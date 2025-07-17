@@ -1,0 +1,53 @@
+package com.example.demo_innocode.service;
+import com.example.demo_innocode.dto.response.LocationResponseDTO;
+import com.example.demo_innocode.entity.Location;
+import com.example.demo_innocode.entity.Media;
+import com.example.demo_innocode.repository.LocationRepository;
+import com.example.demo_innocode.repository.MediaRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class LocationServiceImpl {
+
+    private final LocationRepository locationRepository;
+
+    private final MediaRepository mediaRepository;
+
+    public List<LocationResponseDTO> getAllLocations() {
+        List<LocationResponseDTO> locationResponseDTOs = new ArrayList<>();
+        List<Location> locations = locationRepository.findAll();
+        for (Location location : locations) {
+            List<Media> media = mediaRepository.findByLocationAndHeaderIsTrue(location)
+                    .orElse(null);
+            String imageUrl = "";
+
+            if(!media.isEmpty() && media != null) {
+                imageUrl = media.getFirst().getFilePath();
+            }
+
+            LocationResponseDTO locationResponseDTO = LocationResponseDTO.builder()
+                    .name(location.getName())
+                    .longitude(location.getLongitude())
+                    .latitude(location.getLatitude())
+                    .imageUrl(imageUrl)
+                    .build();
+            locationResponseDTOs.add(locationResponseDTO);
+        }
+        return locationResponseDTOs;
+    }
+
+    public Optional<Location> getLocationById(Long id) {
+        return locationRepository.findById(id);
+    }
+
+    public List<Media> getMediaByLocationId(Long locationId) {
+        return mediaRepository.findByLocationId(locationId);
+    }
+
+}

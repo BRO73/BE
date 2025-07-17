@@ -1,9 +1,9 @@
 package com.example.demo_innocode.controller;
 
+import com.example.demo_innocode.dto.response.LocationResponseDTO;
 import com.example.demo_innocode.entity.Location;
 import com.example.demo_innocode.entity.Media;
-import com.example.demo_innocode.service.LocationService;
-import lombok.AllArgsConstructor;
+import com.example.demo_innocode.service.LocationServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +17,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class LocationController {
 
-    private final LocationService locationService;
+    private final LocationServiceImpl locationService;
 
     @GetMapping
-    public ResponseEntity<List<Location>> getAllLocations() {
-        List<Location> locations = locationService.getAllLocations();
+    public ResponseEntity<List<LocationResponseDTO>> getAllLocations() {
+        List<LocationResponseDTO> locations = locationService.getAllLocations();
         return new ResponseEntity<>(locations, HttpStatus.OK);
     }
 

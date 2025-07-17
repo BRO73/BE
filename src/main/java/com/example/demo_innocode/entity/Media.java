@@ -13,6 +13,9 @@ public class Media extends AbstractEntity<Long> {
     @Column(name = "file_path", nullable = false)
     private String filePath;
 
+    @Column(name = "header")
+    private boolean header;
+
     @Column(name = "file_type", nullable = false, length = 10)
     private String fileType;
 

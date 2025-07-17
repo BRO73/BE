@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class VirtualTourService {
+public class VirtualTourServiceImpl {
     private final VirtualTourRepository virtualTourRepository;
 
     public Optional<VirtualTour> getVirtualTourById(Long id) {

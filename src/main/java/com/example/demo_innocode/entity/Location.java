@@ -1,5 +1,6 @@
 package com.example.demo_innocode.entity;
 
+import com.example.demo_innocode.constant.LocationType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +16,9 @@ public class Location extends AbstractEntity<Long> {
     @Column(nullable = false)
     private String name;
 
-    private String type;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
+    private LocationType type;
 
     @Column(columnDefinition = "TEXT")
     private String description;
