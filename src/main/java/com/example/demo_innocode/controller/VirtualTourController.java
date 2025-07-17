@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.example.demo_innocode.service.VirtualTourServiceImpl;
+import com.example.demo_innocode.service.impl.VirtualTourServiceImpl;
 
 import java.util.Optional;
 

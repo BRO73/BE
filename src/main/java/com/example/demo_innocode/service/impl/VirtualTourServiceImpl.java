@@ -1,4 +1,4 @@
-package com.example.demo_innocode.service; // Thay đổi package này
+package com.example.demo_innocode.service.impl; // Thay đổi package này
 
 import com.example.demo_innocode.entity.VirtualTour;
 import com.example.demo_innocode.repository.VirtualTourRepository;

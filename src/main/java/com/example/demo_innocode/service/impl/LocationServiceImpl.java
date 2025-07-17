@@ -1,4 +1,5 @@
-package com.example.demo_innocode.service;
+package com.example.demo_innocode.service.impl;
+import com.example.demo_innocode.dto.request.LocationRequestDTO;
 import com.example.demo_innocode.dto.response.LocationResponseDTO;
 import com.example.demo_innocode.entity.Location;
 import com.example.demo_innocode.entity.Media;
@@ -48,6 +49,23 @@ public class LocationServiceImpl {
 
     public List<Media> getMediaByLocationId(Long locationId) {
         return mediaRepository.findByLocationId(locationId);
+    }
+
+    public void addLocations(List<LocationRequestDTO> locationRequestDTOs) {
+        List<Location> locations = new ArrayList<>();
+        for(LocationRequestDTO locationRequestDTO : locationRequestDTOs) {
+            Location location = Location.builder()
+                    .name(locationRequestDTO.getName())
+                    .longitude(locationRequestDTO.getLongitude())
+                    .latitude(locationRequestDTO.getLatitude())
+                    .address(locationRequestDTO.getAddress())
+                    .type(locationRequestDTO.getType())
+                    .virtualTour(locationRequestDTO.getVirtualTour())
+                    .description(locationRequestDTO.getDescription())
+                    .build();
+            locations.add(location);
+        }
+        locationRepository.saveAll(locations);
     }
 
 }

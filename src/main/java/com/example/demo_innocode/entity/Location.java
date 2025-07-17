@@ -2,14 +2,16 @@ package com.example.demo_innocode.entity;
 
 import com.example.demo_innocode.constant.LocationType;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
 @Entity
+@Builder
 @Getter
 @Setter
+@AllArgsConstructor
+@RequiredArgsConstructor
 @Table(name = "locations")
 public class Location extends AbstractEntity<Long> {
 
