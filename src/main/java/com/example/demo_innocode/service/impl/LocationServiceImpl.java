@@ -68,7 +68,6 @@ public class LocationServiceImpl {
                     .latitude(locationRequestDTO.getLatitude())
                     .address(locationRequestDTO.getAddress())
                     .type(locationRequestDTO.getType())
-                    .virtualTour(locationRequestDTO.getVirtualTour())
                     .description(locationRequestDTO.getDescription())
                     .build();
             locations.add(location);
