@@ -5,7 +5,6 @@ import com.example.demo_innocode.entity.VirtualTour;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 

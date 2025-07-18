@@ -8,7 +8,6 @@ import com.example.demo_innocode.repository.LocationRepository;
 import com.example.demo_innocode.repository.MediaRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,8 +18,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MediaServiceImpl {
 
-    private MediaRepository mediaRepository;
-    private LocationRepository locationRepository;
+    private final MediaRepository mediaRepository;
+    private final LocationRepository locationRepository;
 
     public List<MediaResponseDTO> createMedia(List<MediaRequestDTO> requestList) {
         List<MediaResponseDTO> responseList = new ArrayList<>();
