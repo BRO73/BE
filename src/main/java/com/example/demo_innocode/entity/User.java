@@ -1,15 +1,17 @@
 package com.example.demo_innocode.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
 @Entity
+@Builder
 @Getter
 @Setter
 @Table(name = "users")
+@AllArgsConstructor
+@NoArgsConstructor
 public class User extends AbstractEntity<Long> {
 
     @Column(nullable = false, unique = true)
@@ -22,6 +24,8 @@ public class User extends AbstractEntity<Long> {
     private String email;
 
     private String fullName;
+
+    private String phone;
 
     @Column(nullable = false)
     private String role; // e.g., "user" or "admin" or "owner"
