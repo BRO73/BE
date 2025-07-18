@@ -1,8 +1,11 @@
 package com.example.demo_innocode.service.impl;
 import com.example.demo_innocode.dto.request.LocationRequestDTO;
 import com.example.demo_innocode.dto.response.LocationResponseDTO;
+import com.example.demo_innocode.entity.Itinerary;
 import com.example.demo_innocode.entity.Location;
 import com.example.demo_innocode.entity.Media;
+import com.example.demo_innocode.repository.ItineraryRepository;
+import com.example.demo_innocode.repository.ItineraryStopRepository;
 import com.example.demo_innocode.repository.LocationRepository;
 import com.example.demo_innocode.repository.MediaRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +20,6 @@ import java.util.Optional;
 public class LocationServiceImpl {
 
     private final LocationRepository locationRepository;
-
     private final MediaRepository mediaRepository;
 
     public List<LocationResponseDTO> getAllLocations() {
@@ -33,9 +35,15 @@ public class LocationServiceImpl {
             }
 
             LocationResponseDTO locationResponseDTO = LocationResponseDTO.builder()
+                    .id(location.getId())
                     .name(location.getName())
+                    .type(location.getType().toString())
+                    .description(location.getDescription())
                     .longitude(location.getLongitude())
                     .latitude(location.getLatitude())
+                    .category(location.getType().toString())
+                    .rating("5")
+                    .checkIns("100")
                     .imageUrl(imageUrl)
                     .build();
             locationResponseDTOs.add(locationResponseDTO);
