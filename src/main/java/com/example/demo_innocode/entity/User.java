@@ -32,4 +32,8 @@ public class User extends AbstractEntity<Long> {
 
     @OneToMany(mappedBy = "user")
     private List<Itinerary> itineraries;
+
+    private String avatar; // đường dẫn ảnh đại diện
+    private String location; // địa chỉ/living
+    private String bio;
 }

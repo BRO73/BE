@@ -7,12 +7,14 @@ import com.example.demo_innocode.entity.ItineraryStop;
 
 import java.util.List;
 
+import java.util.List;
+
 public interface ItineraryStopService {
     ItineraryStopResponseDTO addItineraryStop(ItineraryStopRequestDTO dto);
+
     public ItineraryStopResponseDTO updateItineraryStop(Long id, ItineraryStopRequestDTO dto);
     public void deleteItineraryStop(Long id);
     List<ItineraryStopResponseDTO> getAllItineraryStops();
     List<ItineraryStopResponseDTO> getStopsByItineraryId(Long itineraryId);
-
 
 }

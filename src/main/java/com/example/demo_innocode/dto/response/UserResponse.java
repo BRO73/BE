@@ -6,8 +6,11 @@ import java.util.Set;
 
 @Builder
 public record UserResponse (
+        Long id,
         String email,
         String fullname,
         String phone,
-        String citizenId
+        String avatar,
+        String location,
+        String bio
 ){}
