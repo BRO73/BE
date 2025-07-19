@@ -12,6 +12,7 @@ import com.example.demo_innocode.service.ItineraryStopService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+
 @Service
 @RequiredArgsConstructor
 public class ItineraryStopServiceImpl implements ItineraryStopService {
@@ -47,4 +48,7 @@ public class ItineraryStopServiceImpl implements ItineraryStopService {
                 // .note(stop.getNote()) // Nếu có trường note
                 .build();
     }
+
 }
+
+

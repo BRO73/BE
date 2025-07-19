@@ -18,4 +18,5 @@ public class ItineraryStopController {
     public ResponseEntity<ItineraryStopResponseDTO> addItineraryStop(@RequestBody ItineraryStopRequestDTO dto) {
         return ResponseEntity.ok(itineraryStopService.addItineraryStop(dto));
     }
+
 }

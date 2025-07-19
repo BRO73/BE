@@ -30,9 +30,13 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.findById(id)
                 .map(user -> UserResponse.builder()
+                        .id(user.getId())
                         .fullname(user.getFullName())
                         .email(user.getEmail())
                         .phone(user.getPhone())
+                        .avatar(user.getAvatar())
+                        .location("Dong Hoi, Quang Binh")
+                        .bio("Adventure enthusiast exploring the beautiful caves and landscapes of Quang Binh. Love capturing moments and sharing travel tips with fellow explorers! ")
                         .build()
                 )
                 .orElseThrow(() -> new InnoException(ErrorEnum.USER_NOT_FOUND));
