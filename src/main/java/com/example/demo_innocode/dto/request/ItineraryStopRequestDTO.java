@@ -11,8 +11,7 @@ public class ItineraryStopRequestDTO {
     private Long itineraryId;
     private Long locationId;
     private int stopOrder;
-    private LocalDateTime plannedAt;
+    private LocalDateTime startedAt;
     private LocalDateTime endedAt;
-    // Nếu muốn có ghi chú (note) thì mở thêm dòng này:
-    // private String note;
+
 }
