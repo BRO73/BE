@@ -16,8 +16,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/locations")
 @RequiredArgsConstructor
-
-@CrossOrigin(origins = "http://localhost:8080")
 public class LocationController {
 
     private final LocationServiceImpl locationService;
