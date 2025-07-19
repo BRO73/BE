@@ -12,6 +12,7 @@ import com.example.demo_innocode.service.ItineraryStopService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +26,7 @@ public class ItineraryStopServiceImpl implements ItineraryStopService {
     public ItineraryStopResponseDTO addItineraryStop(ItineraryStopRequestDTO dto) {
         Itinerary itinerary = itineraryRepository.findById(dto.getItineraryId())
                 .orElseThrow(() -> new RuntimeException("Itinerary not found"));
+
         Location location = locationRepository.findById(dto.getLocationId())
                 .orElseThrow(() -> new RuntimeException("Location not found"));
 
@@ -32,21 +34,61 @@ public class ItineraryStopServiceImpl implements ItineraryStopService {
         stop.setItinerary(itinerary);
         stop.setLocation(location);
         stop.setStopOrder(dto.getStopOrder());
-        stop.setPlannedAt(dto.getPlannedAt());
+        stop.setStartedAt(dto.getStartedAt());
         stop.setEndedAt(dto.getEndedAt());
-        // stop.setNote(dto.getNote()); // Nếu có trường note
 
-        stop = itineraryStopRepository.save(stop);
+        ItineraryStop savedStop = itineraryStopRepository.save(stop);
+        return toDto(savedStop);
+    }
 
+    @Override
+    public ItineraryStopResponseDTO updateItineraryStop(Long id, ItineraryStopRequestDTO dto) {
+        ItineraryStop stop = itineraryStopRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("ItineraryStop not found"));
+
+        stop.setStopOrder(dto.getStopOrder());
+        stop.setStartedAt(dto.getStartedAt());
+        stop.setEndedAt(dto.getEndedAt());
+
+        ItineraryStop updatedStop = itineraryStopRepository.save(stop);
+        return toDto(updatedStop);
+    }
+
+    @Override
+    public void deleteItineraryStop(Long id) {
+        if (!itineraryStopRepository.existsById(id)) {
+            throw new RuntimeException("ItineraryStop not found");
+        }
+        itineraryStopRepository.deleteById(id);
+    }
+
+    @Override
+    public List<ItineraryStopResponseDTO> getAllItineraryStops() {
+        return itineraryStopRepository.findAll().stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    // ✅ Reusable private mapper
+    private ItineraryStopResponseDTO toDto(ItineraryStop stop) {
         return ItineraryStopResponseDTO.builder()
                 .id(stop.getId())
-                .itineraryId(itinerary.getId())
-                .locationId(location.getId())
+                .itineraryId(stop.getItinerary().getId())
+                .locationId(stop.getLocation().getId())
                 .stopOrder(stop.getStopOrder())
-                .plannedAt(stop.getPlannedAt())
+                .startedAt(stop.getStartedAt())
                 .endedAt(stop.getEndedAt())
-                // .note(stop.getNote()) // Nếu có trường note
                 .build();
+    }
+
+    @Override
+    public List<ItineraryStopResponseDTO> getStopsByItineraryId(Long itineraryId) {
+        Itinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new RuntimeException("Itinerary not found"));
+        return itineraryStopRepository.findByItinerary(itinerary)
+                .stream()
+                .map(this::toDto)
+                .toList();
     }
 
 }

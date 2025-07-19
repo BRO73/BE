@@ -13,5 +13,4 @@ public class ItineraryRequestDTO {
     private LocalDate startDate;
     private LocalDate endDate;
     private String status;
-    private Long userId; // userId dùng để map với User
 }

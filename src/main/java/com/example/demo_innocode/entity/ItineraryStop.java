@@ -18,7 +18,7 @@ public class ItineraryStop extends AbstractEntity<Long> {
 
     @Column(name = "started_at")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime plannedAt;
+    private LocalDateTime startedAt;
 
     @Column(name = "ended_at")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")

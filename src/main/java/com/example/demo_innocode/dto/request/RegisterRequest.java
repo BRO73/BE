@@ -22,9 +22,6 @@ public record RegisterRequest(
         @NotBlank(message = "Phone must not be blank")
         String phone,
 
-        @NotBlank(message = "Citizen ID must not be blank")
-        String citizenId,
-
         @NotBlank
         String role
 ){}
