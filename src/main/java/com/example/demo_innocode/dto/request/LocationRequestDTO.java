@@ -18,5 +18,4 @@ public class LocationRequestDTO {
     private String address;
     private BigDecimal latitude;
     private BigDecimal longitude;
-    private VirtualTour virtualTour;
 }
