@@ -10,7 +10,7 @@ public record ItineraryStopResponseDTO(
         Long itineraryId,
         Long locationId,
         int stopOrder,
-        LocalDateTime plannedAt,
+        LocalDateTime startedAt,
         LocalDateTime endedAt
-        // Nếu có note thì thêm ở đây: String note
+
 ) {}
