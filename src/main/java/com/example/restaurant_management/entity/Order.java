@@ -21,6 +21,8 @@ public class Order extends AbstractEntity<Long> {
     @JoinColumn(name = "staff_id")
     private User staff;
 
+    private String TuanNgu;
+
     @Column(name = "total_amount", nullable = false)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
