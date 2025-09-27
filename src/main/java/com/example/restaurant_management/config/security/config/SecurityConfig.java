@@ -28,7 +28,7 @@ public class SecurityConfig {
     private final JWTAuthenticationFilter jwtAuthenticationFilter;
 
     private static final String[] AUTH_WHITELIST = {
-            "/auth/**",
+            "/api/auth/**",
             "/ping/**"
     };
 
