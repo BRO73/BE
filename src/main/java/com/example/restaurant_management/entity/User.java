@@ -1,6 +1,8 @@
 package com.example.restaurant_management.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.*;
 
 import java.io.Serializable;
@@ -11,21 +13,22 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "Users")
+@Table(name = "users")
 public class User extends AbstractEntity<Long> implements Serializable {
 
-    @Column(name = "username")
+    @Column(name = "username", nullable = false, unique = true, length = 50)
     private String username;
 
-    @Column(name = "password")
-    private String password;
-
-    @Column(name = "fullname")
-    private String fullName;
+    @Column(name = "hashed_password", nullable = false)
+    private String hashedPassword;
 
     @Column(name = "email")
     private String email;
 
-    @Column(name = "phone")
-    private String phone;
+    @Column(name = "full_name", nullable = false, length = 100)
+    private String fullName;
+
+    @Column(name = "phone_number", unique = true, length = 15)
+    private String phoneNumber;
+
 }

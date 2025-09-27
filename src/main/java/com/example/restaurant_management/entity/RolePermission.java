@@ -1,6 +1,7 @@
 package com.example.restaurant_management.entity;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Table;
 import lombok.*;
 
 import java.io.Serializable;
@@ -11,7 +12,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "role_permission", uniqueConstraints = {
+@Table(name = "role_permissions", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"role_id", "permission_id"},
                 name = "role_permissions_role_id_permission_id_unique")})
 public class RolePermission extends AbstractEntity<Long> implements Serializable {

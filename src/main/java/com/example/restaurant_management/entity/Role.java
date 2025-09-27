@@ -1,6 +1,7 @@
 package com.example.restaurant_management.entity;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Table;
 import lombok.*;
 
 import java.io.Serializable;
@@ -11,7 +12,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "role")
+@Table(name = "roles")
 public class Role extends AbstractEntity<Long> implements Serializable {
 
     @Column(name = "name")

@@ -14,7 +14,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "permission")
+@Table(name = "permissions")
 public class Permission extends AbstractEntity<Long> implements Serializable {
 
     @Column(name = "name", unique = true, length = 50)
