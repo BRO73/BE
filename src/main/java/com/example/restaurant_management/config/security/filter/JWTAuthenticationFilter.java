@@ -27,6 +27,14 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String path = request.getServletPath();
+        // ✅ Bỏ qua kiểm tra JWT cho các endpoint public
+        if (path.startsWith("/api/auth/") || path.startsWith("/ping")) {
+            log.info("Request path = {}", request.getServletPath());
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         final String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (StringUtils.isBlank(authorizationHeader) || !authorizationHeader.startsWith(AuthConstant.BEARER)) {
             filterChain.doFilter(request, response);
