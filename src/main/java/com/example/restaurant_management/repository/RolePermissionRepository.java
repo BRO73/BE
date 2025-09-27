@@ -4,8 +4,12 @@ import com.example.restaurant_management.entity.RolePermission;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Set;
+
 @Repository
 public interface RolePermissionRepository extends JpaRepository<RolePermission, Long> {
-    Set<RolePermission> findAllByRoleIdIn(Set<Long> id);
+    Set<RolePermission> findAllByRoleIdIn(Set<Long> roleIds);
+    List<RolePermission> findAllByRoleId(Long roleId);
+    List<RolePermission> findAllByPermissionId(Long permissionId);
 }
