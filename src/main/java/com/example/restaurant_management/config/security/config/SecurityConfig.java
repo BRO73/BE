@@ -29,7 +29,8 @@ public class SecurityConfig {
 
     private static final String[] AUTH_WHITELIST = {
             "/api/auth/**",
-            "/ping/**"
+            "/ping/**",
+            "/api/menu-items-1/**"
     };
 
     @Bean

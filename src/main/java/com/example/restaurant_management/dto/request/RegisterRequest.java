@@ -20,8 +20,5 @@ public record RegisterRequest(
         String email,
 
         @NotBlank(message = "Phone must not be blank")
-        String phoneNumber,
-
-        @NotBlank
-        String role
+        String phoneNumber
 ){}
