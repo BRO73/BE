@@ -16,6 +16,7 @@ public enum ErrorEnum {
             "Session has expired. Please log in again."),
     USER_EXIST(400, "user_exist", "User already exists"),
     USER_NOT_FOUND(400, "user_not_found", "User not found"),
+    STORE_NOT_FOUND(400, "store_not_found", "Store not found"),
     PASSWORD_INCORRECT(400, "password_incorrect", "Password is incorrect"),
     USER_DISABLED(400, "user_disabled", "User is disabled");
     private final Integer httpStatus;

@@ -283,3 +283,13 @@ CREATE TABLE role_permissions (
                                   CONSTRAINT fk_rolepermission_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
                                   CONSTRAINT fk_rolepermission_permission FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE
 );
+-- Bảng cửa hàng (store)
+USE SWP301;
+CREATE TABLE stores (
+                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                        store_name VARCHAR(100) NOT NULL UNIQUE
+);
+
+ALTER TABLE users ADD COLUMN store_id BIGINT;
+ALTER TABLE users ADD CONSTRAINT fk_store FOREIGN KEY (store_id) REFERENCES stores(id);
+

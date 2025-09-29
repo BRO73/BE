@@ -59,4 +59,9 @@ public class UserServiceImpl implements UserService {
         // Note: This method needs to be added to UserRepository
         return List.of();
     }
+
+    @Override
+    public Optional<User> findByUsernameAndStore_StoreName(String username, String storeName) {
+        return userRepository.findByUsernameAndStore_StoreName(username, storeName);
+    }
 }

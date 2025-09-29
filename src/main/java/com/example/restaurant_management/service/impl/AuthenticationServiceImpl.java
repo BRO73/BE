@@ -1,17 +1,23 @@
 package com.example.restaurant_management.service.impl;
 
+import com.example.restaurant_management.common.constant.ErrorEnum;
+import com.example.restaurant_management.common.exception.RestaurantException;
 import com.example.restaurant_management.constant.ClaimConstant;
 import com.example.restaurant_management.dto.request.RegisterRequest;
 import com.example.restaurant_management.dto.request.SignInRequest;
 import com.example.restaurant_management.dto.response.TokenResponse;
+import com.example.restaurant_management.entity.Store;
 import com.example.restaurant_management.entity.User;
 import com.example.restaurant_management.model.CredentialPayload;
+import com.example.restaurant_management.repository.StoreRepository;
 import com.example.restaurant_management.repository.UserRepository;
 import com.example.restaurant_management.service.AuthenticationService;
 import com.example.restaurant_management.service.JWTService;
+import com.example.restaurant_management.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,6 +35,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationProvider authenticationProvider;
     private final JWTService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
@@ -36,11 +43,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public TokenResponse authenticate(SignInRequest request) {
+        // Gộp storeName và username lại thành "storeName:username"
+        String combinedUsername = request.storeName() + ":" + request.username();
 
-        Authentication authentication = authenticationProvider.authenticate(
-                new UsernamePasswordAuthenticationToken(request.username(), request.password())
+        Authentication authentication;
+        authentication = authenticationProvider.authenticate(
+                new UsernamePasswordAuthenticationToken(combinedUsername, request.password())
         );
 
+
+        // build claims
         Map<String, Object> claimsAccessToken = buildClaimsAccessToken(authentication);
         Map<String, Object> claimsRefreshToken = buildClaimsRefreshToken(authentication);
 
@@ -51,6 +63,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
     }
 
+
     @Override
     public String register(RegisterRequest request) {
         User user = User.builder()
@@ -59,6 +72,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .fullName(request.fullName())
                 .email(request.email())
                 .phoneNumber(request.phoneNumber())
+                .store(request.storeName())
                 .build();
         userRepository.save(user);
         return "Register Success";

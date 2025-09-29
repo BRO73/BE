@@ -1,7 +1,6 @@
 package com.example.restaurant_management.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.*;
 
@@ -13,10 +12,15 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "users")
+@Table(
+        name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"username", "store_id"})
+        }
+)
 public class User extends AbstractEntity<Long> implements Serializable {
 
-    @Column(name = "username", nullable = false, unique = true, length = 50)
+    @Column(name = "username", nullable = false, length = 50)
     private String username;
 
     @Column(name = "hashed_password", nullable = false)
@@ -30,5 +34,9 @@ public class User extends AbstractEntity<Long> implements Serializable {
 
     @Column(name = "phone_number", unique = true, length = 15)
     private String phoneNumber;
+    @ManyToOne
+    @JoinColumn(name = "store_id", nullable = false)
+    private Store store;
+
 
 }

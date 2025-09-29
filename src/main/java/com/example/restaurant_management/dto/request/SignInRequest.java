@@ -8,6 +8,8 @@ public record SignInRequest (
         String username,
 
         @NotBlank(message = "Password must not be blank")
-        String password
+        String password,
+        @NotBlank(message = "Store name must not be blank")
+        String storeName
 ){}
 

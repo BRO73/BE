@@ -28,12 +28,21 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final RolePermissionRepository rolePermissionRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username).
-                orElseThrow(() -> new RestaurantException(ErrorEnum.USER_NOT_FOUND));
+    public UserDetails loadUserByUsername(String combined) throws UsernameNotFoundException {
+        // Expect input dạng "storeName:username"
+        String[] parts = combined.split(":");
+        if (parts.length != 2) {
+            throw new UsernameNotFoundException("Invalid login format. Expected storeName:username");
+        }
+
+        String storeName = parts[0];
+        String username = parts[1];
+
+        User user = userRepository.findByUsernameAndStore_StoreName(username, storeName)
+                .orElseThrow(() -> new RestaurantException(ErrorEnum.USER_NOT_FOUND));
 
         return UserDetailsImpl.builder()
-                .username(user.getUsername())
+                .username(combined) // giữ nguyên format storeName:username
                 .password(user.getHashedPassword())
                 .userId(user.getId())
                 .email(user.getEmail())
@@ -42,6 +51,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .authorities(getUserAuthorities(user))
                 .build();
     }
+
 
     private List<SimpleGrantedAuthority> getUserAuthorities(User user) {
         Set<UserRole> userRoles = userRoleRepository.findAllByUserId(user.getId());

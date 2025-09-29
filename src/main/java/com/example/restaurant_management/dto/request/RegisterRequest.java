@@ -23,5 +23,8 @@ public record RegisterRequest(
         String phoneNumber,
 
         @NotBlank
-        String role
+        String role,
+
+        @NotBlank(message = "Store name must not be blank")
+        String storeName
 ){}
