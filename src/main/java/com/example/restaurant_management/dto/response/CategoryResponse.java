@@ -28,10 +28,6 @@ public class CategoryResponse {
                 .name(category.getName())
                 .description(category.getDescription())
                 .imageUrl(category.getImageUrl())
-                .createdAt(category.getCreatedAt())
-                .updatedAt(category.getUpdatedAt())
-                .deleted(category.isDeleted())
-                .activated(category.isActivated())
                 .build();
     }
 }

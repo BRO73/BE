@@ -29,6 +29,10 @@ public class SecurityConfig {
 
     private static final String[] AUTH_WHITELIST = {
             "/api/auth/**",
+            "/api/menu-items",
+            "/api/categories",
+            "/api/categories/**",
+            "/api/menu-items/**",
             "/ping/**"
     };
 
