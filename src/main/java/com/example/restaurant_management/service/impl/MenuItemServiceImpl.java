@@ -1,25 +1,28 @@
 package com.example.restaurant_management.service.impl;
 
+import com.example.restaurant_management.dto.request.MenuItemRequest;
+import com.example.restaurant_management.dto.response.MenuItemResponse;
 import com.example.restaurant_management.entity.MenuItem;
+import com.example.restaurant_management.mapper.MenuItemMapper;
 import com.example.restaurant_management.repository.MenuItemRepository;
 import com.example.restaurant_management.service.MenuItemService;
+import lombok.AllArgsConstructor;
+import org.mapstruct.Mapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-
+@AllArgsConstructor
 @Service
 public class MenuItemServiceImpl implements MenuItemService {
 
+    private final MenuItemMapper menuItemMapper;
+
     private final MenuItemRepository menuItemRepository;
 
-    public MenuItemServiceImpl(MenuItemRepository menuItemRepository) {
-        this.menuItemRepository = menuItemRepository;
-    }
-
     @Override
-    public List<MenuItem> getAllMenuItems() {
-        return menuItemRepository.findAll();
+    public List<MenuItemResponse> getAllMenuItems() {
+        return menuItemMapper.toDTOList(menuItemRepository.findAll());
     }
 
     @Override
@@ -28,12 +31,15 @@ public class MenuItemServiceImpl implements MenuItemService {
     }
 
     @Override
-    public MenuItem createMenuItem(MenuItem menuItem) {
+    public MenuItem createMenuItem(MenuItemRequest request) {
+        MenuItem menuItem = menuItemMapper.toEntity(request);
+        System.out.println(menuItem.toString());
         return menuItemRepository.save(menuItem);
     }
 
     @Override
-    public MenuItem updateMenuItem(Long id, MenuItem menuItem) {
+    public MenuItem updateMenuItem(Long id, MenuItemRequest request) {
+        MenuItem menuItem = menuItemMapper.toEntity(request);
         menuItem.setId(id);
         return menuItemRepository.save(menuItem);
     }
