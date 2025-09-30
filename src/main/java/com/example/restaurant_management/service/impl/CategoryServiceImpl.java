@@ -1,6 +1,9 @@
 package com.example.restaurant_management.service.impl;
 
+import com.example.restaurant_management.dto.request.CategoryRequest;
+import com.example.restaurant_management.dto.response.CategoryResponse;
 import com.example.restaurant_management.entity.Category;
+import com.example.restaurant_management.mapper.CategoryMapper;
 import com.example.restaurant_management.repository.CategoryRepository;
 import com.example.restaurant_management.service.CategoryService;
 import org.springframework.stereotype.Service;
@@ -12,37 +15,45 @@ import java.util.Optional;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
 
-    public CategoryServiceImpl(CategoryRepository categoryRepository) {
+    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper) {
         this.categoryRepository = categoryRepository;
+        this.categoryMapper = categoryMapper;
     }
 
     @Override
-    public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+    public List<CategoryResponse> getAllCategories() {
+        List<Category> categories = categoryRepository.findAll();
+        return categoryMapper.toDTOList(categories);
     }
 
     @Override
-    public Optional<Category> getCategoryById(Long id) {
-        return categoryRepository.findById(id);
+    public Optional<CategoryResponse> getCategoryById(Long id) {
+        return categoryRepository.findById(id)
+                .map(categoryMapper::toDTO);
     }
 
     @Override
-    public Category createCategory(Category category) {
-        if (categoryRepository.existsByName(category.getName())) {
+    public CategoryResponse createCategory(CategoryRequest request) {
+        if (categoryRepository.existsByName(request.getName())) {
             throw new RuntimeException("Category name already exists");
         }
-        return categoryRepository.save(category);
+        Category entity = categoryMapper.toEntity(request);
+        Category saved = categoryRepository.save(entity);
+        return categoryMapper.toDTO(saved);
     }
 
     @Override
-    public Optional<Category> updateCategory(Long id, Category category) {
-        return Optional.ofNullable(categoryRepository.findById(id).map(existing -> {
-            existing.setName(category.getName());
-            existing.setDescription(category.getDescription());
-            existing.setImageUrl(category.getImageUrl());
-            return categoryRepository.save(existing);
-        }).orElseThrow(() -> new RuntimeException("Category not found")));
+    public Optional<CategoryResponse> updateCategory(Long id, CategoryRequest request) {
+        return categoryRepository.findById(id)
+                .map(existing -> {
+                    existing.setName(request.getName());
+                    existing.setDescription(request.getDescription());
+                    existing.setImageUrl(request.getImageUrl());
+                    Category updated = categoryRepository.save(existing);
+                    return categoryMapper.toDTO(updated);
+                });
     }
 
     @Override
@@ -54,7 +65,14 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Optional<Category> getCategoryByName(String name) {
-        return categoryRepository.findByName(name);
+    public Optional<CategoryResponse> getCategoryByName(String name) {
+        return categoryRepository.findByName(name)
+                .map(categoryMapper::toDTO);
+    }
+
+    // Method dùng cho MenuItemMapper để lấy entity
+    public Category getCategoryEntityByName(String name) {
+        return categoryRepository.findByName(name)
+                .orElseThrow(() -> new RuntimeException("Category not found: " + name));
     }
 }
