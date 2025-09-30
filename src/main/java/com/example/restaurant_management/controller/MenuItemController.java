@@ -39,14 +39,21 @@ public class MenuItemController {
     public ResponseEntity<MenuItemResponse> createMenuItem(@RequestBody MenuItemRequest request) {
         MenuItem menuItem = menuItemService.createMenuItem(request); // tạo entity
         MenuItemResponse response = menuItemMapper.toDTO(menuItem);
+
         return ResponseEntity.ok(response); // trả về DTO
     }
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<MenuItem> updateMenuItem(@PathVariable Long id, @RequestBody MenuItemRequest request) {
-        return ResponseEntity.ok(menuItemService.updateMenuItem(id, request));
+    public ResponseEntity<MenuItemResponse> updateMenuItem(
+            @PathVariable Long id,
+            @RequestBody MenuItemRequest request) {
+
+        MenuItem updatedMenuItem = menuItemService.updateMenuItem(id, request); // update entity
+        MenuItemResponse response = menuItemMapper.toDTO(updatedMenuItem); // map sang DTO
+        return ResponseEntity.ok(response); // trả về DTO giống POST
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMenuItem(@PathVariable Long id) {
