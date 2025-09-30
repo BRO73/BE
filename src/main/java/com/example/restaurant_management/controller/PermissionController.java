@@ -3,11 +3,13 @@ package com.example.restaurant_management.controller;
 import com.example.restaurant_management.entity.Permission;
 import com.example.restaurant_management.service.PermissionService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/api/permissions")
 public class PermissionController {
 
