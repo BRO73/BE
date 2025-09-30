@@ -6,6 +6,7 @@ import com.example.restaurant_management.entity.User;
 import com.example.restaurant_management.repository.UserRepository;
 import com.example.restaurant_management.service.StaffService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,8 +34,9 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public UserProfileResponse getProfile(String username) {
-        User user = userRepository.findByUsername(username)
+    public UserProfileResponse getProfile(Authentication authentication) {
+        Long userId = (Long
+        User user = userRepository.findById()
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return UserProfileResponse.builder()

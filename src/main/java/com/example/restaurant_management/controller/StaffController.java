@@ -8,6 +8,7 @@ import com.example.restaurant_management.service.StaffService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,9 +31,9 @@ public class StaffController {
 
     @GetMapping("/profile")
     public ResponseEntity<RestaurantResponse<UserProfileResponse>> getProfile(
-            @AuthenticationPrincipal String username
+            Authentication authentication
     ) {
-        UserProfileResponse profile = staffService.getProfile(username);
+        UserProfileResponse profile = staffService.getProfile(authentication);
         return RestaurantResponse.ok(profile, "Staff profile fetched successfully");
     }
 }
