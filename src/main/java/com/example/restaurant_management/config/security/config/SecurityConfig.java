@@ -33,8 +33,13 @@ public class SecurityConfig {
             "/api/categories",
             "/api/categories/**",
             "/api/menu-items/**",
-            "/ping/**"
+            "/ping/**",
+
+            // thêm endpoint upload file
+            "/api/files/upload",
+            "/storage/**" // để frontend truy cập file tĩnh
     };
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
