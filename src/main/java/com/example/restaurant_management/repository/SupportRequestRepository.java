@@ -11,5 +11,5 @@ public interface SupportRequestRepository extends JpaRepository<SupportRequest, 
     List<SupportRequest> findByTableId(Long tableId);
     List<SupportRequest> findByStatus(String status);
     List<SupportRequest> findByRequestType(String requestType);
-    List<SupportRequest> findByStaffId(Long staffId);
+    List<SupportRequest> findByStaffUserId(Long userId);
 }

@@ -3,6 +3,7 @@ package com.example.restaurant_management.service.impl;
 import com.example.restaurant_management.dto.request.UpdateStaffRequest;
 import com.example.restaurant_management.dto.response.UserProfileResponse;
 import com.example.restaurant_management.entity.User;
+import com.example.restaurant_management.model.CredentialPayload;
 import com.example.restaurant_management.repository.UserRepository;
 import com.example.restaurant_management.service.StaffService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,6 @@ public class StaffServiceImpl implements StaffService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setFullName(request.fullName());
         user.setEmail(request.email());
         user.setPhoneNumber(request.phoneNumber());
 
@@ -35,14 +35,14 @@ public class StaffServiceImpl implements StaffService {
 
     @Override
     public UserProfileResponse getProfile(Authentication authentication) {
-        Long userId = (Long
-        User user = userRepository.findById()
+        CredentialPayload credentialPayload = (CredentialPayload) authentication.getCredentials();
+        Long userId = credentialPayload.getUserId();
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return UserProfileResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
-                .fullName(user.getFullName())
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
                 .build();

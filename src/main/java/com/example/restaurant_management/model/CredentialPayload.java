@@ -14,6 +14,5 @@ import lombok.Setter;
 public class CredentialPayload {
     private Long userId;
     private String email;
-    private String fullName;
     private String storeName;
 }

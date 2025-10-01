@@ -20,20 +20,6 @@ public class UserResponse {
     private String phoneNumber;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private boolean deleted;
     private boolean activated;
 
-    public static UserResponse fromEntity(User user) {
-        return UserResponse.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .fullName(user.getFullName())
-                .phoneNumber(user.getPhoneNumber())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .deleted(user.isDeleted())
-                .activated(user.isActivated())
-                .build();
-    }
 }

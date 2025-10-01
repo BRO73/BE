@@ -1,19 +1,19 @@
 package com.example.restaurant_management.controller;
 
 import com.example.restaurant_management.dto.request.UpdateStaffRequest;
+import com.example.restaurant_management.dto.request.UserRequest;
 import com.example.restaurant_management.dto.response.RestaurantResponse;
 import com.example.restaurant_management.dto.response.UserProfileResponse;
+import com.example.restaurant_management.dto.response.UserResponse;
 import com.example.restaurant_management.entity.User;
 import com.example.restaurant_management.service.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@PreAuthorize("hasAnyRole('ADMIN', 'WAITSTAFF')")
 @RequestMapping("/api/users")
 public class UserController {
 
@@ -24,7 +24,7 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
@@ -36,8 +36,8 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        return ResponseEntity.ok(userService.createUser(user));
+    public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest userRequest) {
+        return ResponseEntity.ok(userService.createUser(userRequest));
     }
 
     @PutMapping("/{id}")

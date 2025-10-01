@@ -21,15 +21,4 @@ public class RoleResponse {
     private boolean deleted;
     private boolean activated;
 
-    public static RoleResponse fromEntity(Role role) {
-        return RoleResponse.builder()
-                .id(role.getId())
-                .name(role.getName())
-                .description(role.getDescription())
-                .createdAt(role.getCreatedAt())
-                .updatedAt(role.getUpdatedAt())
-                .deleted(role.isDeleted())
-                .activated(role.isActivated())
-                .build();
-    }
 }

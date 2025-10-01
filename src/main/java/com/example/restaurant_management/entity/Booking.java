@@ -1,39 +1,45 @@
 package com.example.restaurant_management.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import java.time.LocalDateTime;
 
-@Entity
 @Getter
 @Setter
-@jakarta.persistence.Table(name = "bookings")
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Entity
+@Table(name = "bookings")
 public class Booking extends AbstractEntity<Long> {
 
-    @Column(name = "customer_name", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_user_id")
+    private User customerUser;
+
+    @Column(name = "customer_name", nullable = false, length = 100)
     private String customerName;
 
-    @Column(name = "customer_phone", nullable = false)
+    @Column(name = "customer_phone", nullable = false, length = 15)
     private String customerPhone;
 
     @Column(name = "booking_time", nullable = false)
     private LocalDateTime bookingTime;
 
     @Column(name = "num_guests", nullable = false)
-    private Integer numGuests;
+    private int numGuests;
 
     @Column(columnDefinition = "TEXT")
     private String notes;
 
-    @Column(nullable = false)
-    private String status = "Pending";
+    @Column(nullable = false, length = 20)
+    private String status;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "table_id")
-    private Table table;
+    private TableEntity table;
 
-    @ManyToOne
-    @JoinColumn(name = "staff_id")
-    private User staff;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "staff_user_id")
+    private User staffUser;
 }

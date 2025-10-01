@@ -27,20 +27,4 @@ public class MenuItemResponse {
     private boolean deleted;
     private boolean activated;
 
-    public static MenuItemResponse fromEntity(MenuItem menuItem) {
-        return MenuItemResponse.builder()
-                .id(menuItem.getId())
-                .name(menuItem.getName())
-                .description(menuItem.getDescription())
-                .imageUrl(menuItem.getImageUrl())
-                .price(menuItem.getPrice())
-                .status(menuItem.getStatus())
-                .categoryId(menuItem.getCategory().getId())
-                .categoryName(menuItem.getCategory().getName())
-                .createdAt(menuItem.getCreatedAt())
-                .updatedAt(menuItem.getUpdatedAt())
-                .deleted(menuItem.isDeleted())
-                .activated(menuItem.isActivated())
-                .build();
-    }
 }

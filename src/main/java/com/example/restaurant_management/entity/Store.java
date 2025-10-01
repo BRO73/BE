@@ -1,10 +1,9 @@
 package com.example.restaurant_management.entity;
 
 import jakarta.persistence.*;
-import jakarta.persistence.Table;
 import lombok.*;
-
-import java.io.Serializable;
+import java.util.List;
+import java.util.ArrayList;
 
 @Getter
 @Setter
@@ -13,12 +12,14 @@ import java.io.Serializable;
 @Builder
 @Entity
 @Table(name = "stores")
-public class Store extends AbstractEntity<Long> implements Serializable {
+public class Store extends AbstractEntity<Long> {
 
-    @Column(name = "name", nullable = false, unique = true, length = 100)
+    @Column(nullable = false, unique = true, length = 100)
     private String name;
 
-    @Column
-    private String description;
+    private String address;
 
+    // --- PHẦN BỔ SUNG ---
+    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    private List<User> staffUsers = new ArrayList<>();
 }

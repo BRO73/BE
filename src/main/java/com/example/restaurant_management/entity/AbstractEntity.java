@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
 public abstract class AbstractEntity<T extends Serializable> implements Serializable {
 
     @Id
@@ -20,7 +22,7 @@ public abstract class AbstractEntity<T extends Serializable> implements Serializ
     private T id;
 
     @CreatedBy
-    @Column(name = "created_by")
+    @Column(name = "created_by", updatable = false)
     private T createdBy;
 
     @LastModifiedBy
@@ -30,7 +32,7 @@ public abstract class AbstractEntity<T extends Serializable> implements Serializ
     @Column(name="deleted_by")
     private T deletedBy;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private LocalDateTime createdAt;
 

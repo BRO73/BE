@@ -1,6 +1,6 @@
 package com.example.restaurant_management.service.impl;
 
-import com.example.restaurant_management.entity.Table;
+import com.example.restaurant_management.entity.TableEntity;
 import com.example.restaurant_management.repository.TableRepository;
 import com.example.restaurant_management.service.TableService;
 import org.springframework.stereotype.Service;
@@ -18,24 +18,24 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
-    public List<Table> getAllTables() {
+    public List<TableEntity> getAllTables() {
         return tableRepository.findAll();
     }
 
     @Override
-    public Optional<Table> getTableById(Long id) {
+    public Optional<TableEntity> getTableById(Long id) {
         return tableRepository.findById(id);
     }
 
     @Override
-    public Table createTable(Table table) {
-        return tableRepository.save(table);
+    public TableEntity createTable(TableEntity tableEntity) {
+        return tableRepository.save(tableEntity);
     }
 
     @Override
-    public Table updateTable(Long id, Table table) {
-        table.setId(id);
-        return tableRepository.save(table);
+    public TableEntity updateTable(Long id, TableEntity tableEntity) {
+        tableEntity.setId(id);
+        return tableRepository.save(tableEntity);
     }
 
     @Override
@@ -44,22 +44,22 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
-    public Optional<Table> getTableByNumber(String tableNumber) {
+    public Optional<TableEntity> getTableByNumber(String tableNumber) {
         return tableRepository.findByTableNumber(tableNumber);
     }
 
     @Override
-    public List<Table> getTablesByStatus(String status) {
+    public List<TableEntity> getTablesByStatus(String status) {
         return tableRepository.findByStatus(status);
     }
 
     @Override
-    public List<Table> getTablesByCapacity(Integer capacity) {
+    public List<TableEntity> getTablesByCapacity(Integer capacity) {
         return tableRepository.findByCapacityGreaterThanEqual(capacity);
     }
 
     @Override
-    public List<Table> getTablesByLocation(String location) {
+    public List<TableEntity> getTablesByLocation(String location) {
         return tableRepository.findByLocation(location);
     }
 }
