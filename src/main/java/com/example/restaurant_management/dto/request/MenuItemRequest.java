@@ -1,5 +1,6 @@
 package com.example.restaurant_management.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,5 +18,6 @@ public class MenuItemRequest {
     private String imageUrl;
     private BigDecimal price;
     private String status;
-    private Long categoryId;
+    @JsonProperty("categoryName")
+    private String categoryName;
 }

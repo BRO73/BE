@@ -4,11 +4,14 @@ import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+
 import java.math.BigDecimal;
 
 @Entity
 @Getter
 @Setter
+@ToString
 @Table(name = "menu_items")
 public class MenuItem extends AbstractEntity<Long> {
 

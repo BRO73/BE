@@ -37,6 +37,4 @@ public class Order extends AbstractEntity<Long> {
     @JoinColumn(name = "promotion_id")
     private Promotion promotion;
 
-    @OneToMany(mappedBy = "order")
-    private List<OrderDetail> orderDetails;
 }

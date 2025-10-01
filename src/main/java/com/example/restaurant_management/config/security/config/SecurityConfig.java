@@ -30,7 +30,17 @@ public class SecurityConfig {
     private static final String[] AUTH_WHITELIST = {
             "/api/auth/**",
             "/ping/**",
+            "/api/menu-items",
+            "/api/categories",
+            "/api/categories/**",
+            "/api/menu-items/**",
+            "/ping/**",
+
+            // thêm endpoint upload file
+            "/api/files/upload",
+            "/storage/**" // để frontend truy cập file tĩnh
     };
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
