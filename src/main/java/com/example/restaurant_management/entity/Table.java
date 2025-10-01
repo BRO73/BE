@@ -16,7 +16,9 @@ public class Table extends AbstractEntity<Long> {
     @Column(nullable = false)
     private Integer capacity;
 
-    private String location;
+    @ManyToOne
+    @JoinColumn(name = "location_id", nullable = false)
+    private Location location;
 
     @Column(nullable = false)
     private String status = "Available";

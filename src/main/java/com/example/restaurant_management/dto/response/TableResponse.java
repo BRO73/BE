@@ -16,7 +16,8 @@ public class TableResponse {
     private Long id;
     private String tableNumber;
     private Integer capacity;
-    private String location;
+    private Long locationId;
+    private String locationName;
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -28,7 +29,8 @@ public class TableResponse {
                 .id(table.getId())
                 .tableNumber(table.getTableNumber())
                 .capacity(table.getCapacity())
-                .location(table.getLocation())
+                .locationId(table.getLocation().getId())
+                .locationName(table.getLocation().getName())
                 .status(table.getStatus())
                 .createdAt(table.getCreatedAt())
                 .updatedAt(table.getUpdatedAt())
