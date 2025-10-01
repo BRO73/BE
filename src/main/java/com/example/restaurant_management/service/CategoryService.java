@@ -1,14 +1,26 @@
 package com.example.restaurant_management.service;
 
+import com.example.restaurant_management.dto.request.CategoryRequest;
+import com.example.restaurant_management.dto.response.CategoryResponse;
 import com.example.restaurant_management.entity.Category;
+
 import java.util.List;
 import java.util.Optional;
 
 public interface CategoryService {
-    List<Category> getAllCategories();
-    Optional<Category> getCategoryById(Long id);
-    Category createCategory(Category category);
-    Optional<Category> updateCategory(Long id, Category category);
+
+    List<CategoryResponse> getAllCategories();
+
+    Optional<CategoryResponse> getCategoryById(Long id);
+
+    // Chỉ thay input từ Category sang CategoryRequest
+    CategoryResponse createCategory(CategoryRequest request);
+
+    Optional<CategoryResponse> updateCategory(Long id, CategoryRequest request);
+
     void deleteCategory(Long id);
-    Optional<Category> getCategoryByName(String name);
+
+    Optional<CategoryResponse> getCategoryByName(String name);
+
+    Category getCategoryEntityByName(String categoryName);
 }

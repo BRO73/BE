@@ -1,6 +1,7 @@
 package com.example.restaurant_management.mapper;
 
 import com.example.restaurant_management.dto.request.MenuItemRequest;
+import com.example.restaurant_management.dto.response.CategoryResponse;
 import com.example.restaurant_management.dto.response.MenuItemResponse;
 import com.example.restaurant_management.entity.Category;
 import com.example.restaurant_management.entity.MenuItem;
@@ -36,7 +37,6 @@ public abstract class MenuItemMapper {
     // helper method: lấy Category thực tế từ DB
     protected Category toCategory(String categoryName) {
         if (categoryName == null) return null;
-        return categoryService.getCategoryByName(categoryName)
-                .orElseThrow(() -> new RuntimeException("Category not found: " + categoryName));
+        return categoryService.getCategoryEntityByName(categoryName);
     }
 }
