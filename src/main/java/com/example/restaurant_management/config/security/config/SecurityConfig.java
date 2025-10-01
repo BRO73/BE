@@ -29,7 +29,9 @@ public class SecurityConfig {
 
     private static final String[] AUTH_WHITELIST = {
             "/api/auth/**",
-            "/ping/**"
+            "/ping/**",
+            "/api/kitchen/**",
+
     };
 
     @Bean
@@ -41,7 +43,7 @@ public class SecurityConfig {
             configuration.setAllowedHeaders(
                     Arrays.asList("Accept", "Content-Type", "Authorization"));
             configuration.setAllowedMethods(
-                    Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+                    Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
             configuration.setAllowCredentials(true);
             return configuration;
         }));

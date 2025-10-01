@@ -2,9 +2,14 @@ package com.example.restaurant_management.dto.response;
 
 import com.example.restaurant_management.entity.OrderDetail;
 import lombok.*;
-import java.time.*;
 
-@Data @Builder @NoArgsConstructor @AllArgsConstructor
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class KitchenTicketResponse {
     private Long orderDetailId;
     private Long orderId;
@@ -12,21 +17,16 @@ public class KitchenTicketResponse {
     private Long menuItemId;
     private String dishName;
     private Integer quantity;
+    private String menuStatus;
     private String status;
     private String notes;
     private LocalDateTime orderedAt;
 
-    private Long elapsedSeconds;
-    private Boolean overtime;
-
-    public static KitchenTicketResponse from(OrderDetail od, int overtimeMinutes) {
+    public static KitchenTicketResponse from(OrderDetail od) {
         var order = od.getOrder();
         var menu  = od.getMenuItem();
-        var ordered = od.getCreatedAt();
-        long elapsed = (ordered != null)
-                ? Duration.between(ordered, LocalDateTime.now()).getSeconds()
-                : 0;
-        boolean isOver = elapsed >= overtimeMinutes * 60L;
+
+        LocalDateTime orderedLocal = od.getCreatedAt(); // <-- FIX
 
         return KitchenTicketResponse.builder()
                 .orderDetailId(od.getId())
@@ -35,11 +35,10 @@ public class KitchenTicketResponse {
                 .menuItemId(menu != null ? menu.getId() : null)
                 .dishName(menu != null ? menu.getName() : null)
                 .quantity(od.getQuantity())
+                .menuStatus(menu != null ? menu.getStatus() : null)
                 .status(od.getStatus())
                 .notes(od.getNotes())
-                .orderedAt(ordered)
-                .elapsedSeconds(elapsed)
-                .overtime(isOver)
+                .orderedAt(orderedLocal)
                 .build();
     }
 }

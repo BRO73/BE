@@ -15,20 +15,22 @@ public class KitchenController {
 
     private final KitchenService kitchenService;
 
-
     @GetMapping
     public ResponseEntity<KitchenBoardResponse> board(@RequestParam(defaultValue = "50") int limit) {
         return ResponseEntity.ok(kitchenService.board(limit));
     }
 
-
-    @PatchMapping("/{orderDetailId}/status")
-    public ResponseEntity<Map<String, Object>> updateStatus(
-            @PathVariable Long orderDetailId,
-            @RequestBody Map<String, String> body
+    @PatchMapping("/menu-items/{id}/availability")
+    public ResponseEntity<Void> updateAvailability(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body
     ) {
-        String next = body.get("status");
-        kitchenService.updateStatus(orderDetailId, next);
-        return ResponseEntity.ok(Map.of("ok", true, "orderDetailId", orderDetailId, "status", next));
+        Object avail = body.get("available");
+        boolean available = (avail instanceof Boolean)
+                ? (Boolean) avail
+                : (avail instanceof String && Boolean.parseBoolean((String) avail));
+
+        kitchenService.updateMenuAvailability(id, available);
+        return ResponseEntity.ok().build();
     }
 }
