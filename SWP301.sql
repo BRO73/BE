@@ -284,8 +284,11 @@ CREATE TABLE role_permissions (
                                   CONSTRAINT fk_rolepermission_permission FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE
 );
 
+CREATE TABLE stores (
+                        id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                        name VARCHAR(100) NOT NULL UNIQUE
+);
 
-Use SWP301;
 INSERT INTO categories (name, description, image_url) VALUES
                                                           ('Appetizer', 'Starter dishes to begin a meal', 'https://example.com/images/appetizer.jpg'),
                                                           ('Main Course', 'Main dishes for a full meal', 'https://example.com/images/main_course.jpg'),

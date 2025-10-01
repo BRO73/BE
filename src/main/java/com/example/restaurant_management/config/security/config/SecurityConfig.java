@@ -29,6 +29,7 @@ public class SecurityConfig {
 
     private static final String[] AUTH_WHITELIST = {
             "/api/auth/**",
+            "/ping/**",
             "/api/menu-items",
             "/api/categories",
             "/api/categories/**",
@@ -64,10 +65,10 @@ public class SecurityConfig {
                         authorize -> authorize.requestMatchers(AUTH_WHITELIST).permitAll()
                                 .anyRequest()
                                 .authenticated())
-                .exceptionHandling(
-                        exceptionHandlingConfigurer -> exceptionHandlingConfigurer.authenticationEntryPoint(
-                                internalAuthEntryPoint)
-                )
+//                .exceptionHandling(
+//                        exceptionHandlingConfigurer -> exceptionHandlingConfigurer.authenticationEntryPoint(
+//                                internalAuthEntryPoint)
+//                )
                 .sessionManagement(
                         sessionManagementConfigurer -> sessionManagementConfigurer.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS))
