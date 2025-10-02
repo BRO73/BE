@@ -1,43 +1,59 @@
 package com.example.restaurant_management.controller;
 
+import com.example.restaurant_management.dto.request.MenuItemRequest;
+import com.example.restaurant_management.dto.response.MenuItemResponse;
 import com.example.restaurant_management.entity.MenuItem;
+import com.example.restaurant_management.mapper.MenuItemMapper;
 import com.example.restaurant_management.service.MenuItemService;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/menu-items")
 public class MenuItemController {
-
     private final MenuItemService menuItemService;
-
-    public MenuItemController(MenuItemService menuItemService) {
-        this.menuItemService = menuItemService;
-    }
+    private final MenuItemMapper menuItemMapper;
 
     @GetMapping
-    public ResponseEntity<List<MenuItem>> getAllMenuItems() {
+    public ResponseEntity<List<MenuItemResponse>> getAllMenuItems() {
         return ResponseEntity.ok(menuItemService.getAllMenuItems());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MenuItem> getMenuItemById(@PathVariable Long id) {
-        return menuItemService.getMenuItemById(id)
+    public ResponseEntity<MenuItemResponse> getMenuItemById(@PathVariable Long id) {
+        Optional<MenuItem> opt = menuItemService.getMenuItemById(id);
+        System.out.println("Fetched from DB: " + opt);
+        return opt
+                .map(menuItemMapper::toDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
+
     @PostMapping
-    public ResponseEntity<MenuItem> createMenuItem(@RequestBody MenuItem menuItem) {
-        return ResponseEntity.ok(menuItemService.createMenuItem(menuItem));
+    public ResponseEntity<MenuItemResponse> createMenuItem(@RequestBody MenuItemRequest request) {
+        MenuItem menuItem = menuItemService.createMenuItem(request); // tạo entity
+        MenuItemResponse response = menuItemMapper.toDTO(menuItem);
+
+        return ResponseEntity.ok(response); // trả về DTO
     }
 
+
     @PutMapping("/{id}")
-    public ResponseEntity<MenuItem> updateMenuItem(@PathVariable Long id, @RequestBody MenuItem menuItem) {
-        return ResponseEntity.ok(menuItemService.updateMenuItem(id, menuItem));
+    public ResponseEntity<MenuItemResponse> updateMenuItem(
+            @PathVariable Long id,
+            @RequestBody MenuItemRequest request) {
+
+        MenuItem updatedMenuItem = menuItemService.updateMenuItem(id, request); // update entity
+        MenuItemResponse response = menuItemMapper.toDTO(updatedMenuItem); // map sang DTO
+        return ResponseEntity.ok(response); // trả về DTO giống POST
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMenuItem(@PathVariable Long id) {

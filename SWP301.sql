@@ -283,3 +283,16 @@ CREATE TABLE role_permissions (
                                   CONSTRAINT fk_rolepermission_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
                                   CONSTRAINT fk_rolepermission_permission FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE
 );
+
+CREATE TABLE stores (
+                        id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                        name VARCHAR(100) NOT NULL UNIQUE
+);
+
+INSERT INTO categories (name, description, image_url) VALUES
+                                                          ('Appetizer', 'Starter dishes to begin a meal', 'https://example.com/images/appetizer.jpg'),
+                                                          ('Main Course', 'Main dishes for a full meal', 'https://example.com/images/main_course.jpg'),
+                                                          ('Dessert', 'Sweet dishes to finish the meal', 'https://example.com/images/dessert.jpg'),
+                                                          ('Beverage', 'Drinks including soft drinks and juices', 'https://example.com/images/beverage.jpg'),
+                                                          ('Special', 'Special dishes of the day or chef\'s choice', 'https://example.com/images/special.jpg');
+

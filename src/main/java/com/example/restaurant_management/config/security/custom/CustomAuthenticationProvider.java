@@ -21,14 +21,18 @@ import org.springframework.stereotype.Component;
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     private final PasswordEncoder passwordEncoder;
-    private final UserDetailsService userDetailsService;
+    private final CustomUserDetailsService userDetailsService;
 
     @Override
     public Authentication authenticate(Authentication authentication)
             throws AuthenticationException {
         final String username = (String) authentication.getPrincipal();
         final String password = (String) authentication.getCredentials();
-        final UserDetails user = userDetailsService.loadUserByUsername(username);
+        if (!(authentication instanceof CustomAuthenticationToken customToken)) {
+            throw new RestaurantException(ErrorEnum.INVALID_CREDENTIALS);
+        }
+        final String storeName = customToken.getStoreName();
+        final UserDetails user = userDetailsService.loadUserByUsernameAndStoreName(username,storeName);
 
         if (StringUtils.isBlank(password) || !passwordEncoder.matches(password, user.getPassword())) {
             throw new RestaurantException(ErrorEnum.PASSWORD_INCORRECT);
@@ -42,6 +46,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
                 .email(((UserDetailsImpl) user).getEmail())
                 .userId(((UserDetailsImpl) user).getUserId())
                 .fullName(((UserDetailsImpl) user).getFullName())
+                .storeName(((UserDetailsImpl) user).getStoreName())
                 .build();
 
         return new UsernamePasswordAuthenticationToken(user.getUsername(), credentialPayload, user.getAuthorities());

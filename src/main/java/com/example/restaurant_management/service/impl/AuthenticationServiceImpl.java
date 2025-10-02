@@ -1,12 +1,19 @@
 package com.example.restaurant_management.service.impl;
 
+import com.example.restaurant_management.common.exception.RestaurantException;
+import com.example.restaurant_management.config.security.custom.CustomAuthenticationToken;
 import com.example.restaurant_management.constant.ClaimConstant;
 import com.example.restaurant_management.dto.request.RegisterRequest;
 import com.example.restaurant_management.dto.request.SignInRequest;
 import com.example.restaurant_management.dto.response.TokenResponse;
+import com.example.restaurant_management.entity.Role;
 import com.example.restaurant_management.entity.User;
+import com.example.restaurant_management.entity.UserRole;
 import com.example.restaurant_management.model.CredentialPayload;
+import com.example.restaurant_management.repository.RoleRepository;
+import com.example.restaurant_management.repository.StoreRepository;
 import com.example.restaurant_management.repository.UserRepository;
+import com.example.restaurant_management.repository.UserRoleRepository;
 import com.example.restaurant_management.service.AuthenticationService;
 import com.example.restaurant_management.service.JWTService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +36,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationProvider authenticationProvider;
     private final JWTService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final StoreRepository storeRepository;
+    private final RoleRepository roleRepository;
+    private final UserRoleRepository userRoleRepository;
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
@@ -38,7 +48,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public TokenResponse authenticate(SignInRequest request) {
 
         Authentication authentication = authenticationProvider.authenticate(
-                new UsernamePasswordAuthenticationToken(request.username(), request.password())
+                new CustomAuthenticationToken(request.username(), request.password(), request.storeName())
         );
 
         Map<String, Object> claimsAccessToken = buildClaimsAccessToken(authentication);
@@ -59,8 +69,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .fullName(request.fullName())
                 .email(request.email())
                 .phoneNumber(request.phoneNumber())
+                .store(storeRepository.findByName(request.storeName()).orElseThrow())
                 .build();
         userRepository.save(user);
+        Role role = roleRepository.findByName(request.role()).orElseThrow();
+
+        UserRole userRole = UserRole.builder()
+                .userId(user.getId())
+                .roleId(role.getId())
+                .build();
+        userRoleRepository.save(userRole);
+
         return "Register Success";
     }
 

@@ -20,6 +20,7 @@ public class UserDetailsImpl implements UserDetails, CredentialsContainer {
     private Long userId;
     private String email;
     private String fullName;
+    private String storeName;
     private Collection<? extends GrantedAuthority> authorities;
 
     public UserDetailsImpl(String username, String password, boolean enabled,

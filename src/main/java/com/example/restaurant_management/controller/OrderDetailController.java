@@ -3,12 +3,14 @@ package com.example.restaurant_management.controller;
 import com.example.restaurant_management.entity.OrderDetail;
 import com.example.restaurant_management.service.OrderDetailService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/order-details")
+@PreAuthorize("hasAnyRole('ADMIN')")
 public class OrderDetailController {
 
     private final OrderDetailService orderDetailService;
