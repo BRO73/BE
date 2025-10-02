@@ -35,16 +35,15 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     public UserDetails loadUserByUsernameAndStoreName(String username, String storeName) throws UsernameNotFoundException {
-        Store store = storeRepository.findByName(storeName).orElseThrow(() -> new RestaurantException(ErrorEnum.STORE_NOT_FOUND));
-        User user = userRepository.findByUsernameAndStore(username,store).
+        Store store = storeRepository.findByName(storeName)
+                .orElseThrow(() -> new RestaurantException(ErrorEnum.STORE_NOT_FOUND));
+        User user = userRepository.findStaffByUsernameAndStore(username, store).
                 orElseThrow(() -> new RestaurantException(ErrorEnum.USER_NOT_FOUND));
 
         return UserDetailsImpl.builder()
                 .username(user.getUsername())
                 .password(user.getHashedPassword())
                 .userId(user.getId())
-                .email(user.getEmail())
-                .fullName(user.getFullName())
                 .enabled(Boolean.FALSE.equals(user.isDeleted()))
                 .authorities(getUserAuthorities(user))
                 .storeName(store.getName())

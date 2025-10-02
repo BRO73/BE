@@ -24,23 +24,5 @@ public class OrderDetailResponse {
     private String notes;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private boolean deleted;
-    private boolean activated;
 
-    public static OrderDetailResponse fromEntity(OrderDetail orderDetail) {
-        return OrderDetailResponse.builder()
-                .id(orderDetail.getId())
-                .orderId(orderDetail.getOrder().getId())
-                .menuItemId(orderDetail.getMenuItem().getId())
-                .menuItemName(orderDetail.getMenuItem().getName())
-                .quantity(orderDetail.getQuantity())
-                .priceAtOrder(orderDetail.getPriceAtOrder())
-                .status(orderDetail.getStatus())
-                .notes(orderDetail.getNotes())
-                .createdAt(orderDetail.getCreatedAt())
-                .updatedAt(orderDetail.getUpdatedAt())
-                .deleted(orderDetail.isDeleted())
-                .activated(orderDetail.isActivated())
-                .build();
-    }
 }

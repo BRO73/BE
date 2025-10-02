@@ -12,7 +12,5 @@ public record SignInRequest (
 
         @NotBlank(message = "Store name must not be blank")
         String storeName
-
-)
-{}
+){}
 

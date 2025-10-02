@@ -1,18 +1,25 @@
 package com.example.restaurant_management.entity;
 
 import jakarta.persistence.*;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
-@Entity
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Entity
 @Table(name = "menu_items")
 public class MenuItem extends AbstractEntity<Long> {
 
-    @Column(nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    @Column(nullable = false, length = 100)
     private String name;
 
     @Column(columnDefinition = "TEXT")
@@ -21,13 +28,12 @@ public class MenuItem extends AbstractEntity<Long> {
     @Column(name = "image_url")
     private String imageUrl;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    @Column(nullable = false)
-    private String status = "Available";
+    @Column(nullable = false, length = 20)
+    private String status;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @OneToMany(mappedBy = "menuItem", fetch = FetchType.LAZY)
+    private List<OrderDetail> orderDetails = new ArrayList<>();
 }

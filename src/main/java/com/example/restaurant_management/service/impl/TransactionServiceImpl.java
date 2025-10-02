@@ -61,7 +61,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public List<Transaction> getTransactionsByCashier(Long cashierId) {
-        return transactionRepository.findByCashierId(cashierId);
+        return transactionRepository.findByCashierUserId(cashierId);
     }
 
     @Override

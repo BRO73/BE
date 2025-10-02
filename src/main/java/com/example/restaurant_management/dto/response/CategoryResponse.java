@@ -22,16 +22,4 @@ public class CategoryResponse {
     private boolean deleted;
     private boolean activated;
 
-    public static CategoryResponse fromEntity(Category category) {
-        return CategoryResponse.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .description(category.getDescription())
-                .imageUrl(category.getImageUrl())
-                .createdAt(category.getCreatedAt())
-                .updatedAt(category.getUpdatedAt())
-                .deleted(category.isDeleted())
-                .activated(category.isActivated())
-                .build();
-    }
 }

@@ -27,21 +27,4 @@ public class SupportRequestResponse {
     private boolean deleted;
     private boolean activated;
 
-    public static SupportRequestResponse fromEntity(SupportRequest supportRequest) {
-        return SupportRequestResponse.builder()
-                .id(supportRequest.getId())
-                .tableId(supportRequest.getTable().getId())
-                .tableNumber(supportRequest.getTable().getTableNumber())
-                .requestType(supportRequest.getRequestType())
-                .status(supportRequest.getStatus())
-                .details(supportRequest.getDetails())
-                .staffId(supportRequest.getStaff() != null ? supportRequest.getStaff().getId() : null)
-                .staffName(supportRequest.getStaff() != null ? supportRequest.getStaff().getFullName() : null)
-                .resolvedAt(supportRequest.getResolvedAt())
-                .createdAt(supportRequest.getCreatedAt())
-                .updatedAt(supportRequest.getUpdatedAt())
-                .deleted(supportRequest.isDeleted())
-                .activated(supportRequest.isActivated())
-                .build();
-    }
 }

@@ -22,16 +22,4 @@ public class ReviewResponse {
     private boolean deleted;
     private boolean activated;
 
-    public static ReviewResponse fromEntity(Review review) {
-        return ReviewResponse.builder()
-                .id(review.getId())
-                .orderId(review.getOrder().getId())
-                .ratingScore(review.getRatingScore())
-                .comment(review.getComment())
-                .createdAt(review.getCreatedAt())
-                .updatedAt(review.getUpdatedAt())
-                .deleted(review.isDeleted())
-                .activated(review.isActivated())
-                .build();
-    }
 }

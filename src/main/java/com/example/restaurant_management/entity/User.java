@@ -3,7 +3,13 @@ package com.example.restaurant_management.entity;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.*;
+
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.ArrayList;
 
 @Getter
 @Setter
@@ -11,25 +17,45 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"username", "store_id"})
+})
 public class User extends AbstractEntity<Long> implements Serializable {
-
-    @Column(name = "username", nullable = false, length = 50)
+    @Column(length = 50)
     private String username;
 
-    @Column(name = "hashed_password", nullable = false)
+    @Column(name = "hashed_password")
     private String hashedPassword;
 
-    @Column(name = "email")
-    private String email;
-
-    @Column(name = "full_name", nullable = false, length = 100)
-    private String fullName;
-
-    @Column(name = "phone_number", length = 15) // ✅ bỏ unique nếu không cần
-    private String phoneNumber;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id") // ✅ thêm nullable = false nếu muốn bắt buộc
+    @JoinColumn(name = "store_id")
     private Store store;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Staff staff;
+
+    @OneToMany(mappedBy = "staffUser", fetch = FetchType.LAZY)
+    private List<Order> ordersAsStaff = new ArrayList<>();
+
+    @OneToMany(mappedBy = "customerUser", fetch = FetchType.LAZY)
+    private List<Order> ordersAsCustomer = new ArrayList<>();
+
+    @OneToMany(mappedBy = "cashierUser", fetch = FetchType.LAZY)
+    private List<Transaction> transactionsAsCashier = new ArrayList<>();
+
+    @OneToMany(mappedBy = "staffUser", fetch = FetchType.LAZY)
+    private List<Booking> bookingsAsStaff = new ArrayList<>();
+
+    @OneToMany(mappedBy = "customerUser", fetch = FetchType.LAZY)
+    private List<Booking> bookingsAsCustomer = new ArrayList<>();
+
+    @OneToMany(mappedBy = "customerUser", fetch = FetchType.LAZY)
+    private List<Review> reviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "staffUser", fetch = FetchType.LAZY)
+    private List<SupportRequest> supportRequestsAsStaff = new ArrayList<>();
+
+    @OneToMany(mappedBy = "customerUser", fetch = FetchType.LAZY)
+    private List<SupportRequest> supportRequestsAsCustomer = new ArrayList<>();
+
 }

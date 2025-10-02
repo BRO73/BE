@@ -59,7 +59,7 @@ public class SupportRequestServiceImpl implements SupportRequestService {
     }
 
     @Override
-    public List<SupportRequest> getSupportRequestsByStaff(Long staffId) {
-        return supportRequestRepository.findByStaffId(staffId);
+    public List<SupportRequest> getSupportRequestsByStaff(Long userId) {
+        return supportRequestRepository.findByStaffUserId(userId);
     }
 }

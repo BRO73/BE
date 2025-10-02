@@ -29,24 +29,4 @@ public class OrderResponse {
     private LocalDateTime updatedAt;
     private boolean deleted;
     private boolean activated;
-
-    public static OrderResponse fromEntity(Order order) {
-        return OrderResponse.builder()
-                .id(order.getId())
-                .tableId(order.getTable().getId())
-                .tableNumber(order.getTable().getTableNumber())
-                .staffId(order.getStaff() != null ? order.getStaff().getId() : null)
-                .staffName(order.getStaff() != null ? order.getStaff().getFullName() : null)
-                .totalAmount(order.getTotalAmount())
-                .status(order.getStatus())
-                .notes(order.getNotes())
-                .completedAt(order.getCompletedAt())
-                .promotionId(order.getPromotion() != null ? order.getPromotion().getId() : null)
-                .promotionName(order.getPromotion() != null ? order.getPromotion().getName() : null)
-                .createdAt(order.getCreatedAt())
-                .updatedAt(order.getUpdatedAt())
-                .deleted(order.isDeleted())
-                .activated(order.isActivated())
-                .build();
-    }
 }

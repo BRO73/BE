@@ -1,6 +1,6 @@
 package com.example.restaurant_management.dto.response;
 
-import com.example.restaurant_management.entity.Table;
+import com.example.restaurant_management.entity.TableEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,7 +24,7 @@ public class TableResponse {
     private boolean deleted;
     private boolean activated;
 
-    public static TableResponse fromEntity(Table table) {
+    public static TableResponse fromEntity(TableEntity table) {
         return TableResponse.builder()
                 .id(table.getId())
                 .tableNumber(table.getTableNumber())

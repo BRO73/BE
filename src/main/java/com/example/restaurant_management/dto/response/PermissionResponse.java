@@ -21,15 +21,4 @@ public class PermissionResponse {
     private boolean deleted;
     private boolean activated;
 
-    public static PermissionResponse fromEntity(Permission permission) {
-        return PermissionResponse.builder()
-                .id(permission.getId())
-                .name(permission.getName())
-                .description(permission.getDescription())
-                .createdAt(permission.getCreatedAt())
-                .updatedAt(permission.getUpdatedAt())
-                .deleted(permission.isDeleted())
-                .activated(permission.isActivated())
-                .build();
-    }
 }

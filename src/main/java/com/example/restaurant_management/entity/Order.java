@@ -1,31 +1,42 @@
 package com.example.restaurant_management.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
 
-@Entity
 @Getter
 @Setter
-@jakarta.persistence.Table(name = "orders")
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Entity
+@Table(name = "orders")
 public class Order extends AbstractEntity<Long> {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "table_id", nullable = false)
-    private Table table;
+    private TableEntity table;
 
-    @ManyToOne
-    @JoinColumn(name = "staff_id")
-    private User staff;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "staff_user_id")
+    private User staffUser;
 
-    @Column(name = "total_amount", nullable = false)
-    private BigDecimal totalAmount = BigDecimal.ZERO;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_user_id")
+    private User customerUser;
 
-    @Column(nullable = false)
-    private String status = "New";
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "promotion_id")
+    private Promotion promotion;
+
+    @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
+    private BigDecimal totalAmount;
+
+    @Column(nullable = false, length = 20)
+    private String status;
 
     @Column(columnDefinition = "TEXT")
     private String notes;
@@ -33,10 +44,12 @@ public class Order extends AbstractEntity<Long> {
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
-    @ManyToOne
-    @JoinColumn(name = "promotion_id")
-    private Promotion promotion;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderDetail> orderDetails = new ArrayList<>();
 
-    @OneToMany(mappedBy = "order")
-    private List<OrderDetail> orderDetails;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Transaction> transactions = new ArrayList<>();
+
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Review review;
 }

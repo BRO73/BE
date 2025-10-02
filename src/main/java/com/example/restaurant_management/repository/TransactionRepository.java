@@ -13,6 +13,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     Optional<Transaction> findByOrderId(Long orderId);
     Optional<Transaction> findByTransactionCode(String transactionCode);
     List<Transaction> findByPaymentMethod(String paymentMethod);
-    List<Transaction> findByCashierId(Long cashierId);
+    List<Transaction> findByCashierUserId(Long userId);
     List<Transaction> findByTransactionTimeBetween(LocalDateTime start, LocalDateTime end);
 }

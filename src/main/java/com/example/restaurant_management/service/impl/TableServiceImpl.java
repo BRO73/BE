@@ -3,7 +3,7 @@ package com.example.restaurant_management.service.impl;
 import com.example.restaurant_management.dto.request.TableRequest;
 import com.example.restaurant_management.dto.response.TableResponse;
 import com.example.restaurant_management.entity.Location;
-import com.example.restaurant_management.entity.Table;
+import com.example.restaurant_management.entity.TableEntity;
 import com.example.restaurant_management.repository.LocationRepository;
 import com.example.restaurant_management.repository.TableRepository;
 import com.example.restaurant_management.service.TableService;
@@ -37,7 +37,7 @@ public class TableServiceImpl implements TableService {
         Location location = locationRepository.findById(request.getLocationId())
                 .orElseThrow(() -> new RuntimeException("Location not found"));
 
-        Table table = new Table();
+        TableEntity table = new TableEntity();
         table.setTableNumber(request.getTableNumber());
         table.setCapacity(request.getCapacity());
         table.setLocation(location);
@@ -48,7 +48,7 @@ public class TableServiceImpl implements TableService {
 
     @Override
     public TableResponse updateTable(Long id, TableRequest request) {
-        Table table = tableRepository.findById(id)
+        TableEntity table = tableRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Table not found"));
 
         Location location = locationRepository.findById(request.getLocationId())
