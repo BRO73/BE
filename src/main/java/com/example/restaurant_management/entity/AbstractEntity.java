@@ -48,7 +48,7 @@ public abstract class AbstractEntity<T extends Serializable> implements Serializ
     private boolean deleted;
 
     @Column(name = "is_activated", columnDefinition = "BOOLEAN DEFAULT TRUE")
-    private boolean activated;
+    private boolean activated = true;
 
     @PrePersist
     private void onCreate() {

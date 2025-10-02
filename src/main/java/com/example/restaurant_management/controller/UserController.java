@@ -31,9 +31,9 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    @GetMapping("/my-store-staff")
+    @GetMapping("/my-store-users")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserResponse>> getAllStaffOfStore(
+    public ResponseEntity<List<UserResponse>> getAllUserInStore(
             Authentication authentication
     ) {
         List<UserResponse> userResponseList = userService.getAllUserInStore(authentication);
@@ -68,13 +68,13 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/profile")
-    public ResponseEntity<RestaurantResponse<UserProfileResponse>> getProfile(
-            @AuthenticationPrincipal String username
-    ) {
-        UserProfileResponse profile = userService.getProfile(username);
-        return RestaurantResponse.ok(profile, "Staff profile fetched successfully");
-    }
+//    @GetMapping("/profile")
+//    public ResponseEntity<RestaurantResponse<UserProfileResponse>> getProfile(
+//            @AuthenticationPrincipal String username
+//    ) {
+//        UserProfileResponse profile = userService.getProfile(username);
+//        return RestaurantResponse.ok(profile, "Staff profile fetched successfully");
+//    }
 
     @GetMapping("/username/{username}")
     public ResponseEntity<User> getUserByUsername(@PathVariable String username) {

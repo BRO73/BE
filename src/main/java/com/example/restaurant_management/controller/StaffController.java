@@ -1,7 +1,9 @@
 package com.example.restaurant_management.controller;
 
 import com.example.restaurant_management.dto.request.UpdateStaffRequest;
+import com.example.restaurant_management.dto.request.CreateStaffRequest;
 import com.example.restaurant_management.dto.response.RestaurantResponse;
+import com.example.restaurant_management.dto.response.StaffResponse;
 import com.example.restaurant_management.dto.response.UserProfileResponse;
 import com.example.restaurant_management.entity.User;
 import com.example.restaurant_management.service.StaffService;
@@ -12,28 +14,54 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/api/staff")
-@PreAuthorize("hasRole('ADMIN')")
+@RequestMapping("/api/staffs")
 @RequiredArgsConstructor
 public class StaffController {
 
     private final StaffService staffService;
 
-    @PostMapping("/update")
-    public ResponseEntity<RestaurantResponse<User>> updateStaff(
-            @AuthenticationPrincipal String username,
-            @RequestBody UpdateStaffRequest request
-    ) {
-        User updatedUser = staffService.updateStaffInfo(username, request);
-        return RestaurantResponse.ok(updatedUser, "Staff information updated successfully");
+    @GetMapping("/my-store-staff")
+    public ResponseEntity<List<StaffResponse>> getAllStaffOfStore(
+            Authentication authentication) {
+        return ResponseEntity.ok(staffService.getAllStaffInStore(authentication));
     }
 
-    @GetMapping("/profile")
-    public ResponseEntity<RestaurantResponse<UserProfileResponse>> getProfile(
-            Authentication authentication
-    ) {
-        UserProfileResponse profile = staffService.getProfile(authentication);
-        return RestaurantResponse.ok(profile, "Staff profile fetched successfully");
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping
+    public ResponseEntity<StaffResponse> createStaff(
+            @RequestBody CreateStaffRequest createStaffRequest,
+            Authentication authentication) {
+        return ResponseEntity.ok(staffService.createStaff(createStaffRequest, authentication));
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{staffId}")
+    public ResponseEntity<StaffResponse> updateStaff(
+            @PathVariable Long staffId,
+            @RequestBody UpdateStaffRequest updateStaffRequest,
+            Authentication authentication) {
+        return ResponseEntity.ok(
+                staffService.updateStaff(staffId, updateStaffRequest, authentication)
+        );
+    }
+
+//    @GetMapping("/profile")
+//    public ResponseEntity<RestaurantResponse<UserProfileResponse>> getProfile(
+//            Authentication authentication
+//    ) {
+//        UserProfileResponse profile = staffService.getProfile(authentication);
+//        return RestaurantResponse.ok(profile, "Staff profile fetched successfully");
+//    }
+//
+//    @PostMapping("/profile")
+//    public ResponseEntity<RestaurantResponse<User>> updateStaff(
+//            @AuthenticationPrincipal String username,
+//            @RequestBody UpdateStaffRequest request
+//    ) {
+//        User updatedUser = staffService.updateStaffInfo(username, request);
+//        return RestaurantResponse.ok(updatedUser, "Staff information updated successfully");
+//    }
 }

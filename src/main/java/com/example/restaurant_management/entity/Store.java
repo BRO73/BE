@@ -19,7 +19,9 @@ public class Store extends AbstractEntity<Long> {
 
     private String address;
 
-    // --- PHẦN BỔ SUNG ---
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
     private List<User> staffUsers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    private List<Staff> staffs = new ArrayList<>();
 }

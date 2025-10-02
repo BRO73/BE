@@ -33,7 +33,8 @@ CREATE TABLE users (
 
 CREATE TABLE staff (
                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                       user_id BIGINT NOT NULL UNIQUE,
+                       user_id BIGINT NULL UNIQUE,
+                       store_id BIGINT NOT NULL,
                        full_name VARCHAR(100) NOT NULL,
                        position VARCHAR(50),
                        phone_number VARCHAR(15) NULL UNIQUE,
@@ -46,7 +47,8 @@ CREATE TABLE staff (
                        deleted_by BIGINT NULL,
                        is_deleted TINYINT(1) DEFAULT 0,
                        is_activated TINYINT(1) DEFAULT 1,
-                       CONSTRAINT fk_staff_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                       CONSTRAINT fk_staff_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                       CONSTRAINT fk_staff_store FOREIGN KEY (store_id) REFERENCES stores(id) -- <<< THÊM RÀNG BUỘC NÀY
 );
 
 CREATE TABLE customers (

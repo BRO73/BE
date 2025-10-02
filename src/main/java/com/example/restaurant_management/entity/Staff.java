@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class Staff extends AbstractEntity<Long> {
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @JoinColumn(name = "user_id", nullable = true, unique = true)
     private User user;
 
     @Column(name = "full_name", nullable = false, length = 100)
@@ -27,4 +27,7 @@ public class Staff extends AbstractEntity<Long> {
     @Column(name = "phone_number", unique = true, length = 15)
     private String phoneNumber;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", nullable = false)
+    private Store store;
 }
