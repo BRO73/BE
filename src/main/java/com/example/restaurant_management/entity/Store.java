@@ -1,6 +1,7 @@
 package com.example.restaurant_management.entity;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Table;
 import lombok.*;
 import java.util.List;
 import java.util.ArrayList;

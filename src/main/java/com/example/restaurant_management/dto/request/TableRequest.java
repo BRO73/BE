@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 public class TableRequest {
     private String tableNumber;
     private Integer capacity;
-    private String location;
+    private Long locationId;
     private String status;
 }

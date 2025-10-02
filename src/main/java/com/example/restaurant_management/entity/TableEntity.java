@@ -1,29 +1,30 @@
 package com.example.restaurant_management.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@Entity
 @Table(name = "tables")
 public class TableEntity extends AbstractEntity<Long> {
-    @Column(name = "table_number", nullable = false, unique = true, length = 10)
+
+    @Column(name = "table_number", nullable = false, unique = true)
     private String tableNumber;
 
     @Column(nullable = false)
-    private int capacity;
+    private Integer capacity;
 
-    private String location;
+    @ManyToOne
+    @JoinColumn(name = "location_id", nullable = false)
+    private Location location;
 
-    @Column(nullable = false, length = 20)
-    private String status;
+    @Column(nullable = false)
+    private String status = "Available";
 
     @OneToMany(mappedBy = "table", fetch = FetchType.LAZY)
     private List<Order> orders = new ArrayList<>();

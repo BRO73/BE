@@ -1,6 +1,7 @@
 package com.example.restaurant_management.controller;
 
-import com.example.restaurant_management.entity.TableEntity;
+import com.example.restaurant_management.dto.request.TableRequest;
+import com.example.restaurant_management.dto.response.TableResponse;
 import com.example.restaurant_management.service.TableService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -10,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/tables")
-@PreAuthorize("hasAnyRole('ADMIN','WAITSTAFF')")
+//@PreAuthorize("hasAnyRole('ADMIN','WAITSTAFF')")
 public class TableController {
 
     private final TableService tableService;
@@ -20,25 +21,25 @@ public class TableController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TableEntity>> getAllTables() {
+    public ResponseEntity<List<TableResponse>> getAllTables() {
         return ResponseEntity.ok(tableService.getAllTables());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TableEntity> getTableById(@PathVariable Long id) {
+    public ResponseEntity<TableResponse> getTableById(@PathVariable Long id) {
         return tableService.getTableById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<TableEntity> createTable(@RequestBody TableEntity tableEntity) {
-        return ResponseEntity.ok(tableService.createTable(tableEntity));
+    public ResponseEntity<TableResponse> createTable(@RequestBody TableRequest request) {
+        return ResponseEntity.ok(tableService.createTable(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TableEntity> updateTable(@PathVariable Long id, @RequestBody TableEntity tableEntity) {
-        return ResponseEntity.ok(tableService.updateTable(id, tableEntity));
+    public ResponseEntity<TableResponse> updateTable(@PathVariable Long id, @RequestBody TableRequest request) {
+        return ResponseEntity.ok(tableService.updateTable(id, request));
     }
 
     @DeleteMapping("/{id}")
@@ -48,24 +49,24 @@ public class TableController {
     }
 
     @GetMapping("/number/{tableNumber}")
-    public ResponseEntity<TableEntity> getTableByNumber(@PathVariable String tableNumber) {
+    public ResponseEntity<TableResponse> getTableByNumber(@PathVariable String tableNumber) {
         return tableService.getTableByNumber(tableNumber)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<TableEntity>> getTablesByStatus(@PathVariable String status) {
+    public ResponseEntity<List<TableResponse>> getTablesByStatus(@PathVariable String status) {
         return ResponseEntity.ok(tableService.getTablesByStatus(status));
     }
 
     @GetMapping("/capacity/{capacity}")
-    public ResponseEntity<List<TableEntity>> getTablesByCapacity(@PathVariable Integer capacity) {
+    public ResponseEntity<List<TableResponse>> getTablesByCapacity(@PathVariable Integer capacity) {
         return ResponseEntity.ok(tableService.getTablesByCapacity(capacity));
     }
 
-    @GetMapping("/location/{location}")
-    public ResponseEntity<List<TableEntity>> getTablesByLocation(@PathVariable String location) {
-        return ResponseEntity.ok(tableService.getTablesByLocation(location));
+    @GetMapping("/location/{locationId}")
+    public ResponseEntity<List<TableResponse>> getTablesByLocation(@PathVariable Long locationId) {
+        return ResponseEntity.ok(tableService.getTablesByLocation(locationId));
     }
 }

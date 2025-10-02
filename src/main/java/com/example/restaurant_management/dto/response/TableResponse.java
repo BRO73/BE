@@ -16,24 +16,26 @@ public class TableResponse {
     private Long id;
     private String tableNumber;
     private Integer capacity;
-    private String location;
+    private Long locationId;
+    private String locationName;
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private boolean deleted;
     private boolean activated;
 
-    public static TableResponse fromEntity(TableEntity tableEntity) {
+    public static TableResponse fromEntity(TableEntity table) {
         return TableResponse.builder()
-                .id(tableEntity.getId())
-                .tableNumber(tableEntity.getTableNumber())
-                .capacity(tableEntity.getCapacity())
-                .location(tableEntity.getLocation())
-                .status(tableEntity.getStatus())
-                .createdAt(tableEntity.getCreatedAt())
-                .updatedAt(tableEntity.getUpdatedAt())
-                .deleted(tableEntity.isDeleted())
-                .activated(tableEntity.isActivated())
+                .id(table.getId())
+                .tableNumber(table.getTableNumber())
+                .capacity(table.getCapacity())
+                .locationId(table.getLocation().getId())
+                .locationName(table.getLocation().getName())
+                .status(table.getStatus())
+                .createdAt(table.getCreatedAt())
+                .updatedAt(table.getUpdatedAt())
+                .deleted(table.isDeleted())
+                .activated(table.isActivated())
                 .build();
     }
 }

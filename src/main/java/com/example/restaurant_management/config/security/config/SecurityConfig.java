@@ -66,10 +66,10 @@ public class SecurityConfig {
                         authorize -> authorize.requestMatchers(AUTH_WHITELIST).permitAll()
                                 .anyRequest()
                                 .authenticated())
-//                .exceptionHandling(
-//                        exceptionHandlingConfigurer -> exceptionHandlingConfigurer.authenticationEntryPoint(
-//                                internalAuthEntryPoint)
-//                )
+                .exceptionHandling(
+                        exceptionHandlingConfigurer -> exceptionHandlingConfigurer.authenticationEntryPoint(
+                                internalAuthEntryPoint)
+                )
                 .sessionManagement(
                         sessionManagementConfigurer -> sessionManagementConfigurer.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS))
