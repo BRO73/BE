@@ -66,19 +66,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = User.builder()
                 .username(request.username())
                 .hashedPassword(passwordEncoder.encode(request.password()))
-                .email(request.email())
-                .phoneNumber(request.phoneNumber())
-                .userType(User.UserType.STAFF)
                 .store(storeRepository.findByName(request.storeName()).orElseThrow(() -> new RestaurantException("Store not found")))
                 .build();
         userRepository.save(user);
+
         Role role = roleRepository.findByName(request.role())
                 .orElseThrow(() -> new RestaurantException("Role not found"));
 
         UserRole userRole = UserRole.builder()
-                .userId(user.getId())
                 .roleId(role.getId())
+                .userId(user.getId())
                 .build();
+
         userRoleRepository.save(userRole);
 
         return "Register Success";
@@ -107,7 +106,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         claims.put(ClaimConstant.AUTH_USER_ROLES, roles);
         claims.put(ClaimConstant.AUTH_USER_ID, credentialPayload.getUserId());
-        claims.put(ClaimConstant.AUTH_USER_EMAIL, credentialPayload.getEmail());
+        claims.put(ClaimConstant.AUTH_STORE_NAME, credentialPayload.getStoreName());
 
         return claims;
     }

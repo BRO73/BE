@@ -16,13 +16,8 @@ CREATE TABLE stores (
 
 CREATE TABLE users (
                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                       user_type VARCHAR(20) NOT NULL COMMENT 'STAFF hoặc CUSTOMER',
                        username VARCHAR(50) NULL COMMENT 'Chỉ cho staff',
                        hashed_password VARCHAR(255) NULL COMMENT 'Chỉ cho staff',
-                       phone_number VARCHAR(15) NULL UNIQUE,
-                       email VARCHAR(100) NULL UNIQUE,
-                       otp_code VARCHAR(10) NULL,
-                       otp_expiry_time DATETIME(6) NULL,
                        is_activated TINYINT(1) DEFAULT 1,
                        is_deleted TINYINT(1) DEFAULT 0,
                        store_id BIGINT NULL,
@@ -41,6 +36,8 @@ CREATE TABLE staff (
                        user_id BIGINT NOT NULL UNIQUE,
                        full_name VARCHAR(100) NOT NULL,
                        position VARCHAR(50),
+                       phone_number VARCHAR(15) NULL UNIQUE,
+                       email VARCHAR(100) NULL UNIQUE,
                        created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
                        updated_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
                        deleted_at DATETIME(6) NULL,
@@ -54,10 +51,13 @@ CREATE TABLE staff (
 
 CREATE TABLE customers (
                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                           user_id BIGINT NOT NULL UNIQUE,
                            full_name VARCHAR(100),
                            address VARCHAR(255),
                            date_of_birth DATE,
+                           phone_number VARCHAR(15) NULL UNIQUE,
+                           email VARCHAR(100) NULL UNIQUE,
+                           otp_code VARCHAR(10) NULL,
+                           otp_expiry_time DATETIME(6) NULL,
                            created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
                            updated_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
                            deleted_at DATETIME(6) NULL,
@@ -65,8 +65,7 @@ CREATE TABLE customers (
                            updated_by BIGINT NULL,
                            deleted_by BIGINT NULL,
                            is_deleted TINYINT(1) DEFAULT 0,
-                           is_activated TINYINT(1) DEFAULT 1,
-                           CONSTRAINT fk_customer_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                           is_activated TINYINT(1) DEFAULT 1
 );
 
 CREATE TABLE roles (
@@ -347,11 +346,9 @@ INSERT INTO roles (name, description) VALUES
                                           ('ADMIN', 'Quản trị hệ thống, có toàn quyền'),
                                           ('WAITSTAFF', 'Nhân viên phục vụ bàn, nhận order từ khách'),
                                           ('KITCHEN_STAFF', 'Nhân viên bếp, chế biến món ăn'),
-                                          ('CASHIER', 'Thu ngân, xử lý thanh toán'),
-                                          ('CUSTOMER', 'Khách hàng, người dùng hệ thống để đặt bàn, gọi món');
-
+                                          ('CASHIER', 'Thu ngân, xử lý thanh toán')
 # SELECT * FROM stores WHERE name = 'Nhà hàng A - Quận 1';
-# SELECT * FROM users
+SELECT * FROM users
 # SELECT * FROM staff
 # SELECT * FROM roles
 # DELETE FROM users

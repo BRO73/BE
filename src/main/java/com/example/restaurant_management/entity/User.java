@@ -20,33 +20,11 @@ import java.util.ArrayList;
         @UniqueConstraint(columnNames = {"username", "store_id"})
 })
 public class User extends AbstractEntity<Long> implements Serializable {
-
-    public enum UserType {
-        STAFF,
-        CUSTOMER
-    }
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "user_type", nullable = false, length = 20)
-    private UserType userType;
-
     @Column(length = 50)
     private String username;
 
     @Column(name = "hashed_password")
     private String hashedPassword;
-
-    @Column(unique = true)
-    private String email;
-
-    @Column(name = "phone_number", unique = true, length = 15)
-    private String phoneNumber;
-
-    @Column(name = "otp_code", length = 10)
-    private String otpCode;
-
-    @Column(name = "otp_expiry_time")
-    private LocalDateTime otpExpiryTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
@@ -54,9 +32,6 @@ public class User extends AbstractEntity<Long> implements Serializable {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Staff staff;
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Customer customer;
 
     @OneToMany(mappedBy = "staffUser", fetch = FetchType.LAZY)
     private List<Order> ordersAsStaff = new ArrayList<>();

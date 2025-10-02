@@ -3,6 +3,8 @@ package com.example.restaurant_management.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -19,6 +21,10 @@ public class Staff extends AbstractEntity<Long> {
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
-    @Column(length = 50)
-    private String position;
+    @Column(unique = true)
+    private String email;
+
+    @Column(name = "phone_number", unique = true, length = 15)
+    private String phoneNumber;
+
 }

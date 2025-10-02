@@ -42,7 +42,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         }
 
         CredentialPayload credentialPayload = CredentialPayload.builder()
-                .email(((UserDetailsImpl) user).getEmail())
                 .userId(((UserDetailsImpl) user).getUserId())
                 .storeName(((UserDetailsImpl) user).getStoreName())
                 .build();

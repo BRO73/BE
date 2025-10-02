@@ -3,6 +3,7 @@ package com.example.restaurant_management.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -24,4 +25,16 @@ public class Customer extends AbstractEntity<Long> {
 
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
+
+    @Column(unique = true)
+    private String email;
+
+    @Column(name = "phone_number", unique = true, length = 15)
+    private String phoneNumber;
+
+    @Column(name = "otp_code", length = 10)
+    private String otpCode;
+
+    @Column(name = "otp_expiry_time")
+    private LocalDateTime otpExpiryTime;
 }

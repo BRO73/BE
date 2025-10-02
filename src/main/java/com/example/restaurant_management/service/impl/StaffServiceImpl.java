@@ -23,9 +23,6 @@ public class StaffServiceImpl implements StaffService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setEmail(request.email());
-        user.setPhoneNumber(request.phoneNumber());
-
         if (request.password() != null && !request.password().isBlank()) {
             user.setHashedPassword(passwordEncoder.encode(request.password()));
         }
@@ -43,8 +40,6 @@ public class StaffServiceImpl implements StaffService {
         return UserProfileResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
-                .email(user.getEmail())
-                .phoneNumber(user.getPhoneNumber())
                 .build();
     }
 }

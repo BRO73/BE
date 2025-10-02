@@ -44,7 +44,6 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .username(user.getUsername())
                 .password(user.getHashedPassword())
                 .userId(user.getId())
-                .email(user.getEmail())
                 .enabled(Boolean.FALSE.equals(user.isDeleted()))
                 .authorities(getUserAuthorities(user))
                 .storeName(store.getName())
