@@ -1,6 +1,6 @@
 package com.example.restaurant_management.dto.response;
 
-import com.example.restaurant_management.entity.Table;
+import com.example.restaurant_management.entity.TableEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,17 +23,17 @@ public class TableResponse {
     private boolean deleted;
     private boolean activated;
 
-    public static TableResponse fromEntity(Table table) {
+    public static TableResponse fromEntity(TableEntity tableEntity) {
         return TableResponse.builder()
-                .id(table.getId())
-                .tableNumber(table.getTableNumber())
-                .capacity(table.getCapacity())
-                .location(table.getLocation())
-                .status(table.getStatus())
-                .createdAt(table.getCreatedAt())
-                .updatedAt(table.getUpdatedAt())
-                .deleted(table.isDeleted())
-                .activated(table.isActivated())
+                .id(tableEntity.getId())
+                .tableNumber(tableEntity.getTableNumber())
+                .capacity(tableEntity.getCapacity())
+                .location(tableEntity.getLocation())
+                .status(tableEntity.getStatus())
+                .createdAt(tableEntity.getCreatedAt())
+                .updatedAt(tableEntity.getUpdatedAt())
+                .deleted(tableEntity.isDeleted())
+                .activated(tableEntity.isActivated())
                 .build();
     }
 }

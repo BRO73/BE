@@ -29,23 +29,4 @@ public class BookingResponse {
     private boolean deleted;
     private boolean activated;
 
-    public static BookingResponse fromEntity(Booking booking) {
-        return BookingResponse.builder()
-                .id(booking.getId())
-                .tableId(booking.getTable().getId())
-                .tableNumber(booking.getTable().getTableNumber())
-                .customerName(booking.getCustomerName())
-                .customerPhone(booking.getCustomerPhone())
-                .bookingTime(booking.getBookingTime())
-                .numGuests(booking.getNumGuests())
-                .status(booking.getStatus())
-                .notes(booking.getNotes())
-                .staffId(booking.getStaff() != null ? booking.getStaff().getId() : null)
-                .staffName(booking.getStaff() != null ? booking.getStaff().getFullName() : null)
-                .createdAt(booking.getCreatedAt())
-                .updatedAt(booking.getUpdatedAt())
-                .deleted(booking.isDeleted())
-                .activated(booking.isActivated())
-                .build();
-    }
 }

@@ -23,8 +23,6 @@ public abstract class MenuItemMapper {
     public abstract MenuItem toEntity(MenuItemRequest menuItemRequest);
 
 
-
-
     @Mapping(source = "category.name", target = "categoryName")
     public abstract MenuItemResponse toDTO(MenuItem menuItem);
 

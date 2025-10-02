@@ -12,7 +12,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -43,9 +42,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         }
 
         CredentialPayload credentialPayload = CredentialPayload.builder()
-                .email(((UserDetailsImpl) user).getEmail())
                 .userId(((UserDetailsImpl) user).getUserId())
-                .fullName(((UserDetailsImpl) user).getFullName())
                 .storeName(((UserDetailsImpl) user).getStoreName())
                 .build();
 
