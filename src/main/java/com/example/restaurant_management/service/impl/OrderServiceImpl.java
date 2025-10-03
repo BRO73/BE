@@ -56,7 +56,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<Order> getOrdersByStaff(Long staffId) {
-        return orderRepository.findByStaffId(staffId);
+        return orderRepository.findByStaffUserId(staffId);
     }
 
     @Override

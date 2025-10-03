@@ -35,6 +35,7 @@ public class SecurityConfig {
             "/api/categories/**",
             "/api/menu-items/**",
             "/ping/**",
+            "/api/users/**",
 
             // thêm endpoint upload file
             "/api/files/upload",
@@ -65,10 +66,10 @@ public class SecurityConfig {
                         authorize -> authorize.requestMatchers(AUTH_WHITELIST).permitAll()
                                 .anyRequest()
                                 .authenticated())
-//                .exceptionHandling(
-//                        exceptionHandlingConfigurer -> exceptionHandlingConfigurer.authenticationEntryPoint(
-//                                internalAuthEntryPoint)
-//                )
+                .exceptionHandling(
+                        exceptionHandlingConfigurer -> exceptionHandlingConfigurer.authenticationEntryPoint(
+                                internalAuthEntryPoint)
+                )
                 .sessionManagement(
                         sessionManagementConfigurer -> sessionManagementConfigurer.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS))

@@ -23,15 +23,4 @@ public class RolePermissionResponse {
     private boolean deleted;
     private boolean activated;
 
-    public static RolePermissionResponse fromEntity(RolePermission rolePermission) {
-        return RolePermissionResponse.builder()
-                .id(rolePermission.getId())
-                .roleId(rolePermission.getRoleId())
-                .permissionId(rolePermission.getPermissionId())
-                .createdAt(rolePermission.getCreatedAt())
-                .updatedAt(rolePermission.getUpdatedAt())
-                .deleted(rolePermission.isDeleted())
-                .activated(rolePermission.isActivated())
-                .build();
-    }
 }

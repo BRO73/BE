@@ -29,22 +29,4 @@ public class PromotionResponse {
     private boolean deleted;
     private boolean activated;
 
-    public static PromotionResponse fromEntity(Promotion promotion) {
-        return PromotionResponse.builder()
-                .id(promotion.getId())
-                .name(promotion.getName())
-                .code(promotion.getCode())
-                .description(promotion.getDescription())
-                .promotionType(promotion.getPromotionType())
-                .value(promotion.getValue())
-                .minSpend(promotion.getMinSpend())
-                .startDate(promotion.getStartDate())
-                .endDate(promotion.getEndDate())
-                .usageLimit(promotion.getUsageLimit())
-                .createdAt(promotion.getCreatedAt())
-                .updatedAt(promotion.getUpdatedAt())
-                .deleted(promotion.isDeleted())
-                .activated(promotion.isActivated())
-                .build();
-    }
 }

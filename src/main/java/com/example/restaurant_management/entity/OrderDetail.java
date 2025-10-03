@@ -1,33 +1,34 @@
 package com.example.restaurant_management.entity;
 
 import jakarta.persistence.*;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import java.math.BigDecimal;
 
-@Entity
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Entity
 @Table(name = "order_details")
 public class OrderDetail extends AbstractEntity<Long> {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "menu_item_id", nullable = false)
     private MenuItem menuItem;
 
     @Column(nullable = false)
-    private Integer quantity = 1;
+    private int quantity;
 
-    @Column(name = "price_at_order", nullable = false)
+    @Column(name = "price_at_order", nullable = false, precision = 10, scale = 2)
     private BigDecimal priceAtOrder;
 
-    @Column(nullable = false)
-    private String status = "Pending";
+    @Column(nullable = false, length = 20)
+    private String status;
 
     @Column(columnDefinition = "TEXT")
     private String notes;

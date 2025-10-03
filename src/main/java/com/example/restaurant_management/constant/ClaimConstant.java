@@ -3,7 +3,7 @@ package com.example.restaurant_management.constant;
 public class ClaimConstant {
     public static final String AUTH_USER_ID = "u_id";
     public static final String AUTH_USER_EMAIL = "u_email";
-    public static final String AUTH_USER_FULLNAME = "u_fullname";
+    public static final String AUTH_STORE_NAME = "u_store_name";
     public static final String AUTH_USER_ROLES = "u_roles";
     public static final String TOKEN_TYPE = "token_type";
     public static final String ACCESS_TOKEN = "access_token";

@@ -1,41 +1,65 @@
 package com.example.restaurant_management.service.impl;
 
-import com.example.restaurant_management.entity.Table;
+import com.example.restaurant_management.dto.request.TableRequest;
+import com.example.restaurant_management.dto.response.TableResponse;
+import com.example.restaurant_management.entity.Location;
+import com.example.restaurant_management.entity.TableEntity;
+import com.example.restaurant_management.repository.LocationRepository;
 import com.example.restaurant_management.repository.TableRepository;
 import com.example.restaurant_management.service.TableService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class TableServiceImpl implements TableService {
 
     private final TableRepository tableRepository;
+    private final LocationRepository locationRepository;
 
-    public TableServiceImpl(TableRepository tableRepository) {
-        this.tableRepository = tableRepository;
+    @Override
+    public List<TableResponse> getAllTables() {
+        return tableRepository.findAll().stream()
+                .map(TableResponse::fromEntity)
+                .toList();
     }
 
     @Override
-    public List<Table> getAllTables() {
-        return tableRepository.findAll();
+    public Optional<TableResponse> getTableById(Long id) {
+        return tableRepository.findById(id).map(TableResponse::fromEntity);
     }
 
     @Override
-    public Optional<Table> getTableById(Long id) {
-        return tableRepository.findById(id);
+    public TableResponse createTable(TableRequest request) {
+        Location location = locationRepository.findById(request.getLocationId())
+                .orElseThrow(() -> new RuntimeException("Location not found"));
+
+        TableEntity table = new TableEntity();
+        table.setTableNumber(request.getTableNumber());
+        table.setCapacity(request.getCapacity());
+        table.setLocation(location);
+        table.setStatus(request.getStatus());
+
+        return TableResponse.fromEntity(tableRepository.save(table));
     }
 
     @Override
-    public Table createTable(Table table) {
-        return tableRepository.save(table);
-    }
+    public TableResponse updateTable(Long id, TableRequest request) {
+        TableEntity table = tableRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Table not found"));
 
-    @Override
-    public Table updateTable(Long id, Table table) {
-        table.setId(id);
-        return tableRepository.save(table);
+        Location location = locationRepository.findById(request.getLocationId())
+                .orElseThrow(() -> new RuntimeException("Location not found"));
+
+        table.setTableNumber(request.getTableNumber());
+        table.setCapacity(request.getCapacity());
+        table.setLocation(location);
+        table.setStatus(request.getStatus());
+
+        return TableResponse.fromEntity(tableRepository.save(table));
     }
 
     @Override
@@ -44,22 +68,30 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
-    public Optional<Table> getTableByNumber(String tableNumber) {
-        return tableRepository.findByTableNumber(tableNumber);
+    public Optional<TableResponse> getTableByNumber(String tableNumber) {
+        return tableRepository.findByTableNumber(tableNumber).map(TableResponse::fromEntity);
     }
 
     @Override
-    public List<Table> getTablesByStatus(String status) {
-        return tableRepository.findByStatus(status);
+    public List<TableResponse> getTablesByStatus(String status) {
+        return tableRepository.findByStatus(status).stream()
+                .map(TableResponse::fromEntity)
+                .toList();
     }
 
     @Override
-    public List<Table> getTablesByCapacity(Integer capacity) {
-        return tableRepository.findByCapacityGreaterThanEqual(capacity);
+    public List<TableResponse> getTablesByCapacity(Integer capacity) {
+        return tableRepository.findByCapacityGreaterThanEqual(capacity).stream()
+                .map(TableResponse::fromEntity)
+                .toList();
     }
 
     @Override
-    public List<Table> getTablesByLocation(String location) {
-        return tableRepository.findByLocation(location);
+    public List<TableResponse> getTablesByLocation(Long locationId) {
+        Location location = locationRepository.findById(locationId)
+                .orElseThrow(() -> new RuntimeException("Location not found"));
+        return tableRepository.findByLocation(location).stream()
+                .map(TableResponse::fromEntity)
+                .toList();
     }
 }

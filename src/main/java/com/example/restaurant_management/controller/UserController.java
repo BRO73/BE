@@ -1,19 +1,22 @@
 package com.example.restaurant_management.controller;
 
 import com.example.restaurant_management.dto.request.UpdateStaffRequest;
+import com.example.restaurant_management.dto.request.CreateUserRequest;
+import com.example.restaurant_management.dto.request.UpdateUserRequest;
 import com.example.restaurant_management.dto.response.RestaurantResponse;
 import com.example.restaurant_management.dto.response.UserProfileResponse;
+import com.example.restaurant_management.dto.response.UserResponse;
 import com.example.restaurant_management.entity.User;
 import com.example.restaurant_management.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@PreAuthorize("hasAnyRole('ADMIN', 'WAITSTAFF')")
 @RequestMapping("/api/users")
 public class UserController {
 
@@ -24,8 +27,38 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @GetMapping("/my-store-users")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<UserResponse>> getAllUserInStore(
+            Authentication authentication
+    ) {
+        List<UserResponse> userResponseList = userService.getAllUserInStore(authentication);
+        return ResponseEntity.ok(userResponseList);
+    }
+
+    @PostMapping
+    public ResponseEntity<UserResponse> createUser(@RequestBody CreateUserRequest createUserRequest,
+                                                   Authentication authentication) {
+        return ResponseEntity.ok(userService.createUser(createUserRequest, authentication));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<RestaurantResponse<UserResponse>> updateUser(
+            @PathVariable Long id,
+            @RequestBody UpdateUserRequest request
+    ) {
+        return RestaurantResponse.ok(userService.updateUser(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")
@@ -35,25 +68,13 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        return ResponseEntity.ok(userService.createUser(user));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<RestaurantResponse<User>> updateStaff(
-            @AuthenticationPrincipal String username,
-            @RequestBody UpdateStaffRequest request
-    ) {
-        User updatedUser = userService.updateStaffInfo(username, request);
-        return RestaurantResponse.ok(updatedUser, "Staff information updated successfully");
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
-    }
+//    @GetMapping("/profile")
+//    public ResponseEntity<RestaurantResponse<UserProfileResponse>> getProfile(
+//            @AuthenticationPrincipal String username
+//    ) {
+//        UserProfileResponse profile = userService.getProfile(username);
+//        return RestaurantResponse.ok(profile, "Staff profile fetched successfully");
+//    }
 
     @GetMapping("/username/{username}")
     public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
@@ -72,13 +93,5 @@ public class UserController {
     @GetMapping("/email/{email}")
     public ResponseEntity<List<User>> getUsersByEmail(@PathVariable String email) {
         return ResponseEntity.ok(userService.getUsersByEmail(email));
-    }
-
-    @GetMapping("/profile")
-    public ResponseEntity<RestaurantResponse<UserProfileResponse>> getProfile(
-            @AuthenticationPrincipal String username
-    ) {
-        UserProfileResponse profile = userService.getProfile(username);
-        return RestaurantResponse.ok(profile, "Staff profile fetched successfully");
     }
 }

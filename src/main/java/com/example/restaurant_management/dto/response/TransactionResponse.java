@@ -27,20 +27,4 @@ public class TransactionResponse {
     private boolean deleted;
     private boolean activated;
 
-    public static TransactionResponse fromEntity(Transaction transaction) {
-        return TransactionResponse.builder()
-                .id(transaction.getId())
-                .orderId(transaction.getOrder().getId())
-                .amountPaid(transaction.getAmountPaid())
-                .paymentMethod(transaction.getPaymentMethod())
-                .transactionTime(transaction.getTransactionTime())
-                .transactionCode(transaction.getTransactionCode())
-                .cashierId(transaction.getCashier() != null ? transaction.getCashier().getId() : null)
-                .cashierName(transaction.getCashier() != null ? transaction.getCashier().getFullName() : null)
-                .createdAt(transaction.getCreatedAt())
-                .updatedAt(transaction.getUpdatedAt())
-                .deleted(transaction.isDeleted())
-                .activated(transaction.isActivated())
-                .build();
-    }
 }

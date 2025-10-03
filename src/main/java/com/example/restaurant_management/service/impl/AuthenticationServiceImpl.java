@@ -16,10 +16,10 @@ import com.example.restaurant_management.repository.UserRepository;
 import com.example.restaurant_management.repository.UserRoleRepository;
 import com.example.restaurant_management.service.AuthenticationService;
 import com.example.restaurant_management.service.JWTService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,7 +43,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Value("${jwt.expiration}")
     private long jwtExpiration;
 
-
     @Override
     public TokenResponse authenticate(SignInRequest request) {
 
@@ -62,22 +61,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
+    @Transactional
     public String register(RegisterRequest request) {
         User user = User.builder()
                 .username(request.username())
                 .hashedPassword(passwordEncoder.encode(request.password()))
-                .fullName(request.fullName())
-                .email(request.email())
-                .phoneNumber(request.phoneNumber())
-                .store(storeRepository.findByName(request.storeName()).orElseThrow())
+                .store(storeRepository.findByName(request.storeName()).orElseThrow(() -> new RestaurantException("Store not found")))
                 .build();
         userRepository.save(user);
-        Role role = roleRepository.findByName(request.role()).orElseThrow();
+
+        Role role = roleRepository.findByName(request.role())
+                .orElseThrow(() -> new RestaurantException("Role not found"));
 
         UserRole userRole = UserRole.builder()
-                .userId(user.getId())
                 .roleId(role.getId())
+                .userId(user.getId())
                 .build();
+
         userRoleRepository.save(userRole);
 
         return "Register Success";
@@ -101,12 +101,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         List<String> roles = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
+
         CredentialPayload credentialPayload = (CredentialPayload) authentication.getCredentials();
 
         claims.put(ClaimConstant.AUTH_USER_ROLES, roles);
         claims.put(ClaimConstant.AUTH_USER_ID, credentialPayload.getUserId());
-        claims.put(ClaimConstant.AUTH_USER_EMAIL, credentialPayload.getEmail());
-        claims.put(ClaimConstant.AUTH_USER_FULLNAME, credentialPayload.getFullName());
+        claims.put(ClaimConstant.AUTH_STORE_NAME, credentialPayload.getStoreName());
 
         return claims;
     }
