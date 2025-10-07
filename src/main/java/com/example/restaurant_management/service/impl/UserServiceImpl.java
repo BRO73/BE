@@ -1,25 +1,19 @@
 package com.example.restaurant_management.service.impl;
 
-import com.example.restaurant_management.common.constant.ErrorEnum;
 import com.example.restaurant_management.common.exception.RestaurantException;
 import com.example.restaurant_management.dto.request.CreateUserRequest;
 import com.example.restaurant_management.dto.request.UpdateUserRequest;
-import com.example.restaurant_management.dto.response.UserProfileResponse;
 import com.example.restaurant_management.dto.response.UserResponse;
 import com.example.restaurant_management.entity.Role;
-import com.example.restaurant_management.entity.Store;
 import com.example.restaurant_management.entity.User;
 import com.example.restaurant_management.entity.UserRole;
 import com.example.restaurant_management.mapper.UserMapper;
-import com.example.restaurant_management.model.CredentialPayload;
 import com.example.restaurant_management.repository.RoleRepository;
-import com.example.restaurant_management.repository.StoreRepository;
 import com.example.restaurant_management.repository.UserRepository;
 import com.example.restaurant_management.repository.UserRoleRepository;
 import com.example.restaurant_management.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +25,6 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final StoreRepository storeRepository;
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
     private final UserMapper userMapper;
@@ -48,35 +41,7 @@ public class UserServiceImpl implements UserService {
         return userResponseList;
     }
 
-    @Override
-    public List<UserResponse> getAllUserInStore(Authentication authentication) {
-        CredentialPayload credentialPayload = (CredentialPayload) authentication.getCredentials();
-        String storeName = credentialPayload.getStoreName();
-        Store store = storeRepository.findByName(storeName)
-                .orElseThrow(() -> new RestaurantException(String.valueOf(ErrorEnum.STORE_NOT_FOUND)));
 
-        List<User> userList = userRepository.findAllByStore(store);
-        List<UserResponse> userResponseList = new ArrayList<>();
-
-        for (User user : userList) {
-            Set<Role> roles = roleRepository.findByUserId(user.getId());
-            Set<String> roleNames = new HashSet<>();
-            for (Role role : roles) {
-                roleNames.add(role.getName());
-            }
-
-            UserResponse userResponse = UserResponse.builder()
-                    .id(user.getId())
-                    .username(user.getUsername())
-                    .createdAt(user.getCreatedAt())
-                    .updatedAt(user.getUpdatedAt())
-                    .role(roleNames)
-                    .build();
-
-            userResponseList.add(userResponse);
-        }
-        return userResponseList;
-    }
 
     @Override
     public Optional<User> getUserById(Long id) {
@@ -85,12 +50,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse createUser(CreateUserRequest createUserRequest, Authentication authentication) {
-        CredentialPayload credentialPayload = (CredentialPayload) authentication.getCredentials();
+    public UserResponse createUser(CreateUserRequest createUserRequest) {
         User user = User.builder()
                 .username(createUserRequest.username())
-                .store(storeRepository.findByName(credentialPayload.getStoreName())
-                        .orElseThrow(() -> new RestaurantException("Store not found")))
                 .build();
         userRepository.save(user);
 
@@ -179,18 +141,6 @@ public class UserServiceImpl implements UserService {
         // Note: This method needs to be added to UserRepository
         return List.of();
     }
-
-    @Override
-    public UserProfileResponse getProfile(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        return UserProfileResponse.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .build();
-    }
-
 
 
 }

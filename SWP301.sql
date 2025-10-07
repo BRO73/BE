@@ -6,29 +6,18 @@ USE SWP301;
 -- BẢNG LÕI
 -- ====================================================================================
 
-CREATE TABLE stores (
-                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                        name VARCHAR(100) NOT NULL UNIQUE,
-                        address VARCHAR(255),
-                        created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
-                        updated_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)
-);
-
 CREATE TABLE users (
                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
                        username VARCHAR(50) NULL COMMENT 'Chỉ cho staff',
                        hashed_password VARCHAR(255) NULL COMMENT 'Chỉ cho staff',
                        is_activated TINYINT(1) DEFAULT 1,
                        is_deleted TINYINT(1) DEFAULT 0,
-                       store_id BIGINT NULL,
                        created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
                        updated_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
                        deleted_at DATETIME(6) NULL,
                        created_by BIGINT NULL,
                        updated_by BIGINT NULL,
-                       deleted_by BIGINT NULL,
-                       CONSTRAINT fk_user_store FOREIGN KEY (store_id) REFERENCES stores(id),
-                       CONSTRAINT uq_username_per_store UNIQUE (username, store_id)
+                       deleted_by BIGINT NULL
 );
 
 CREATE TABLE staff (
@@ -47,19 +36,15 @@ CREATE TABLE staff (
                        deleted_by BIGINT NULL,
                        is_deleted TINYINT(1) DEFAULT 0,
                        is_activated TINYINT(1) DEFAULT 1,
-                       CONSTRAINT fk_staff_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-                       CONSTRAINT fk_staff_store FOREIGN KEY (store_id) REFERENCES stores(id) -- <<< THÊM RÀNG BUỘC NÀY
+                       CONSTRAINT fk_staff_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE customers (
                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
                            full_name VARCHAR(100),
-                           address VARCHAR(255),
-                           date_of_birth DATE,
+                           user_id BIGINT NULL UNIQUE,
                            phone_number VARCHAR(15) NULL UNIQUE,
                            email VARCHAR(100) NULL UNIQUE,
-                           otp_code VARCHAR(10) NULL,
-                           otp_expiry_time DATETIME(6) NULL,
                            created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
                            updated_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
                            deleted_at DATETIME(6) NULL,
@@ -67,7 +52,8 @@ CREATE TABLE customers (
                            updated_by BIGINT NULL,
                            deleted_by BIGINT NULL,
                            is_deleted TINYINT(1) DEFAULT 0,
-                           is_activated TINYINT(1) DEFAULT 1
+                           is_activated TINYINT(1) DEFAULT 1,
+                           CONSTRAINT fk_customer_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE roles (
@@ -328,12 +314,6 @@ INSERT INTO categories (name, description) VALUES
                                                ('Dessert', 'Sweet dishes to finish the meal'),
                                                ('Beverage', 'Drinks including soft drinks and juices');
 
-INSERT INTO stores (name, address) VALUES
-                                       ('Nhà hàng A - Quận 1', '123 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP.HCM'),
-                                       ('Nhà hàng B - Hoàn Kiếm', '45 Hàng Bông, Phường Hàng Bông, Quận Hoàn Kiếm, Hà Nội'),
-                                       ('Nhà hàng C - Quận 7', '789 Nguyễn Lương Bằng, Phường Tân Phú, Quận 7, TP.HCM');
-
-
 INSERT INTO location (name, description)
 VALUES
     ('Đà Nẵng', 'Thành phố đáng sống'),
@@ -375,4 +355,4 @@ INSERT INTO roles (name, description) VALUES
 # SELECT * FROM staff
 # SELECT * FROM roles
 # DELETE FROM users
-SELECT * FROM stores
+

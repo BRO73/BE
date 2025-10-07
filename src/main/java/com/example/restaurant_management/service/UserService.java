@@ -13,12 +13,10 @@ import java.util.Optional;
 public interface UserService {
     List<UserResponse> getAllUsers();
     Optional<User> getUserById(Long id);
-    UserResponse createUser(CreateUserRequest createUserRequest, Authentication authentication);
+    UserResponse createUser(CreateUserRequest createUserRequest);
     UserResponse updateUser(Long id, UpdateUserRequest request);
     void deleteUser(Long id);
     Optional<User> getUserByUsername(String username);
     Optional<User> getUserByPhoneNumber(String phoneNumber);
     List<User> getUsersByEmail(String email);
-    UserProfileResponse getProfile(String username);
-    List<UserResponse> getAllUserInStore(Authentication authentication);
 }

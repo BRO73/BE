@@ -27,11 +27,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             throws AuthenticationException {
         final String username = (String) authentication.getPrincipal();
         final String password = (String) authentication.getCredentials();
-        if (!(authentication instanceof CustomAuthenticationToken customToken)) {
-            throw new RestaurantException(ErrorEnum.INVALID_CREDENTIALS);
-        }
-        final String storeName = customToken.getStoreName();
-        final UserDetails user = userDetailsService.loadUserByUsernameAndStoreName(username,storeName);
+
+        final UserDetails user = userDetailsService.loadUserByUsername(username);
 
         if (StringUtils.isBlank(password) || !passwordEncoder.matches(password, user.getPassword())) {
             throw new RestaurantException(ErrorEnum.PASSWORD_INCORRECT);
@@ -43,7 +40,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         CredentialPayload credentialPayload = CredentialPayload.builder()
                 .userId(((UserDetailsImpl) user).getUserId())
-                .storeName(((UserDetailsImpl) user).getStoreName())
                 .build();
 
         return new UsernamePasswordAuthenticationToken(user.getUsername(), credentialPayload, user.getAuthorities());
