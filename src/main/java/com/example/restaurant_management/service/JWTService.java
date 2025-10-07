@@ -17,4 +17,6 @@ public interface JWTService {
     boolean isTokenValid(String token, Authentication authentication);
 
     public <T> T extractClaim(String token, Function<Claims, T> claimResolver);
+
+
 }

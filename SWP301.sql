@@ -140,11 +140,25 @@ CREATE TABLE menu_items (
                             CONSTRAINT fk_menu_category FOREIGN KEY (category_id) REFERENCES categories(id)
 );
 
+CREATE TABLE location (
+                          id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                          name VARCHAR(100) NOT NULL UNIQUE,
+                          description VARCHAR(255),
+                          created_by BIGINT,
+                          updated_by BIGINT,
+                          deleted_by BIGINT,
+                          created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
+                          updated_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+                          deleted_at DATETIME(6) NULL,
+                          is_deleted TINYINT(1) DEFAULT 0,
+                          is_activated TINYINT(1) DEFAULT 1
+);
+
 CREATE TABLE tables (
                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
                         table_number VARCHAR(10) NOT NULL UNIQUE,
                         capacity INT NOT NULL,
-                        location VARCHAR(255),
+                        location_id BIGINT NOT NULL,
                         status VARCHAR(20) NOT NULL DEFAULT 'Available',
                         created_by BIGINT,
                         updated_by BIGINT,
@@ -153,7 +167,9 @@ CREATE TABLE tables (
                         updated_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
                         deleted_at DATETIME(6) NULL,
                         is_deleted TINYINT(1) DEFAULT 0,
-                        is_activated TINYINT(1) DEFAULT 1
+                        is_activated TINYINT(1) DEFAULT 1,
+
+                        CONSTRAINT fk_table_location FOREIGN KEY (location_id) REFERENCES location(id)
 );
 
 CREATE TABLE promotions (
@@ -317,6 +333,19 @@ INSERT INTO stores (name, address) VALUES
                                        ('Nhà hàng B - Hoàn Kiếm', '45 Hàng Bông, Phường Hàng Bông, Quận Hoàn Kiếm, Hà Nội'),
                                        ('Nhà hàng C - Quận 7', '789 Nguyễn Lương Bằng, Phường Tân Phú, Quận 7, TP.HCM');
 
+
+INSERT INTO location (name, description)
+VALUES
+    ('Đà Nẵng', 'Thành phố đáng sống'),
+    ('Hải Phòng', 'Thành phố cảng'),
+    ('Cần Thơ', 'Thành phố miền Tây');
+
+INSERT INTO tables (table_number, capacity, location_id, status)
+VALUES
+    ('T03', 2, '1', 'Available'),
+    ('T04', 8, '2', 'Occupied'),
+    ('T05', 4, '3', 'Available');
+
 INSERT INTO menu_items (category_id, name, description, price, status) VALUES
 -- Appetizers (Khai vị)
 (1, 'Gỏi cuốn tôm thịt', 'Gỏi cuốn tươi với tôm, thịt, bún và rau thơm, dùng kèm nước chấm đậu phộng.', 65000.00, 'Available'),
@@ -340,10 +369,10 @@ INSERT INTO roles (name, description) VALUES
                                           ('ADMIN', 'Quản trị hệ thống, có toàn quyền'),
                                           ('WAITSTAFF', 'Nhân viên phục vụ bàn, nhận order từ khách'),
                                           ('KITCHEN_STAFF', 'Nhân viên bếp, chế biến món ăn'),
-                                          ('CASHIER', 'Thu ngân, xử lý thanh toán')
+                                          ('CASHIER', 'Thu ngân, xử lý thanh toán');
 # SELECT * FROM stores WHERE name = 'Nhà hàng A - Quận 1';
 # SELECT * FROM users
-# SELECT * FROM staff
-# SELECT * FROM roles
-# DELETE FROM users
+                    # SELECT * FROM staff
+      # SELECT * FROM roles
+                          # DELETE FROM users
 SELECT * FROM stores

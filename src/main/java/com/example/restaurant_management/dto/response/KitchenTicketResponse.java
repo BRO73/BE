@@ -1,7 +1,10 @@
 package com.example.restaurant_management.dto.response;
 
+import com.example.restaurant_management.common.enums.MenuItemAvailability;
+import com.example.restaurant_management.common.enums.OrderItemStatus;
 import com.example.restaurant_management.entity.OrderDetail;
 import lombok.*;
+
 
 import java.time.LocalDateTime;
 
@@ -17,28 +20,28 @@ public class KitchenTicketResponse {
     private Long menuItemId;
     private String dishName;
     private Integer quantity;
-    private String menuStatus;
-    private String status;
+    private MenuItemAvailability availability;
+    private OrderItemStatus status;
+
     private String notes;
     private LocalDateTime orderedAt;
 
     public static KitchenTicketResponse from(OrderDetail od) {
-        var order = od.getOrder();
-        var menu  = od.getMenuItem();
-
-        LocalDateTime orderedLocal = od.getCreatedAt(); // <-- FIX
-
         return KitchenTicketResponse.builder()
                 .orderDetailId(od.getId())
-                .orderId(order != null ? order.getId() : null)
-                .tableNumber(order != null && order.getTable() != null ? order.getTable().getTableNumber() : null)
-                .menuItemId(menu != null ? menu.getId() : null)
-                .dishName(menu != null ? menu.getName() : null)
+                .orderId(od.getOrder() != null ? od.getOrder().getId() : null)
+                .tableNumber(
+                        od.getOrder() != null && od.getOrder().getTable() != null
+                                ? od.getOrder().getTable().getTableNumber()
+                                : null
+                )
+                .menuItemId(od.getMenuItem() != null ? od.getMenuItem().getId() : null)
+                .dishName(od.getMenuItem() != null ? od.getMenuItem().getName() : null)
                 .quantity(od.getQuantity())
-                .menuStatus(menu != null ? menu.getStatus() : null)
+                .availability(od.getMenuItem() != null ? od.getMenuItem().getAvailability() : null)
                 .status(od.getStatus())
                 .notes(od.getNotes())
-                .orderedAt(orderedLocal)
+                .orderedAt(od.getCreatedAt())
                 .build();
     }
 }

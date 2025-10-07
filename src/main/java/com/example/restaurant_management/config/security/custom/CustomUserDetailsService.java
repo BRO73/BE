@@ -9,8 +9,18 @@ import com.example.restaurant_management.common.constant.ErrorEnum;
 import com.example.restaurant_management.common.exception.RestaurantException;
 import com.example.restaurant_management.config.security.user.UserDetailsImpl;
 import com.example.restaurant_management.constant.RoleConstant;
-import com.example.restaurant_management.entity.*;
-import com.example.restaurant_management.repository.*;
+import com.example.restaurant_management.entity.Permission;
+import com.example.restaurant_management.entity.Role;
+import com.example.restaurant_management.entity.RolePermission;
+import com.example.restaurant_management.entity.Store;
+import com.example.restaurant_management.entity.User;
+import com.example.restaurant_management.entity.UserRole;
+import com.example.restaurant_management.repository.PermissionRepository;
+import com.example.restaurant_management.repository.RolePermissionRepository;
+import com.example.restaurant_management.repository.RoleRepository;
+import com.example.restaurant_management.repository.StoreRepository;
+import com.example.restaurant_management.repository.UserRepository;
+import com.example.restaurant_management.repository.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,14 +41,27 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return null;
+        User user = userRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+
+        return UserDetailsImpl.builder()
+                .username(user.getUsername())
+                .password(user.getHashedPassword())
+                .userId(user.getId())
+                .enabled(Boolean.FALSE.equals(user.isDeleted()))
+                .authorities(getUserAuthorities(user))
+                .storeName(null)
+                .build();
     }
 
+    /** Dùng khi token có cả username + storeName (u_store_name hoặc u_storeName). */
     public UserDetails loadUserByUsernameAndStoreName(String username, String storeName) throws UsernameNotFoundException {
         Store store = storeRepository.findByName(storeName)
                 .orElseThrow(() -> new RestaurantException(ErrorEnum.STORE_NOT_FOUND));
-        User user = userRepository.findStaffByUsernameAndStore(username, store).
-                orElseThrow(() -> new RestaurantException(ErrorEnum.USER_NOT_FOUND));
+
+        User user = userRepository.findStaffByUsernameAndStore(username, store)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found in store: " + username));
 
         return UserDetailsImpl.builder()
                 .username(user.getUsername())
@@ -50,14 +73,30 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .build();
     }
 
+    /** Fallback khi chỉ có u_id trong token (hoặc username không khớp DB). */
+    public UserDetails loadUserById(Long userId) throws UsernameNotFoundException {
+        User user = userRepository
+                .findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found by id: " + userId));
+
+        return UserDetailsImpl.builder()
+                .username(user.getUsername())
+                .password(user.getHashedPassword())
+                .userId(user.getId())
+                .enabled(Boolean.FALSE.equals(user.isDeleted()))
+                .authorities(getUserAuthorities(user))
+                .storeName(null)
+                .build();
+    }
+
     private List<SimpleGrantedAuthority> getUserAuthorities(User user) {
         Set<UserRole> userRoles = userRoleRepository.findAllByUserId(user.getId());
 
-        Set<Role> roles = roleRepository.findAllByIdIn(
-                userRoles.stream()
-                        .map(UserRole::getRoleId)
-                        .collect(Collectors.toSet())
-        );
+        Set<Long> roleIds = userRoles.stream()
+                .map(UserRole::getRoleId)
+                .collect(Collectors.toSet());
+
+        Set<Role> roles = roleRepository.findAllByIdIn(roleIds);
 
         List<SimpleGrantedAuthority> roleAuthorities = roles.stream()
                 .map(role -> new SimpleGrantedAuthority(RoleConstant.ROLE_PREFIX + role.getName()))
@@ -65,23 +104,22 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         List<SimpleGrantedAuthority> permissionAuthorities;
 
-        if (roleAuthorities.stream()
-                .anyMatch(item -> item.getAuthority().equals(RoleConstant.ADMIN))) {
+        boolean isAdmin = roleAuthorities.stream()
+                .anyMatch(item -> item.getAuthority().equals(RoleConstant.ADMIN));
+
+        if (isAdmin) {
             permissionAuthorities = permissionRepository.findAll().stream()
                     .map(permission -> new SimpleGrantedAuthority(permission.getName()))
                     .toList();
         } else {
-            Set<RolePermission> rolePermissions = rolePermissionRepository.findAllByRoleIdIn(
-                    roles.stream()
-                            .map(Role::getId)
-                            .collect(Collectors.toSet())
-            );
+            Set<Long> roleIdSet = roles.stream().map(Role::getId).collect(Collectors.toSet());
+            Set<RolePermission> rolePermissions = rolePermissionRepository.findAllByRoleIdIn(roleIdSet);
 
-            Set<Permission> permissions = permissionRepository.findAllByIdIn(
-                    rolePermissions.stream()
-                            .map(RolePermission::getPermissionId)
-                            .collect(Collectors.toSet())
-            );
+            Set<Long> permissionIds = rolePermissions.stream()
+                    .map(RolePermission::getPermissionId)
+                    .collect(Collectors.toSet());
+
+            Set<Permission> permissions = permissionRepository.findAllByIdIn(permissionIds);
 
             permissionAuthorities = permissions.stream()
                     .map(permission -> new SimpleGrantedAuthority(permission.getName()))
