@@ -327,18 +327,6 @@ VALUES
     ('T05', 4, '3', 'Available');
 
 
-INSERT INTO location (name, description)
-VALUES
-    ('Đà Nẵng', 'Thành phố đáng sống'),
-    ('Hải Phòng', 'Thành phố cảng'),
-    ('Cần Thơ', 'Thành phố miền Tây');
-
-INSERT INTO tables (table_number, capacity, location_id, status)
-VALUES
-    ('T03', 2, '1', 'Available'),
-    ('T04', 8, '2', 'Occupied'),
-    ('T05', 4, '3', 'Available');
-
 INSERT INTO menu_items (category_id, name, description, price, status) VALUES
 -- Appetizers (Khai vị)
 (1, 'Gỏi cuốn tôm thịt', 'Gỏi cuốn tươi với tôm, thịt, bún và rau thơm, dùng kèm nước chấm đậu phộng.', 65000.00, 'Available'),
@@ -362,9 +350,15 @@ INSERT INTO roles (name, description) VALUES
                                           ('ADMIN', 'Quản trị hệ thống, có toàn quyền'),
                                           ('WAITSTAFF', 'Nhân viên phục vụ bàn, nhận order từ khách'),
                                           ('KITCHEN_STAFF', 'Nhân viên bếp, chế biến món ăn'),
-                                          ('CASHIER', 'Thu ngân, xử lý thanh toán');
+                                          ('CASHIER', 'Thu ngân, xử lý thanh toán'),
+                                          ('CUSTOMER', 'Khách hàng');
+
+# SELECT * FROM customers;
 # SELECT * FROM stores WHERE name = 'Nhà hàng A - Quận 1';
 # SELECT * FROM users
 # SELECT * FROM staff
 # SELECT * FROM roles
 # DELETE FROM users
+
+SELECT * FROM roles;
+SELECT * FROM user_roles;

@@ -2,6 +2,7 @@ package com.example.restaurant_management.controller;
 
 import com.example.restaurant_management.dto.request.RegisterCustomerRequest;
 import com.example.restaurant_management.dto.response.OtpLoginResponse;
+import com.example.restaurant_management.dto.response.TokenResponse;
 import com.example.restaurant_management.service.impl.CustomerAuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,13 +22,13 @@ public class OtpController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<OtpLoginResponse> verifyOtp(@RequestParam String phoneNumber,
+    public ResponseEntity<TokenResponse> verifyOtp(@RequestParam String phoneNumber,
                                                       @RequestParam String otp) {
         return ResponseEntity.ok(customerAuthService.verifyOtp(phoneNumber, otp));
     }
 
     @PostMapping("/register-customer")
-    public ResponseEntity<OtpLoginResponse> registerCustomer(@RequestBody RegisterCustomerRequest request) {
+    public ResponseEntity<TokenResponse> registerCustomer(@RequestBody RegisterCustomerRequest request) {
         return ResponseEntity.ok(customerAuthService.registerCustomer(request));
     }
 }
