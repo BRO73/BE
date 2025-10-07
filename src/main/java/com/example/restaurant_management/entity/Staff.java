@@ -27,7 +27,4 @@ public class Staff extends AbstractEntity<Long> {
     @Column(name = "phone_number", unique = true, length = 15)
     private String phoneNumber;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id", nullable = false)
-    private Store store;
 }

@@ -1,7 +1,6 @@
 package com.example.restaurant_management.service.impl;
 
 import com.example.restaurant_management.common.exception.RestaurantException;
-import com.example.restaurant_management.config.security.custom.CustomAuthenticationToken;
 import com.example.restaurant_management.constant.ClaimConstant;
 import com.example.restaurant_management.dto.request.RegisterRequest;
 import com.example.restaurant_management.dto.request.SignInRequest;
@@ -11,7 +10,6 @@ import com.example.restaurant_management.entity.User;
 import com.example.restaurant_management.entity.UserRole;
 import com.example.restaurant_management.model.CredentialPayload;
 import com.example.restaurant_management.repository.RoleRepository;
-import com.example.restaurant_management.repository.StoreRepository;
 import com.example.restaurant_management.repository.UserRepository;
 import com.example.restaurant_management.repository.UserRoleRepository;
 import com.example.restaurant_management.service.AuthenticationService;
@@ -20,6 +18,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,7 +35,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationProvider authenticationProvider;
     private final JWTService jwtService;
     private final PasswordEncoder passwordEncoder;
-    private final StoreRepository storeRepository;
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
 
@@ -47,7 +45,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public TokenResponse authenticate(SignInRequest request) {
 
         Authentication authentication = authenticationProvider.authenticate(
-                new CustomAuthenticationToken(request.username(), request.password(), request.storeName())
+                new UsernamePasswordAuthenticationToken(request.username(), request.password())
         );
 
         Map<String, Object> claimsAccessToken = buildClaimsAccessToken(authentication);
@@ -66,7 +64,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = User.builder()
                 .username(request.username())
                 .hashedPassword(passwordEncoder.encode(request.password()))
-                .store(storeRepository.findByName(request.storeName()).orElseThrow(() -> new RestaurantException("Store not found")))
                 .build();
         userRepository.save(user);
 
@@ -106,8 +103,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         claims.put(ClaimConstant.AUTH_USER_ROLES, roles);
         claims.put(ClaimConstant.AUTH_USER_ID, credentialPayload.getUserId());
-        claims.put(ClaimConstant.AUTH_STORE_NAME, credentialPayload.getStoreName());
-
         return claims;
     }
 }

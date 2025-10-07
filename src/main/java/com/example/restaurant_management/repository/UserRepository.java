@@ -1,6 +1,5 @@
 package com.example.restaurant_management.repository;
 
-import com.example.restaurant_management.entity.Store;
 import com.example.restaurant_management.entity.User;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +12,4 @@ public interface UserRepository extends JpaRepository<User, Long>{
     Optional<User> findByUsername(String username);
     Optional<User> findById(Long id);
     List<User> findAll();
-    Optional<User> findStaffByUsernameAndStore(String username, Store store);
-    List<User> findAllByStore(Store store);
 }
