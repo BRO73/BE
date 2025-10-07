@@ -40,8 +40,8 @@ public class TableServiceImpl implements TableService {
         TableEntity table = new TableEntity();
         table.setTableNumber(request.getTableNumber());
         table.setCapacity(request.getCapacity());
-        table.setLocation(location);
         table.setStatus(request.getStatus());
+        table.setLocation(location);
 
         return TableResponse.fromEntity(tableRepository.save(table));
     }

@@ -326,6 +326,19 @@ VALUES
     ('T04', 8, '2', 'Occupied'),
     ('T05', 4, '3', 'Available');
 
+
+INSERT INTO location (name, description)
+VALUES
+    ('Đà Nẵng', 'Thành phố đáng sống'),
+    ('Hải Phòng', 'Thành phố cảng'),
+    ('Cần Thơ', 'Thành phố miền Tây');
+
+INSERT INTO tables (table_number, capacity, location_id, status)
+VALUES
+    ('T03', 2, '1', 'Available'),
+    ('T04', 8, '2', 'Occupied'),
+    ('T05', 4, '3', 'Available');
+
 INSERT INTO menu_items (category_id, name, description, price, status) VALUES
 -- Appetizers (Khai vị)
 (1, 'Gỏi cuốn tôm thịt', 'Gỏi cuốn tươi với tôm, thịt, bún và rau thơm, dùng kèm nước chấm đậu phộng.', 65000.00, 'Available'),
