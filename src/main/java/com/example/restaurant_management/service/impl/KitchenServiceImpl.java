@@ -53,36 +53,74 @@ public class KitchenServiceImpl implements KitchenService {
         menuItemRepo.save(menu);
     }
 
+    /**
+     * Cập nhật trạng thái OrderDetail.
+     * Hỗ trợ rollback DONE -> IN_PROGRESS:
+     *  - Nếu tìm được dòng gốc (PENDING/IN_PROGRESS) cùng order + menu + priceAtOrder + notes,
+     *    sẽ GỘP quantity về dòng gốc và XÓA dòng DONE (giữ ID cũ của dòng gốc).
+     *  - Nếu không tìm được dòng phù hợp: đổi trạng thái tại chỗ (giữ ID hiện tại).
+     */
     @Override
     @Transactional
     public void updateOrderDetailStatus(Long orderDetailId, OrderItemStatus status) {
-        OrderDetail od = repo.findById(orderDetailId)
+        OrderDetail od = repo.findByIdForUpdate(orderDetailId)
                 .orElseThrow(() -> new IllegalArgumentException("OrderDetail not found: " + orderDetailId));
 
         OrderItemStatus cur = od.getStatus();
 
-
         switch (cur) {
             case PENDING -> {
-
                 if (status != OrderItemStatus.DONE
                         && status != OrderItemStatus.CANCELED
-
                         && status != OrderItemStatus.IN_PROGRESS) {
                     throw new IllegalStateException("Invalid transition from PENDING to " + status);
                 }
             }
             case IN_PROGRESS -> {
-
                 if (status != OrderItemStatus.DONE
                         && status != OrderItemStatus.CANCELED) {
                     throw new IllegalStateException("Invalid transition from IN_PROGRESS to " + status);
                 }
             }
             case DONE -> {
-
-                if (status != OrderItemStatus.SERVED) {
+                if (status != OrderItemStatus.SERVED
+                        && status != OrderItemStatus.IN_PROGRESS) {
                     throw new IllegalStateException("Invalid transition from DONE to " + status);
+                }
+
+                if (status == OrderItemStatus.IN_PROGRESS) {
+                    // TÌM DÒNG GỐC TRONG CÙNG ORDER (SIẾT CHẶT)
+                    List<OrderDetail> targets = repo.findMergeTargetsForRollback(
+                            od.getOrder().getId(),
+                            od.getId(), // loại trừ chính nó
+                            od.getMenuItem().getId(),
+                            List.of(OrderItemStatus.PENDING, OrderItemStatus.IN_PROGRESS),
+                            od.getPriceAtOrder(),
+                            od.getNotes()
+                    );
+
+                    if (!targets.isEmpty()) {
+                        OrderDetail tgt = targets.get(0);
+
+                        // AN TOÀN HƠN: kiểm tra lại orderId (phòng trường hợp mapping khác)
+                        if (!tgt.getOrder().getId().equals(od.getOrder().getId())) {
+                            // Không cùng order => không gộp, fallback đổi trạng thái tại chỗ
+                            od.setStatus(status);
+                            od.setUpdatedAt(LocalDateTime.now());
+                            repo.save(od);
+                            return;
+                        }
+
+                        // Gộp quantity về dòng gốc
+                        tgt.setQuantity(tgt.getQuantity() + od.getQuantity());
+                        tgt.setUpdatedAt(LocalDateTime.now());
+                        repo.save(tgt);
+
+                        // Xoá dòng DONE sau khi gộp
+                        repo.delete(od);
+                        return;
+                    }
+                    // Không có dòng phù hợp -> rơi xuống đổi trạng thái tại chỗ
                 }
             }
             case SERVED, CANCELED -> {
@@ -90,11 +128,11 @@ public class KitchenServiceImpl implements KitchenService {
             }
         }
 
+        // Mặc định: đổi trạng thái tại chỗ
         od.setStatus(status);
         od.setUpdatedAt(LocalDateTime.now());
         repo.save(od);
     }
-
 
     @Override
     @Transactional
@@ -116,6 +154,7 @@ public class KitchenServiceImpl implements KitchenService {
             return;
         }
 
+        // Tách 1 đơn vị DONE ra dòng mới
         src.setQuantity(qty - 1);
         src.setUpdatedAt(LocalDateTime.now());
         repo.save(src);

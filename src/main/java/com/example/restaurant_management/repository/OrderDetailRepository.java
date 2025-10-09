@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,18 +20,35 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
 
     List<OrderDetail> findByMenuItemId(Long menuItemId);
 
-    // Nên dùng enum cho đúng kiểu cột status
     List<OrderDetail> findByStatus(OrderItemStatus status);
 
-    // (tuỳ chọn) nhiều trạng thái
     List<OrderDetail> findAllByStatusIn(List<OrderItemStatus> statuses);
 
-    // Nếu nơi khác vẫn còn dùng String, tạm giữ lại (có thể xoá khi refactor xong)
     @Deprecated
     List<OrderDetail> findByStatus(String status);
 
-    // Dùng để tránh race-condition khi “tách 1 đơn vị / giao 1 đơn vị”
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select od from OrderDetail od where od.id = :id")
     Optional<OrderDetail> findByIdForUpdate(@Param("id") Long id);
+
+    // ===== CHẶT HƠN: Gộp về dòng gốc trong CÙNG order, loại trừ chính dòng rollback =====
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        select od from OrderDetail od
+        where od.order.id = :orderId
+          and od.id <> :excludeId
+          and od.menuItem.id = :menuItemId
+          and od.status in :statuses
+          and ((od.priceAtOrder is null and :priceAtOrder is null) or od.priceAtOrder = :priceAtOrder)
+          and ((od.notes is null and :notes is null) or od.notes = :notes)
+        order by od.createdAt asc
+        """)
+    List<OrderDetail> findMergeTargetsForRollback(
+            @Param("orderId") Long orderId,
+            @Param("excludeId") Long excludeId,
+            @Param("menuItemId") Long menuItemId,
+            @Param("statuses") List<OrderItemStatus> statuses,
+            @Param("priceAtOrder") BigDecimal priceAtOrder,
+            @Param("notes") String notes
+    );
 }
