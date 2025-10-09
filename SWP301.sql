@@ -372,7 +372,7 @@ INSERT INTO roles (name, description) VALUES
                                           ('CASHIER', 'Thu ngân, xử lý thanh toán');
 # SELECT * FROM stores WHERE name = 'Nhà hàng A - Quận 1';
 # SELECT * FROM users
-# SELECT * FROM staff
-# SELECT * FROM roles
-# DELETE FROM users
+                    # SELECT * FROM staff
+      # SELECT * FROM roles
+                          # DELETE FROM users
 SELECT * FROM stores

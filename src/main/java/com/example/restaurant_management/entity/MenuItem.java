@@ -31,6 +31,10 @@ public class MenuItem extends AbstractEntity<Long> {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Enumerated(EnumType.STRING)
+    @Column
+    private com.example.restaurant_management.common.enums.MenuItemAvailability availability = com.example.restaurant_management.common.enums.MenuItemAvailability.AVAILABLE;
+
     @Column(nullable = false, length = 20)
     private String status;
 
