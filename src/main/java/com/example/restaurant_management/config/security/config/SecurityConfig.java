@@ -39,7 +39,9 @@ public class SecurityConfig {
 
             // thêm endpoint upload file
             "/api/files/upload",
-            "/storage/**" // để frontend truy cập file tĩnh
+            "/storage/**", // để frontend truy cập file tĩnh
+
+            "/ws/**"
     };
 
 
