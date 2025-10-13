@@ -6,5 +6,6 @@ import lombok.Builder;
 public record TokenResponse(
         String accessToken,
         String refreshToken,
-        Long expiresIn
+        Long expiresIn,
+        String registrationToken
 ){}

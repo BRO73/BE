@@ -52,30 +52,31 @@ public class CustomerAuthService {
             if (phoneNumber == null || phoneNumber.isBlank()) {
                 throw new RuntimeException("Firebase token không có phoneNumber.");
             }
-
             String normalizedPhone = normalizeToLocalVN(phoneNumber);
 
             Customer customer = customerRepository.findByPhoneNumber(normalizedPhone)
-                    .orElseGet(() -> {
-                        Customer c = Customer.builder()
-                                .phoneNumber(normalizedPhone)
-                                .build();
-                        return customerRepository.save(c);
-                    });
+                    .orElseGet(() -> customerRepository.save(Customer.builder().phoneNumber(normalizedPhone).build()));
 
-            if (customer.getUser() == null) {
-                throw new RestaurantException(ErrorEnum.USER_NOT_FOUND);
+            if (customer.getUser() != null) {
+                return TokenResponse.builder()
+                        .accessToken(generateJwt(ClaimConstant.ACCESS_TOKEN, normalizedPhone))
+                        .refreshToken(generateJwt(ClaimConstant.REFRESH_TOKEN, normalizedPhone))
+                        .expiresIn(System.currentTimeMillis() + jwtExpiration)
+                        .build();
+            } else {
+                // Nếu User chưa tồn tại -> người dùng mới -> cấp Registration Token
+                return TokenResponse.builder()
+                        .registrationToken(generateRegistrationToken(normalizedPhone))
+                        .expiresIn(System.currentTimeMillis() + 900000L) // Cấp token tạm thời 15 phút
+                        .build();
             }
 
-            return TokenResponse.builder()
-                    .accessToken(generateJwt(ClaimConstant.ACCESS_TOKEN, normalizedPhone))
-                    .refreshToken(generateJwt(ClaimConstant.REFRESH_TOKEN, normalizedPhone))
-                    .expiresIn(System.currentTimeMillis() + jwtExpiration)
-                    .build();
         } catch (Exception e) {
+            // Lỗi này giờ chỉ xảy ra khi Firebase token thật sự không hợp lệ
             throw new RuntimeException("Firebase token không hợp lệ hoặc đã hết hạn.", e);
         }
     }
+
 
     @Transactional
     public TokenResponse registerCustomer(RegisterCustomerRequest request) {
@@ -117,6 +118,14 @@ public class CustomerAuthService {
                 .refreshToken(generateJwt(ClaimConstant.REFRESH_TOKEN, customer.getPhoneNumber()))
                 .expiresIn(System.currentTimeMillis() + jwtExpiration)
                 .build();
+    }
+
+    private String generateRegistrationToken(String phoneNumber) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("scope", "customer:register");
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(phoneNumber, null, List.of());
+        return jwtService.generateToken(claims, authentication);
     }
 
     private String generateJwt(String tokenType, String phoneNumber) {

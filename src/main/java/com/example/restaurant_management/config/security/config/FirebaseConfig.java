@@ -16,16 +16,16 @@ public class FirebaseConfig {
     @Value("${firebase.admin.credentials.path}")
     private String serviceAccountPath;
 
-    @Value("${firebase.project.id}")
-    private String projectId;
 
     @PostConstruct
     public void init() throws IOException {
         if (FirebaseApp.getApps().isEmpty()) {
             try (FileInputStream serviceAccount = new FileInputStream(serviceAccountPath)) {
+                // SDK sẽ tự động đọc projectId từ file JSON
                 FirebaseOptions options = FirebaseOptions.builder()
                         .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                        .setProjectId(projectId)
+                        // XÓA DÒNG NÀY ĐI
+                        // .setProjectId(projectId)
                         .build();
                 FirebaseApp.initializeApp(options);
             }
