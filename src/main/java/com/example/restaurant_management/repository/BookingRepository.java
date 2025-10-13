@@ -18,4 +18,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     // Ví dụ: tìm booking theo số điện thoại khách hàng
     List<Booking> findByCustomerPhone(String customerPhone);
+
 }

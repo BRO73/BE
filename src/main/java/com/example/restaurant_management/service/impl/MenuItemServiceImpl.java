@@ -8,6 +8,8 @@ import com.example.restaurant_management.repository.MenuItemRepository;
 import com.example.restaurant_management.service.MenuItemService;
 import lombok.AllArgsConstructor;
 import org.mapstruct.Mapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -62,5 +64,11 @@ public class MenuItemServiceImpl implements MenuItemService {
     @Override
     public List<MenuItem> searchMenuItemsByName(String name) {
         return menuItemRepository.findByNameContainingIgnoreCase(name);
+    }
+
+    @Override
+    public Page<MenuItemResponse> getAllMenuItemsPaged(Pageable pageable) {
+        return menuItemRepository.findAll(pageable)
+                .map(menuItemMapper::toDTO);
     }
 }
