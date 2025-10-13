@@ -1,5 +1,6 @@
 package com.example.restaurant_management.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.*;
@@ -24,6 +25,7 @@ public class Booking extends AbstractEntity<Long> {
     @Column(name = "customer_phone", nullable = false, length = 15)
     private String customerPhone;
 
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @Column(name = "booking_time", nullable = false)
     private LocalDateTime bookingTime;
 

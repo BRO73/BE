@@ -41,7 +41,8 @@ public class SecurityConfig {
             "/api/files/upload",
             "/storage/**", // để frontend truy cập file tĩnh
 
-            "/ws/**"
+            "/ws/**",
+            "/api/bookings/**"
     };
 
 

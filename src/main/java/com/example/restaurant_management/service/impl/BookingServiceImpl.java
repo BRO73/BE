@@ -30,8 +30,13 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking createBooking(Booking booking) {
+        if (booking.getStatus() == null || booking.getStatus().isEmpty()) {
+            booking.setStatus("Pending");
+        }
+
         return bookingRepository.save(booking);
     }
+
 
     @Override
     public Booking updateBooking(Long id, Booking booking) {

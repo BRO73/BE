@@ -65,4 +65,9 @@ public class BookingController {
     public ResponseEntity<List<Booking>> getBookingsByCustomerPhone(@PathVariable String phone) {
         return ResponseEntity.ok(bookingService.getBookingsByCustomerPhone(phone));
     }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Booking>> getBookingsByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(bookingService.getBookingsByUserId(userId));
+    }
 }
