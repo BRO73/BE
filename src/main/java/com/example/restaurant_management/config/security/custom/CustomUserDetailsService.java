@@ -27,17 +27,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRoleRepository userRoleRepository;
     private final PermissionRepository permissionRepository;
     private final RolePermissionRepository rolePermissionRepository;
-    private final StoreRepository storeRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return null;
-    }
-
-    public UserDetails loadUserByUsernameAndStoreName(String username, String storeName) throws UsernameNotFoundException {
-        Store store = storeRepository.findByName(storeName)
-                .orElseThrow(() -> new RestaurantException(ErrorEnum.STORE_NOT_FOUND));
-        User user = userRepository.findStaffByUsernameAndStore(username, store).
+        User user = userRepository.findByUsername(username).
                 orElseThrow(() -> new RestaurantException(ErrorEnum.USER_NOT_FOUND));
 
         return UserDetailsImpl.builder()
@@ -46,7 +39,6 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .userId(user.getId())
                 .enabled(Boolean.FALSE.equals(user.isDeleted()))
                 .authorities(getUserAuthorities(user))
-                .storeName(store.getName())
                 .build();
     }
 

@@ -31,27 +31,16 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    @GetMapping("/my-store-users")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserResponse>> getAllUserInStore(
-            Authentication authentication
-    ) {
-        List<UserResponse> userResponseList = userService.getAllUserInStore(authentication);
-        return ResponseEntity.ok(userResponseList);
-    }
-
     @PostMapping
-    public ResponseEntity<UserResponse> createUser(@RequestBody CreateUserRequest createUserRequest,
-                                                   Authentication authentication) {
-        return ResponseEntity.ok(userService.createUser(createUserRequest, authentication));
+    public ResponseEntity<UserResponse> createUser(@RequestBody CreateUserRequest createUserRequest) {
+        return ResponseEntity.ok(userService.createUser(createUserRequest));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RestaurantResponse<UserResponse>> updateUser(
             @PathVariable Long id,
-            @RequestBody UpdateUserRequest request
-    ) {
+            @RequestBody UpdateUserRequest request) {
         return RestaurantResponse.ok(userService.updateUser(id, request));
     }
 

@@ -13,6 +13,5 @@ public record StaffResponse(
         String phoneNumber,
         boolean isActivated,
         LocalDateTime createdAt,
-        String storeName,
         Long userId
 ) {}
