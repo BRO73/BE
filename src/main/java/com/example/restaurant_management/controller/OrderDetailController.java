@@ -1,7 +1,9 @@
 package com.example.restaurant_management.controller;
 
-import com.example.restaurant_management.entity.OrderDetail;
+import com.example.restaurant_management.dto.request.OrderDetailRequest;
+import com.example.restaurant_management.dto.response.OrderDetailResponse;
 import com.example.restaurant_management.service.OrderDetailService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -10,35 +12,36 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/order-details")
+@RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN')")
 public class OrderDetailController {
 
     private final OrderDetailService orderDetailService;
 
-    public OrderDetailController(OrderDetailService orderDetailService) {
-        this.orderDetailService = orderDetailService;
-    }
-
     @GetMapping
-    public ResponseEntity<List<OrderDetail>> getAllOrderDetails() {
+    public ResponseEntity<List<OrderDetailResponse>> getAllOrderDetails() {
         return ResponseEntity.ok(orderDetailService.getAllOrderDetails());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OrderDetail> getOrderDetailById(@PathVariable Long id) {
+    public ResponseEntity<OrderDetailResponse> getOrderDetailById(@PathVariable Long id) {
         return orderDetailService.getOrderDetailById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ResponseEntity<OrderDetail> createOrderDetail(@RequestBody OrderDetail orderDetail) {
-        return ResponseEntity.ok(orderDetailService.createOrderDetail(orderDetail));
+    @PostMapping("/{orderId}")
+    public ResponseEntity<OrderDetailResponse> createOrderDetail(
+            @PathVariable Long orderId,
+            @RequestBody OrderDetailRequest request) {
+        return ResponseEntity.ok(orderDetailService.createOrderDetail(orderId, request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<OrderDetail> updateOrderDetail(@PathVariable Long id, @RequestBody OrderDetail orderDetail) {
-        return ResponseEntity.ok(orderDetailService.updateOrderDetail(id, orderDetail));
+    public ResponseEntity<OrderDetailResponse> updateOrderDetail(
+            @PathVariable Long id,
+            @RequestBody OrderDetailRequest request) {
+        return ResponseEntity.ok(orderDetailService.updateOrderDetail(id, request));
     }
 
     @DeleteMapping("/{id}")
@@ -48,17 +51,17 @@ public class OrderDetailController {
     }
 
     @GetMapping("/order/{orderId}")
-    public ResponseEntity<List<OrderDetail>> getOrderDetailsByOrder(@PathVariable Long orderId) {
+    public ResponseEntity<List<OrderDetailResponse>> getOrderDetailsByOrder(@PathVariable Long orderId) {
         return ResponseEntity.ok(orderDetailService.getOrderDetailsByOrder(orderId));
     }
 
     @GetMapping("/menu-item/{menuItemId}")
-    public ResponseEntity<List<OrderDetail>> getOrderDetailsByMenuItem(@PathVariable Long menuItemId) {
+    public ResponseEntity<List<OrderDetailResponse>> getOrderDetailsByMenuItem(@PathVariable Long menuItemId) {
         return ResponseEntity.ok(orderDetailService.getOrderDetailsByMenuItem(menuItemId));
     }
 
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<OrderDetail>> getOrderDetailsByStatus(@PathVariable String status) {
+    public ResponseEntity<List<OrderDetailResponse>> getOrderDetailsByStatus(@PathVariable String status) {
         return ResponseEntity.ok(orderDetailService.getOrderDetailsByStatus(status));
     }
 }

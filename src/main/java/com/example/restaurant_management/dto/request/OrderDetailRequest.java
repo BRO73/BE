@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderDetailRequest {
-    private Long orderId;
     private Long menuItemId;
     private Integer quantity;
     private BigDecimal priceAtOrder;

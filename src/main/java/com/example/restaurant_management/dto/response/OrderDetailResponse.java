@@ -1,6 +1,5 @@
 package com.example.restaurant_management.dto.response;
 
-import com.example.restaurant_management.entity.OrderDetail;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,5 +23,4 @@ public class OrderDetailResponse {
     private String notes;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
 }

@@ -354,11 +354,11 @@ INSERT INTO roles (name, description) VALUES
                                           ('CUSTOMER', 'Khách hàng');
 
 # SELECT * FROM customers;
-# SELECT * FROM stores WHERE name = 'Nhà hàng A - Quận 1';
 # SELECT * FROM users
 # SELECT * FROM staff
 # SELECT * FROM roles
-# DELETE FROM users where id = 2
+# SELECT * FROM tables
+# DELETE FROM users where id = 6
 # DELETE FROM customer where id = 4
 
 # SELECT * FROM roles;

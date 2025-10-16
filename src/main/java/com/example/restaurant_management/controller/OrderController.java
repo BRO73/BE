@@ -1,7 +1,9 @@
 package com.example.restaurant_management.controller;
 
-import com.example.restaurant_management.entity.Order;
+import com.example.restaurant_management.dto.request.OrderRequest;
+import com.example.restaurant_management.dto.response.OrderResponse;
 import com.example.restaurant_management.service.OrderService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,24 +14,21 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
+@RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN')")
 public class OrderController {
 
     private final OrderService orderService;
 
-    public OrderController(OrderService orderService) {
-        this.orderService = orderService;
-    }
-
     @GetMapping
-    @PreAuthorize("hasAnyRole('KITCHEN', 'CASHIER')")
-    public ResponseEntity<List<Order>> getAllOrders() {
+    @PreAuthorize("hasAnyRole('KITCHEN', 'CASHIER', 'ADMIN')")
+    public ResponseEntity<List<OrderResponse>> getAllOrders() {
         return ResponseEntity.ok(orderService.getAllOrders());
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('CUSTOMER', 'WAITSTAFF', 'KITCHEN')")
-    public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
+    public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long id) {
         return orderService.getOrderById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -37,14 +36,16 @@ public class OrderController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('CUSTOMER', 'WAITSTAFF')")
-    public ResponseEntity<Order> createOrder(@RequestBody Order order) {
-        return ResponseEntity.ok(orderService.createOrder(order));
+    public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest request) {
+        return ResponseEntity.ok(orderService.createOrder(request));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('CUSTOMER', 'WAITSTAFF', 'CASHIER')")
-    public ResponseEntity<Order> updateOrder(@PathVariable Long id, @RequestBody Order order) {
-        return ResponseEntity.ok(orderService.updateOrder(id, order));
+    public ResponseEntity<OrderResponse> updateOrder(
+            @PathVariable Long id,
+            @RequestBody OrderRequest request) {
+        return ResponseEntity.ok(orderService.updateOrder(id, request));
     }
 
     @DeleteMapping("/{id}")
@@ -56,25 +57,25 @@ public class OrderController {
 
     @GetMapping("/table/{tableId}")
     @PreAuthorize("hasAnyRole('KITCHEN', 'CASHIER')")
-    public ResponseEntity<List<Order>> getOrdersByTable(@PathVariable Long tableId) {
+    public ResponseEntity<List<OrderResponse>> getOrdersByTable(@PathVariable Long tableId) {
         return ResponseEntity.ok(orderService.getOrdersByTable(tableId));
     }
 
     @GetMapping("/status/{status}")
     @PreAuthorize("hasAnyRole('KITCHEN', 'CASHIER')")
-    public ResponseEntity<List<Order>> getOrdersByStatus(@PathVariable String status) {
+    public ResponseEntity<List<OrderResponse>> getOrdersByStatus(@PathVariable String status) {
         return ResponseEntity.ok(orderService.getOrdersByStatus(status));
     }
 
     @GetMapping("/staff/{staffId}")
     @PreAuthorize("hasAnyRole('KITCHEN', 'CASHIER')")
-    public ResponseEntity<List<Order>> getOrdersByStaff(@PathVariable Long staffId) {
+    public ResponseEntity<List<OrderResponse>> getOrdersByStaff(@PathVariable Long staffId) {
         return ResponseEntity.ok(orderService.getOrdersByStaff(staffId));
     }
 
     @GetMapping("/between")
     @PreAuthorize("hasAnyRole('KITCHEN', 'CASHIER')")
-    public ResponseEntity<List<Order>> getOrdersBetween(
+    public ResponseEntity<List<OrderResponse>> getOrdersBetween(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
         return ResponseEntity.ok(orderService.getOrdersBetween(start, end));
