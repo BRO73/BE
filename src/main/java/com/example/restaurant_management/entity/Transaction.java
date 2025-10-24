@@ -15,8 +15,8 @@ import java.time.LocalDateTime;
 public class Transaction extends AbstractEntity<Long> {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
-    private Order order;
+    @JoinColumn(name = "order_session_id", nullable = false)
+    private OrderSession orderSession;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cashier_user_id")

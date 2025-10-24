@@ -12,7 +12,6 @@ public interface TransactionService {
     Transaction createTransaction(Transaction transaction);
     Transaction updateTransaction(Long id, Transaction transaction);
     void deleteTransaction(Long id);
-    Optional<Transaction> getTransactionByOrder(Long orderId);
     Optional<Transaction> getTransactionByCode(String transactionCode);
     List<Transaction> getTransactionsByPaymentMethod(String paymentMethod);
     List<Transaction> getTransactionsByCashier(Long cashierId);

@@ -11,7 +11,6 @@ public interface ReviewService {
     Review createReview(Review review);
     Review updateReview(Long id, Review review);
     void deleteReview(Long id);
-    Optional<Review> getReviewByOrder(Long orderId);
     List<Review> getReviewsByRating(Byte rating);
     List<Review> getReviewsByMinRating(Byte minRating);
 }

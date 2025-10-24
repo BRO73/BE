@@ -144,8 +144,9 @@ CREATE TABLE tables (
                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
                         table_number VARCHAR(10) NOT NULL UNIQUE,
                         capacity INT NOT NULL,
-                        location_id BIGINT NOT NULL,
+                        locationId BIGINT NOT NULL, -- THAY ĐỔI: Khớp với @JoinColumn(name = "locationId")
                         status VARCHAR(20) NOT NULL DEFAULT 'Available',
+                        current_order_session_id BIGINT NULL UNIQUE, -- THAY ĐỔI: Thêm cột mới
                         created_by BIGINT,
                         updated_by BIGINT,
                         deleted_by BIGINT,
@@ -155,7 +156,7 @@ CREATE TABLE tables (
                         is_deleted TINYINT(1) DEFAULT 0,
                         is_activated TINYINT(1) DEFAULT 1,
 
-                        CONSTRAINT fk_table_location FOREIGN KEY (location_id) REFERENCES location(id)
+                        CONSTRAINT fk_table_location FOREIGN KEY (locationId) REFERENCES location(id) -- THAY ĐỔI: Cập nhật tên cột
 );
 
 CREATE TABLE promotions (
@@ -179,16 +180,48 @@ CREATE TABLE promotions (
                             is_activated TINYINT(1) DEFAULT 1
 );
 
+-- THAY ĐỔI: Thêm bảng ORDER_SESSIONS mới
+CREATE TABLE order_sessions (
+                                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                table_id BIGINT NOT NULL,
+                                staff_user_id BIGINT NULL COMMENT 'ID của user là nhân viên tạo session',
+                                customer_user_id BIGINT NULL COMMENT 'ID của user là khách hàng của session này',
+                                promotion_id BIGINT NULL,
+                                total_amount DECIMAL(12,2) NOT NULL DEFAULT '0.00',
+                                status VARCHAR(20) NOT NULL DEFAULT 'Active' COMMENT 'e.g., Active, Completed, Cancelled',
+                                notes TEXT,
+                                session_start_time DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
+                                session_end_time DATETIME(6) NULL,
+                                created_by BIGINT,
+                                updated_by BIGINT,
+                                deleted_by BIGINT,
+                                created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
+                                updated_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+                                deleted_at DATETIME(6) NULL,
+                                is_deleted TINYINT(1) DEFAULT 0,
+                                is_activated TINYINT(1) DEFAULT 1,
+                                CONSTRAINT fk_session_table FOREIGN KEY (table_id) REFERENCES tables(id),
+                                CONSTRAINT fk_session_staff_user FOREIGN KEY (staff_user_id) REFERENCES users(id),
+                                CONSTRAINT fk_session_customer_user FOREIGN KEY (customer_user_id) REFERENCES users(id),
+                                CONSTRAINT fk_session_promotion FOREIGN KEY (promotion_id) REFERENCES promotions(id)
+);
+
+-- THAY ĐỔI: Thêm khóa ngoại từ `tables` -> `order_sessions`
+ALTER TABLE tables
+    ADD CONSTRAINT fk_table_current_session
+        FOREIGN KEY (current_order_session_id) REFERENCES order_sessions(id) ON DELETE SET NULL;
+
+
+-- THAY ĐỔI: Cấu trúc bảng `orders`
 CREATE TABLE orders (
                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                        table_id BIGINT NOT NULL,
-                        staff_user_id BIGINT NULL COMMENT 'ID của user là nhân viên tạo order',
-                        customer_user_id BIGINT NULL COMMENT 'ID của user là khách hàng của order này',
-                        promotion_id BIGINT,
-                        total_amount DECIMAL(12,2) NOT NULL DEFAULT '0.00',
-                        status VARCHAR(20) NOT NULL DEFAULT 'New',
-                        notes TEXT,
-                        completed_at DATETIME(6),
+                        order_session_id BIGINT NOT NULL, -- THAY ĐỔI: Thêm cột này
+                        status VARCHAR(20) NOT NULL DEFAULT 'New', -- Giữ lại từ entity
+                        notes TEXT, -- Giữ lại từ entity
+
+    -- CÁC CỘT ĐÃ BỊ XÓA (đã chuyển lên order_sessions)
+    -- table_id, staff_user_id, customer_user_id, promotion_id, total_amount, completed_at
+
                         created_by BIGINT,
                         updated_by BIGINT,
                         deleted_by BIGINT,
@@ -197,12 +230,15 @@ CREATE TABLE orders (
                         deleted_at DATETIME(6) NULL,
                         is_deleted TINYINT(1) DEFAULT 0,
                         is_activated TINYINT(1) DEFAULT 1,
-                        CONSTRAINT fk_order_table FOREIGN KEY (table_id) REFERENCES tables(id),
-                        CONSTRAINT fk_order_staff_user FOREIGN KEY (staff_user_id) REFERENCES users(id),
-                        CONSTRAINT fk_order_customer_user FOREIGN KEY (customer_user_id) REFERENCES users(id),
-                        CONSTRAINT fk_order_promotion FOREIGN KEY (promotion_id) REFERENCES promotions(id)
+
+    -- THAY ĐỔI: Cập nhật/thêm khóa ngoại
+                        CONSTRAINT fk_order_session FOREIGN KEY (order_session_id) REFERENCES order_sessions(id) ON DELETE CASCADE
+
+    -- CÁC KHÓA NGOẠI ĐÃ BỊ XÓA
+    -- CONSTRAINT fk_order_table, fk_order_staff_user, fk_order_customer_user, fk_order_promotion
 );
 
+-- KHÔNG THAY ĐỔI: Bảng order_details đã khớp với entity
 CREATE TABLE order_details (
                                id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                order_id BIGINT NOT NULL,
@@ -225,7 +261,7 @@ CREATE TABLE order_details (
 
 CREATE TABLE transactions (
                               id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                              order_id BIGINT NOT NULL,
+                              order_id BIGINT NOT NULL, -- Chú ý: Có thể bạn sẽ muốn đổi cái này thành order_session_id
                               cashier_user_id BIGINT COMMENT 'ID của user là thu ngân',
                               amount_paid DECIMAL(12,2) NOT NULL,
                               payment_method VARCHAR(20) NOT NULL,
@@ -239,7 +275,7 @@ CREATE TABLE transactions (
                               deleted_at DATETIME(6) NULL,
                               is_deleted TINYINT(1) DEFAULT 0,
                               is_activated TINYINT(1) DEFAULT 1,
-                              CONSTRAINT fk_transaction_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+                              CONSTRAINT fk_transaction_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE, -- Cân nhắc đổi
                               CONSTRAINT fk_transaction_cashier_user FOREIGN KEY (cashier_user_id) REFERENCES users(id)
 );
 
@@ -269,7 +305,7 @@ CREATE TABLE bookings (
 
 CREATE TABLE reviews (
                          id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                         order_id BIGINT NOT NULL UNIQUE,
+                         order_id BIGINT NOT NULL UNIQUE, -- Chú ý: Có thể bạn sẽ muốn đổi cái này thành order_session_id
                          customer_user_id BIGINT NOT NULL,
                          rating_score TINYINT NOT NULL,
                          comment TEXT,
@@ -281,7 +317,7 @@ CREATE TABLE reviews (
                          deleted_at DATETIME(6) NULL,
                          is_deleted TINYINT(1) DEFAULT 0,
                          is_activated TINYINT(1) DEFAULT 1,
-                         CONSTRAINT fk_review_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+                         CONSTRAINT fk_review_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE, -- Cân nhắc đổi
                          CONSTRAINT fk_review_customer_user FOREIGN KEY (customer_user_id) REFERENCES users(id)
 );
 
@@ -320,11 +356,12 @@ VALUES
     ('Hải Phòng', 'Thành phố cảng'),
     ('Cần Thơ', 'Thành phố miền Tây');
 
-INSERT INTO tables (table_number, capacity, location_id, status)
+-- THAY ĐỔI: Cập nhật tên cột `location_id` -> `locationId`
+INSERT INTO tables (table_number, capacity, locationId, status)
 VALUES
-    ('T03', 2, '1', 'Available'),
-    ('T04', 8, '2', 'Occupied'),
-    ('T05', 4, '3', 'Available');
+    ('T03', 2, 1, 'Available'),
+    ('T04', 8, 2, 'Occupied'),
+    ('T05', 4, 3, 'Available');
 
 
 INSERT INTO menu_items (category_id, name, description, price, status) VALUES
@@ -352,14 +389,3 @@ INSERT INTO roles (name, description) VALUES
                                           ('KITCHEN_STAFF', 'Nhân viên bếp, chế biến món ăn'),
                                           ('CASHIER', 'Thu ngân, xử lý thanh toán'),
                                           ('CUSTOMER', 'Khách hàng');
-
-# SELECT * FROM customers;
-# SELECT * FROM stores WHERE name = 'Nhà hàng A - Quận 1';
-# SELECT * FROM users
-# SELECT * FROM staff
-# SELECT * FROM roles
-# DELETE FROM users where id = 2
-# DELETE FROM customer where id = 4
-
-# SELECT * FROM roles;
-# SELECT * FROM user_roles;

@@ -47,12 +47,6 @@ public class TransactionController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/order/{orderId}")
-    public ResponseEntity<Transaction> getTransactionByOrder(@PathVariable Long orderId) {
-        return transactionService.getTransactionByOrder(orderId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
 
     @GetMapping("/code/{transactionCode}")
     public ResponseEntity<Transaction> getTransactionByCode(@PathVariable String transactionCode) {

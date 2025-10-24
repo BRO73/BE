@@ -44,10 +44,6 @@ public class TransactionServiceImpl implements TransactionService {
         transactionRepository.deleteById(id);
     }
 
-    @Override
-    public Optional<Transaction> getTransactionByOrder(Long orderId) {
-        return transactionRepository.findByOrderId(orderId);
-    }
 
     @Override
     public Optional<Transaction> getTransactionByCode(String transactionCode) {

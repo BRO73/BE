@@ -42,6 +42,10 @@ public class Promotion extends AbstractEntity<Long> {
     @Column(name = "usage_limit")
     private Integer usageLimit;
 
-    @OneToMany(mappedBy = "promotion", fetch = FetchType.LAZY)
-    private List<Order> orders = new ArrayList<>();
+    @OneToMany(
+            mappedBy = "promotion",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY
+    )
+    private List<OrderSession> orderSessions = new ArrayList<>();
 }

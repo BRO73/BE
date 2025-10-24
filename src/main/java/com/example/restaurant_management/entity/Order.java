@@ -17,23 +17,8 @@ import java.util.ArrayList;
 public class Order extends AbstractEntity<Long> {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "table_id", nullable = false)
-    private TableEntity table;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "staff_user_id")
-    private User staffUser;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_user_id")
-    private User customerUser;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "promotion_id")
-    private Promotion promotion;
-
-    @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
-    private BigDecimal totalAmount;
+    @JoinColumn(name = "order_session_id", nullable = false)
+    private OrderSession orderSession;
 
     @Column(nullable = false, length = 20)
     private String status;
@@ -41,15 +26,7 @@ public class Order extends AbstractEntity<Long> {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
-    @Column(name = "completed_at")
-    private LocalDateTime completedAt;
-
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderDetail> orderDetails = new ArrayList<>();
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Transaction> transactions = new ArrayList<>();
-
-    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Review review;
 }

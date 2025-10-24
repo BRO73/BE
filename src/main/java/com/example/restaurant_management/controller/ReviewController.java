@@ -45,13 +45,6 @@ public class ReviewController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/order/{orderId}")
-    public ResponseEntity<Review> getReviewByOrder(@PathVariable Long orderId) {
-        return reviewService.getReviewByOrder(orderId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
     @GetMapping("/rating/{rating}")
     public ResponseEntity<List<Review>> getReviewsByRating(@PathVariable Byte rating) {
         return ResponseEntity.ok(reviewService.getReviewsByRating(rating));

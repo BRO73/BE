@@ -29,12 +29,6 @@ public class User extends AbstractEntity<Long> implements Serializable {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Customer customer;
 
-    @OneToMany(mappedBy = "staffUser", fetch = FetchType.LAZY)
-    private List<Order> ordersAsStaff = new ArrayList<>();
-
-    @OneToMany(mappedBy = "customerUser", fetch = FetchType.LAZY)
-    private List<Order> ordersAsCustomer = new ArrayList<>();
-
     @OneToMany(mappedBy = "cashierUser", fetch = FetchType.LAZY)
     private List<Transaction> transactionsAsCashier = new ArrayList<>();
 

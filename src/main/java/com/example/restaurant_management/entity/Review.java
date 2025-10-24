@@ -13,8 +13,8 @@ import lombok.*;
 public class Review extends AbstractEntity<Long> {
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false, unique = true)
-    private Order order;
+    @JoinColumn(name = "order_session_id", nullable = false, unique = true) // 'name' là tên cột FK trong DB
+    private OrderSession orderSession;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_user_id", nullable = false)

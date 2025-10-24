@@ -44,11 +44,6 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public Optional<Review> getReviewByOrder(Long orderId) {
-        return reviewRepository.findByOrderId(orderId);
-    }
-
-    @Override
     public List<Review> getReviewsByRating(Byte rating) {
         return reviewRepository.findByRatingScore(rating);
     }
