@@ -36,10 +36,9 @@ public class SecurityConfig {
             "/api/menu-items/**",
             "/ping/**",
             "/api/users/**",
-
-            // thêm endpoint upload file
+            "/api/bookings/**",
             "/api/files/upload",
-            "/storage/**" // để frontend truy cập file tĩnh
+            "/storage/**"
     };
 
 

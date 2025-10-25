@@ -1,32 +1,35 @@
 package com.example.restaurant_management.dto.response;
 
-import com.example.restaurant_management.entity.Booking;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.example.restaurant_management.dto.response.CustomerSimpleResponse;
+import com.example.restaurant_management.dto.response.TableSimpleResponse;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Data
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class BookingResponse {
     private Long id;
-    private Long tableId;
-    private String tableNumber;
     private String customerName;
     private String customerPhone;
-    private LocalDateTime bookingTime;
-    private Integer numGuests;
-    private String status;
-    private String notes;
-    private Long staffId;
-    private String staffName;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private boolean deleted;
-    private boolean activated;
 
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime bookingTime;
+
+    private Integer numGuests;
+    private String notes;
+    private String status;
+
+    private TableSimpleResponse table;
+    private CustomerSimpleResponse customer;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime createdAt;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime updatedAt;
 }
