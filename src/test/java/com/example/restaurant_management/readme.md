@@ -61,7 +61,7 @@ xdg-open build/reports/jacoco/test/html/index.html 2>/dev/null || open build/rep
 - Common setup for entities and requests is reused across tests for efficiency.
 
 ## Coverage
-<img width="1197" height="511" alt="image" src="https://github.com/user-attachments/assets/75e01a81-609b-4df1-b010-303c3047ed98" />
+<img width="971" height="700" alt="image" src="https://github.com/user-attachments/assets/5e98f823-1adb-4ae5-a6cc-d597736e9faa" />
 
 
 # 📝 AI Prompt Log – BookingServiceImpl Test Suite
