@@ -27,6 +27,9 @@ public class OrderDetail extends AbstractEntity<Long> {
     @Column(name = "price_at_order", nullable = false, precision = 10, scale = 2)
     private BigDecimal priceAtOrder;
 
+    @Column(name = "amount_paid", nullable = false, precision = 10, scale = 2)
+    private BigDecimal amountPaid = BigDecimal.ZERO; // Tiền đã trả (default = 0)
+
     @Column(nullable = false, length = 20)
     private String status;
 

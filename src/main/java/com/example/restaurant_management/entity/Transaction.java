@@ -33,4 +33,8 @@ public class Transaction extends AbstractEntity<Long> {
 
     @Column(name = "transaction_code")
     private String transactionCode;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bill_id", nullable = false) // ĐỔI TỪ order_session_id
+    private Bill bill;
 }

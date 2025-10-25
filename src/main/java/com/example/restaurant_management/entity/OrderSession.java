@@ -35,9 +35,6 @@ public class OrderSession extends AbstractEntity<Long> {
     @Column(nullable = false, length = 20)
     private String status;
 
-    @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
-    private BigDecimal totalAmount;
-
     @OneToMany(mappedBy = "orderSession", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Order> orders = new ArrayList<>();
 
@@ -46,4 +43,7 @@ public class OrderSession extends AbstractEntity<Long> {
     
     @OneToOne(mappedBy = "orderSession", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Review review;
+
+    @OneToMany(mappedBy = "originatingSession", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Bill> generatedBills = new ArrayList<>();
 }
