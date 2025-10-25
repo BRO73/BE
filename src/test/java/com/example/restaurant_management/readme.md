@@ -60,6 +60,8 @@ xdg-open build/reports/jacoco/test/html/index.html 2>/dev/null || open build/rep
 - Business logic is tested in isolation; no real database calls occur.  
 - Common setup for entities and requests is reused across tests for efficiency.
 
+## Coverage
+<img width="1197" height="511" alt="image" src="https://github.com/user-attachments/assets/75e01a81-609b-4df1-b010-303c3047ed98" />
 
 
 # 📝 AI Prompt Log – BookingServiceImpl Test Suite
@@ -203,6 +205,11 @@ Ensure consistent setup and mocking (if applicable)
 Provide a short summary of test results (passed/failed count)
 Include a brief coverage summary (overall % and key files tested)
 ```
+
+<img width="1036" height="550" alt="image" src="https://github.com/user-attachments/assets/75ae69ea-0a2f-4a6a-9d01-7f71bd818b5b" />
+<img width="1073" height="617" alt="image" src="https://github.com/user-attachments/assets/7ba1c579-c824-4fec-b063-21aac7f95156" />
+<img width="1080" height="476" alt="image" src="https://github.com/user-attachments/assets/144b1e53-3561-44c4-8f6d-6a9552d59559" />
+
 
 ## Prompt 5 – Mock & Integration
 **Prompt Command:**  
