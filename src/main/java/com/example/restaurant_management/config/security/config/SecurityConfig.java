@@ -48,7 +48,7 @@ public class SecurityConfig {
 
         http.cors(corsConfigurer -> corsConfigurer.configurationSource(request -> {
             CorsConfiguration configuration = new CorsConfiguration();
-            configuration.setAllowedOriginPatterns(List.of("http://localhost:*", "https://fe-admin-jet.vercel.app/"));
+            configuration.setAllowedOriginPatterns(List.of("http://localhost:*", "https://fe-admin-jet.vercel.app/", "http://192.168.16.*:*"));
             configuration.setAllowedHeaders(
                     Arrays.asList("Accept", "Content-Type", "Authorization"));
             configuration.setAllowedMethods(
