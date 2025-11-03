@@ -23,7 +23,6 @@ CREATE TABLE users (
 CREATE TABLE staff (
                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
                        user_id BIGINT NULL UNIQUE,
-                       store_id BIGINT NOT NULL,
                        full_name VARCHAR(100) NOT NULL,
                        position VARCHAR(50),
                        phone_number VARCHAR(15) NULL UNIQUE,
@@ -354,12 +353,20 @@ INSERT INTO roles (name, description) VALUES
                                           ('CUSTOMER', 'Khách hàng');
 
 # SELECT * FROM customers;
-# SELECT * FROM stores WHERE name = 'Nhà hàng A - Quận 1';
 # SELECT * FROM users
 # SELECT * FROM staff
 # SELECT * FROM roles
 # DELETE FROM users where id = 2
 # DELETE FROM customer where id = 4
 
-# SELECT * FROM roles;
+# SELECT * FROM orders;
 # SELECT * FROM user_roles;
+# DESCRIBE users;
+#
+# DROP TABLE users;
+# DROP TABLE orders;
+# DROP TABLE order_details;
+# DROP TABLE user_roles;
+
+
+
