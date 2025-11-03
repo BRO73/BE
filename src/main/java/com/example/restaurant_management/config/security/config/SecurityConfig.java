@@ -38,7 +38,9 @@ public class SecurityConfig {
             "/api/users/**",
             "/api/bookings/**",
             "/api/files/upload",
-            "/storage/**"
+            "/storage/**",
+            "/api/locations",
+            "/api/elements"
     };
 
 
