@@ -17,6 +17,9 @@ public interface MenuItemService {
     List<MenuItem> getMenuItemsByCategory(Long categoryId);
     List<MenuItem> getMenuItemsByStatus(String status);
     List<MenuItem> searchMenuItemsByName(String name);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 9c63813bdcf9ae648609546908fa8614fab988c4
     Page<MenuItemResponse> getAllMenuItemsPaged(Pageable pageable);
 }
