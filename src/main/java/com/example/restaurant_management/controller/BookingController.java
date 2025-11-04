@@ -1,16 +1,14 @@
 package com.example.restaurant_management.controller;
 
-import com.example.restaurant_management.dto.request.BookingCreateRequest;
-import com.example.restaurant_management.dto.request.BookingStatusUpdateRequest;
-import com.example.restaurant_management.dto.request.BookingUpdateRequest;
+import com.example.restaurant_management.dto.request.BookingRequest;
 import com.example.restaurant_management.dto.response.BookingResponse;
 import com.example.restaurant_management.dto.response.TableAvailabilityResponse;
+import com.example.restaurant_management.entity.Booking;
 import com.example.restaurant_management.service.BookingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -43,7 +41,7 @@ public class BookingController {
     }
 
     @PostMapping
-    public ResponseEntity<BookingResponse> createBooking(@RequestBody BookingCreateRequest request) {
+    public ResponseEntity<BookingResponse> createBooking(@RequestBody BookingRequest request) {
         BookingResponse created = bookingService.createBooking(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -51,7 +49,7 @@ public class BookingController {
     @PutMapping("/{id}")
     public ResponseEntity<BookingResponse> updateBooking(
             @PathVariable Long id,
-            @RequestBody BookingUpdateRequest request) {
+            @RequestBody BookingRequest request) {
         BookingResponse updated = bookingService.updateBooking(id, request);
         return ResponseEntity.ok(updated);
     }
@@ -60,7 +58,7 @@ public class BookingController {
 //    @PreAuthorize("hasAnyRole('ADMIN','WAITSTAFF')")
     public ResponseEntity<BookingResponse> updateBookingStatus(
             @PathVariable Long id,
-            @RequestBody BookingStatusUpdateRequest request) {
+            @RequestBody BookingRequest request) {
         BookingResponse updated = bookingService.updateStatus(id, request.getStatus());
         return ResponseEntity.ok(updated);
     }
