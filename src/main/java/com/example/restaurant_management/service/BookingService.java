@@ -1,7 +1,6 @@
 package com.example.restaurant_management.service;
 
-import com.example.restaurant_management.dto.request.BookingCreateRequest;
-import com.example.restaurant_management.dto.request.BookingUpdateRequest;
+import com.example.restaurant_management.dto.request.BookingRequest;
 import com.example.restaurant_management.dto.response.BookingResponse;
 import com.example.restaurant_management.dto.response.TableAvailabilityResponse;
 
@@ -10,9 +9,9 @@ import java.util.List;
 
 public interface BookingService {
 
-    BookingResponse createBooking(BookingCreateRequest request);
+    BookingResponse createBooking(BookingRequest request);
 
-    BookingResponse updateBooking(Long id, BookingUpdateRequest request);
+    BookingResponse updateBooking(Long id, BookingRequest request);
 
 
     void deleteBooking(Long id);

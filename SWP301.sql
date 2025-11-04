@@ -394,4 +394,10 @@ CREATE TABLE floor_elements (
 );
 
 SELECT * FROM tables;
+ALTER TABLE bookings
+    ADD customer_email VARCHAR(100) NOT NULL DEFAULT '';
 
+DESC customers;
+
+
+ALTER TABLE customers MODIFY user_id BIGINT NULL;
