@@ -3,7 +3,7 @@ package com.example.restaurant_management.mapper;
 import com.example.restaurant_management.dto.request.BookingCreateRequest;
 import com.example.restaurant_management.dto.request.BookingUpdateRequest;
 import com.example.restaurant_management.dto.response.BookingResponse;
-import com.example.restaurant_management.dto.response.CustomerSimpleResponse;
+import com.example.restaurant_management.dto.response.CustomerResponse;
 import com.example.restaurant_management.dto.response.TableSimpleResponse;
 import com.example.restaurant_management.entity.Booking;
 import com.example.restaurant_management.entity.TableEntity;
@@ -50,9 +50,9 @@ public class BookingMapper {
         }
 
         if (booking.getCustomerUser() != null) {
-            builder.customer(CustomerSimpleResponse.builder()
-                    .id(booking.getCustomerUser().getId())
-                    .username(booking.getCustomerUser().getUsername())
+            builder.customer(CustomerResponse.builder()
+                    .userId(booking.getCustomerUser().getId())
+                    .fullName(booking.getCustomerUser().getUsername())
                     .build());
         }
 

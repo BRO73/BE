@@ -1,7 +1,5 @@
 package com.example.restaurant_management.dto.response;
 
-import com.example.restaurant_management.dto.response.CustomerSimpleResponse;
-import com.example.restaurant_management.dto.response.TableSimpleResponse;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
@@ -25,7 +23,7 @@ public class BookingResponse {
     private String status;
 
     private TableSimpleResponse table;
-    private CustomerSimpleResponse customer;
+    private CustomerResponse customer;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
