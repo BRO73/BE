@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api/menu-items")
@@ -34,6 +36,11 @@ public class MenuItemController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/paged")
+    public ResponseEntity<Page<MenuItemResponse>> getAllMenuItemsPaged(
+            @PageableDefault(size = 10, page = 0) Pageable pageable) {
+        return ResponseEntity.ok(menuItemService.getAllMenuItemsPaged(pageable));
+    }
 
     @PostMapping
     public ResponseEntity<MenuItemResponse> createMenuItem(@RequestBody MenuItemRequest request) {
