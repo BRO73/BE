@@ -29,8 +29,9 @@ public class TableEntity extends AbstractEntity<Long> {
     @OneToMany(mappedBy = "table", fetch = FetchType.LAZY)
     private List<Order> orders = new ArrayList<>();
 
-    @OneToMany(mappedBy = "table", fetch = FetchType.LAZY)
-    private List<Booking> bookings = new ArrayList<>();
+    @ManyToMany(mappedBy = "tables")
+    private List<Booking> bookings;
+
 
     @OneToMany(mappedBy = "table", fetch = FetchType.LAZY)
     private List<SupportRequest> supportRequests = new ArrayList<>();
