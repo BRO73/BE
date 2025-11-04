@@ -8,7 +8,9 @@ import com.example.restaurant_management.service.MenuItemService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +26,11 @@ public class MenuItemController {
         return ResponseEntity.ok(menuItemService.getAllMenuItems());
     }
 
+    @GetMapping("/paged")
+    public ResponseEntity<Page<MenuItemResponse>> getAllMenuItemsPaged(
+            @PageableDefault(size = 10, page = 0) Pageable pageable) {
+        return ResponseEntity.ok(menuItemService.getAllMenuItemsPaged(pageable));
+    }
     @GetMapping("/{id}")
     public ResponseEntity<MenuItemResponse> getMenuItemById(@PathVariable Long id) {
         Optional<MenuItem> opt = menuItemService.getMenuItemById(id);
