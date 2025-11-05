@@ -37,10 +37,14 @@ public class SecurityConfig {
             "/ping/**",
             "/api/users/**",
             "/api/bookings/**",
+            "/api/bookings",
             "/api/files/upload",
             "/storage/**",
             "/api/orders",
             "/api/payments/webhook"
+            "/api/locations",
+            "/api/elements",
+            "/api/tables"
     };
 
 

@@ -9,6 +9,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.3'
 	id 'io.spring.dependency-management' version '1.1.7'
+//	id 'jacoco'
 }
 
 
@@ -17,7 +18,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(22)
+		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
 
@@ -31,6 +32,10 @@ dependencies {
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+//	testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+//	testImplementation 'org.mockito:mockito-core:5.5.0'
+//	testImplementation 'org.assertj:assertj-core:3.24.2'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 	implementation 'mysql:mysql-connector-java:8.0.33'
 
@@ -58,6 +63,30 @@ dependencies {
 
 	implementation 'com.google.firebase:firebase-admin:9.4.3'
 	implementation("vn.payos:payos-java:2.0.1")
+}
+
+//test {
+//	useJUnitPlatform()
+//	finalizedBy jacocoTestReport
+//}
+//
+//jacoco {
+//	toolVersion = "0.8.10"
+//}
+//
+//jacocoTestReport {
+//	reports {
+//		xml.required = true
+//		html.required = true
+//	}
+//}
+
+test {
+	useJUnitPlatform()
+	testLogging {
+		events "passed", "skipped", "failed", "standardOut", "standardError"
+		showStandardStreams = true
+	}
 }
 
 tasks.named('test') {

@@ -365,3 +365,41 @@ SELECT * FROM transactions
 SELECT * FROM order_details
 # SELECT * FROM roles;
 # SELECT * FROM user_roles;
+
+SHOW CREATE TABLE users;
+ALTER TABLE users MODIFY full_name VARCHAR(100) NULL;
+SELECT * FROM roles;
+
+DROP TABLE IF EXISTS floor_elements;
+
+CREATE TABLE floor_elements (
+                                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                x DOUBLE NOT NULL,
+                                y DOUBLE NOT NULL,
+                                width DOUBLE NOT NULL,
+                                height DOUBLE NOT NULL,
+                                rotation DOUBLE DEFAULT 0,
+                                color VARCHAR(20),
+                                type VARCHAR(20),
+                                label VARCHAR(100),
+
+
+    -- Audit fields
+                                created_by BIGINT,
+                                updated_by BIGINT,
+                                deleted_by BIGINT,
+                                created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
+                                updated_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+                                deleted_at DATETIME(6) NULL,
+                                is_deleted TINYINT(1) DEFAULT 0,
+                                is_activated TINYINT(1) DEFAULT 1
+);
+
+SELECT * FROM tables;
+ALTER TABLE bookings
+    ADD customer_email VARCHAR(100) NOT NULL DEFAULT '';
+
+DESC customers;
+
+
+ALTER TABLE customers MODIFY user_id BIGINT NULL;
