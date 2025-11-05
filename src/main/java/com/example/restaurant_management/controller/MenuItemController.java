@@ -46,13 +46,6 @@ public class MenuItemController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/paged")
-    public ResponseEntity<Page<MenuItemResponse>> getAllMenuItemsPaged(
-            @PageableDefault(size = 10, page = 0) Pageable pageable) {
-        return ResponseEntity.ok(menuItemService.getAllMenuItemsPaged(pageable));
-    }
-
-
     @PostMapping
     public ResponseEntity<MenuItemResponse> createMenuItem(@RequestBody MenuItemRequest request) {
         MenuItem menuItem = menuItemService.createMenuItem(request); // tạo entity

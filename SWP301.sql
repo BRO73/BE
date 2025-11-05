@@ -366,9 +366,9 @@ SELECT * FROM order_details
 # SELECT * FROM roles;
 # SELECT * FROM user_roles;
 
-SHOW CREATE TABLE users;
-ALTER TABLE users MODIFY full_name VARCHAR(100) NULL;
-SELECT * FROM roles;
+# SHOW CREATE TABLE users;
+# ALTER TABLE users MODIFY full_name VARCHAR(100) NULL;
+# SELECT * FROM roles;
 
 DROP TABLE IF EXISTS floor_elements;
 

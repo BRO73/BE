@@ -41,7 +41,7 @@ public class SecurityConfig {
             "/api/files/upload",
             "/storage/**",
             "/api/orders",
-            "/api/payments/webhook"
+            "/api/payments/webhook",
             "/api/locations",
             "/api/elements",
             "/api/tables"
