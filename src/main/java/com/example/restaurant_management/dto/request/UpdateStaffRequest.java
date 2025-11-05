@@ -1,5 +1,6 @@
 package com.example.restaurant_management.dto.request;
 
+import com.example.restaurant_management.common.enums.StaffRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
@@ -19,5 +20,7 @@ public record UpdateStaffRequest(
 
         Boolean isActivated,
 
-        String username
+        String username,
+
+        StaffRole role
 ) {}

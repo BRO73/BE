@@ -1,5 +1,6 @@
 package com.example.restaurant_management.entity;
 
+import com.example.restaurant_management.common.enums.StaffRole;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,5 +27,13 @@ public class Staff extends AbstractEntity<Long> {
 
     @Column(name = "phone_number", unique = true, length = 15)
     private String phoneNumber;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "position", length = 50)
+    private StaffRole role; // <-- NEW
+
+    // Staff.java
+    @Column(name = "store_id", nullable = false)
+    private Long storeId;
 
 }

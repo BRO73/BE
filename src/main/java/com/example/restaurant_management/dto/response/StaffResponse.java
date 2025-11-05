@@ -1,5 +1,6 @@
 package com.example.restaurant_management.dto.response;
 
+import com.example.restaurant_management.common.enums.StaffRole;
 import lombok.Builder;
 
 import java.time.LocalDate;
@@ -13,5 +14,6 @@ public record StaffResponse(
         String phoneNumber,
         boolean isActivated,
         LocalDateTime createdAt,
-        Long userId
+        Long userId,
+        StaffRole role
 ) {}

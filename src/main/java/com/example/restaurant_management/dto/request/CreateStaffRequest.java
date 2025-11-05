@@ -1,7 +1,9 @@
 package com.example.restaurant_management.dto.request;
 
+import com.example.restaurant_management.common.enums.StaffRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record CreateStaffRequest(
 
@@ -13,6 +15,10 @@ public record CreateStaffRequest(
         String email,
 
         @NotBlank
-        String phoneNumber
+        String phoneNumber,
+
+        StaffRole role,
+
+        @NotNull Long storeId
 
 ) {}

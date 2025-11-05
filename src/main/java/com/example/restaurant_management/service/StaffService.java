@@ -10,12 +10,16 @@ import org.springframework.security.core.Authentication;
 import java.util.List;
 
 public interface StaffService {
-    User updateStaffInfo(String username, UpdateStaffRequest request);
-    UserProfileResponse getProfile(Authentication authentication);
-
-    StaffResponse createStaff(CreateStaffRequest createStaffRequest, Authentication authentication);
 
     List<StaffResponse> getAllStaffInStore(Authentication authentication);
 
-    StaffResponse updateStaff(Long staffId, UpdateStaffRequest updateStaffRequest, Authentication authentication);
+    StaffResponse createStaff(CreateStaffRequest createStaffRequest, Authentication authentication);
+
+    StaffResponse updateStaff(Long staffId, UpdateStaffRequest request, Authentication authentication);
+
+    UserProfileResponse getProfile(Authentication authentication);
+
+    User updateStaffInfo(String username, UpdateStaffRequest request);
+
+    void deleteStaff(Long staffId, Authentication authentication);
 }
