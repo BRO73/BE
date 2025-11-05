@@ -36,6 +36,8 @@ public class SecurityConfig {
             "/api/menu-items/**",
             "/ping/**",
             "/api/users/**",
+            "/api/promotions",
+            "/api/reviews",
 
             // thêm endpoint upload file
             "/api/files/upload",
