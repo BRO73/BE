@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -22,12 +23,13 @@ public class BookingResponse {
     private String notes;
     private String status;
 
-    private TableSimpleResponse table;
-    private CustomerResponse customer;
+    private List<TableSimpleResponse> table;
+    private CustomerSimpleResponse customer;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
+    private String customerEmail;
 }
