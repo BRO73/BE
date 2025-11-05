@@ -154,7 +154,6 @@ CREATE TABLE tables (
                         deleted_at DATETIME(6) NULL,
                         is_deleted TINYINT(1) DEFAULT 0,
                         is_activated TINYINT(1) DEFAULT 1,
-
                         CONSTRAINT fk_table_location FOREIGN KEY (location_id) REFERENCES location(id)
 );
 
@@ -186,7 +185,7 @@ CREATE TABLE orders (
                         customer_user_id BIGINT NULL COMMENT 'ID của user là khách hàng của order này',
                         promotion_id BIGINT,
                         total_amount DECIMAL(12,2) NOT NULL DEFAULT '0.00',
-                        status VARCHAR(20) NOT NULL DEFAULT 'New',
+                        status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
                         notes TEXT,
                         completed_at DATETIME(6),
                         created_by BIGINT,
@@ -360,6 +359,9 @@ INSERT INTO roles (name, description) VALUES
 # SELECT * FROM roles
 # DELETE FROM users where id = 2
 # DELETE FROM customer where id = 4
-
+SELECT * FROM tables;
+SELECT * FROM orders
+SELECT * FROM transactions
+SELECT * FROM order_details
 # SELECT * FROM roles;
 # SELECT * FROM user_roles;

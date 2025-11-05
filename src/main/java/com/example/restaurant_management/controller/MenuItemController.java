@@ -6,6 +6,9 @@ import com.example.restaurant_management.entity.MenuItem;
 import com.example.restaurant_management.mapper.MenuItemMapper;
 import com.example.restaurant_management.service.MenuItemService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +35,12 @@ public class MenuItemController {
                 .map(menuItemMapper::toDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/paged")
+    public ResponseEntity<Page<MenuItemResponse>> getAllMenuItemsPaged(
+            @PageableDefault(size = 10, page = 0) Pageable pageable) {
+        return ResponseEntity.ok(menuItemService.getAllMenuItemsPaged(pageable));
     }
 
 

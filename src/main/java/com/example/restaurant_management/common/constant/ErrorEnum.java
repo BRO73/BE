@@ -19,7 +19,8 @@ public enum ErrorEnum {
     PASSWORD_INCORRECT(400, "password_incorrect", "Password is incorrect"),
     USER_DISABLED(400, "user_disabled", "User is disabled"),
     BOOKING_NOT_FOUND(400,"invalid_booking_found","Booking not found"),
-    STORE_NOT_FOUND(400,"invalid_store_found","Store not found");
+    STORE_NOT_FOUND(400,"invalid_store_found","Store not found"),
+    ROLE_NOT_FOUND(400,"invalid_role_found","Role not found"),;
     private final Integer httpStatus;
     private final String code;
     private final String message;
