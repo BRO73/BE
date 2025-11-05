@@ -3,12 +3,8 @@ package com.example.restaurant_management.entity;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.*;
-
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.ArrayList;
 
 @Getter
@@ -27,12 +23,11 @@ public class User extends AbstractEntity<Long> implements Serializable {
     @Column(name = "hashed_password")
     private String hashedPassword;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id")
-    private Store store;
-
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Staff staff;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Customer customer;
 
     @OneToMany(mappedBy = "staffUser", fetch = FetchType.LAZY)
     private List<Order> ordersAsStaff = new ArrayList<>();

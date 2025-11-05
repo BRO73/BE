@@ -37,13 +37,12 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRoleRepository userRoleRepository;
     private final PermissionRepository permissionRepository;
     private final RolePermissionRepository rolePermissionRepository;
-    private final StoreRepository storeRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository
-                .findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+
+        User user = userRepository.findByUsername(username).
+                orElseThrow(() -> new RestaurantException(ErrorEnum.USER_NOT_FOUND));
 
         return UserDetailsImpl.builder()
                 .username(user.getUsername())
@@ -51,25 +50,6 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .userId(user.getId())
                 .enabled(Boolean.FALSE.equals(user.isDeleted()))
                 .authorities(getUserAuthorities(user))
-                .storeName(null)
-                .build();
-    }
-
-    /** Dùng khi token có cả username + storeName (u_store_name hoặc u_storeName). */
-    public UserDetails loadUserByUsernameAndStoreName(String username, String storeName) throws UsernameNotFoundException {
-        Store store = storeRepository.findByName(storeName)
-                .orElseThrow(() -> new RestaurantException(ErrorEnum.STORE_NOT_FOUND));
-
-        User user = userRepository.findStaffByUsernameAndStore(username, store)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found in store: " + username));
-
-        return UserDetailsImpl.builder()
-                .username(user.getUsername())
-                .password(user.getHashedPassword())
-                .userId(user.getId())
-                .enabled(Boolean.FALSE.equals(user.isDeleted()))
-                .authorities(getUserAuthorities(user))
-                .storeName(store.getName())
                 .build();
     }
 

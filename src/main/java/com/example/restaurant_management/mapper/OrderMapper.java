@@ -1,0 +1,114 @@
+package com.example.restaurant_management.mapper;
+
+import com.example.restaurant_management.dto.request.OrderRequest;
+import com.example.restaurant_management.dto.request.OrderDetailRequest;
+import com.example.restaurant_management.dto.response.*;
+import com.example.restaurant_management.entity.MenuItem;
+import com.example.restaurant_management.entity.Order;
+import com.example.restaurant_management.entity.OrderDetail;
+import com.example.restaurant_management.entity.User;
+import com.example.restaurant_management.entity.TableEntity;
+import com.example.restaurant_management.repository.MenuItemRepository;
+import com.example.restaurant_management.repository.UserRepository;
+import com.example.restaurant_management.repository.TableRepository;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Component
+public class OrderMapper {
+    private final TableRepository tableRepository;
+    private final UserRepository userRepository;
+    private final MenuItemRepository menuItemRepository;
+
+    public OrderMapper(TableRepository tableRepository,
+                      UserRepository userRepository,
+                      MenuItemRepository menuItemRepository) {
+        this.tableRepository = tableRepository;
+        this.userRepository = userRepository;
+        this.menuItemRepository = menuItemRepository;
+    }
+
+    public Order toEntity(OrderRequest request) {
+        Order order = Order.builder()
+                .status("PENDING")
+                .notes(request.getNote())
+                .build();
+        order.setCreatedAt(LocalDateTime.now());
+
+        TableEntity table = tableRepository.findById(request.getTableId())
+                .orElseThrow(() -> new RuntimeException("Table not found"));
+        order.setTable(table);
+
+        List<OrderDetail> orderDetails = new ArrayList<>();
+        BigDecimal totalAmount = BigDecimal.ZERO;
+
+        for (OrderDetailRequest item : request.getItems()) {
+            MenuItem menuItem = menuItemRepository.findById(item.getMenuItemId())
+                    .orElseThrow(() -> new RuntimeException("Menu item not found"));
+
+            OrderDetail detail = new OrderDetail();
+            detail.setOrder(order);
+            detail.setMenuItem(menuItem);
+            detail.setQuantity(item.getQuantity());
+            detail.setStatus("PENDING");
+            detail.setNotes(item.getSpecialRequirements());
+            detail.setPriceAtOrder(menuItem.getPrice());
+
+            totalAmount = totalAmount.add(menuItem.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+            orderDetails.add(detail);
+        }
+
+        order.setOrderDetails(orderDetails);
+        order.setTotalAmount(totalAmount);
+
+        return order;
+    }
+
+    public OrderResponse toResponse(Order order) {
+        OrderResponse response = new OrderResponse();
+        response.setId(order.getId());
+        response.setStatus(order.getStatus());
+        response.setTotalAmount(order.getTotalAmount());
+        response.setNote(order.getNotes());
+
+        TableResponse tableResponse = new TableResponse();
+        tableResponse.setId(order.getTable().getId());
+        tableResponse.setTableNumber(order.getTable().getTableNumber());
+        tableResponse.setCapacity(order.getTable().getCapacity());
+        response.setTable(tableResponse);
+
+        if (order.getStaffUser() != null) {
+            StaffResponse staffResponse = new StaffResponse();
+            staffResponse.setId(order.getStaffUser().getId());
+            staffResponse.setName(order.getStaffUser().getUsername());
+            response.setStaff(staffResponse);
+        }
+
+        List<OrderDetailResponse> items = order.getOrderDetails().stream()
+                .map(detail -> {
+                    OrderDetailResponse itemResponse = new OrderDetailResponse();
+                    itemResponse.setId(detail.getId());
+
+                    MenuItemResponse menuItemResponse = new MenuItemResponse();
+                    menuItemResponse.setId(detail.getMenuItem().getId());
+                    menuItemResponse.setName(detail.getMenuItem().getName());
+                    menuItemResponse.setPrice(detail.getPriceAtOrder());
+
+                    itemResponse.setMenuItem(menuItemResponse);
+                    itemResponse.setQuantity(detail.getQuantity());
+                    itemResponse.setPrice(detail.getPriceAtOrder());
+                    itemResponse.setSpecialRequirements(detail.getNotes());
+                    return itemResponse;
+                })
+                .collect(Collectors.toList());
+
+        response.setItems(items);
+
+        return response;
+    }
+}

@@ -6,29 +6,18 @@ USE SWP301;
 -- BẢNG LÕI
 -- ====================================================================================
 
-CREATE TABLE stores (
-                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                        name VARCHAR(100) NOT NULL UNIQUE,
-                        address VARCHAR(255),
-                        created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
-                        updated_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)
-);
-
 CREATE TABLE users (
                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
                        username VARCHAR(50) NULL COMMENT 'Chỉ cho staff',
                        hashed_password VARCHAR(255) NULL COMMENT 'Chỉ cho staff',
                        is_activated TINYINT(1) DEFAULT 1,
                        is_deleted TINYINT(1) DEFAULT 0,
-                       store_id BIGINT NULL,
                        created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
                        updated_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
                        deleted_at DATETIME(6) NULL,
                        created_by BIGINT NULL,
                        updated_by BIGINT NULL,
-                       deleted_by BIGINT NULL,
-                       CONSTRAINT fk_user_store FOREIGN KEY (store_id) REFERENCES stores(id),
-                       CONSTRAINT uq_username_per_store UNIQUE (username, store_id)
+                       deleted_by BIGINT NULL
 );
 
 CREATE TABLE staff (
@@ -47,19 +36,15 @@ CREATE TABLE staff (
                        deleted_by BIGINT NULL,
                        is_deleted TINYINT(1) DEFAULT 0,
                        is_activated TINYINT(1) DEFAULT 1,
-                       CONSTRAINT fk_staff_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-                       CONSTRAINT fk_staff_store FOREIGN KEY (store_id) REFERENCES stores(id) -- <<< THÊM RÀNG BUỘC NÀY
+                       CONSTRAINT fk_staff_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE customers (
                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
                            full_name VARCHAR(100),
-                           address VARCHAR(255),
-                           date_of_birth DATE,
+                           user_id BIGINT NULL UNIQUE,
                            phone_number VARCHAR(15) NULL UNIQUE,
                            email VARCHAR(100) NULL UNIQUE,
-                           otp_code VARCHAR(10) NULL,
-                           otp_expiry_time DATETIME(6) NULL,
                            created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
                            updated_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
                            deleted_at DATETIME(6) NULL,
@@ -67,7 +52,8 @@ CREATE TABLE customers (
                            updated_by BIGINT NULL,
                            deleted_by BIGINT NULL,
                            is_deleted TINYINT(1) DEFAULT 0,
-                           is_activated TINYINT(1) DEFAULT 1
+                           is_activated TINYINT(1) DEFAULT 1,
+                           CONSTRAINT fk_customer_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE roles (
@@ -168,7 +154,6 @@ CREATE TABLE tables (
                         deleted_at DATETIME(6) NULL,
                         is_deleted TINYINT(1) DEFAULT 0,
                         is_activated TINYINT(1) DEFAULT 1,
-
                         CONSTRAINT fk_table_location FOREIGN KEY (location_id) REFERENCES location(id)
 );
 
@@ -200,7 +185,7 @@ CREATE TABLE orders (
                         customer_user_id BIGINT NULL COMMENT 'ID của user là khách hàng của order này',
                         promotion_id BIGINT,
                         total_amount DECIMAL(12,2) NOT NULL DEFAULT '0.00',
-                        status VARCHAR(20) NOT NULL DEFAULT 'New',
+                        status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
                         notes TEXT,
                         completed_at DATETIME(6),
                         created_by BIGINT,
@@ -328,10 +313,18 @@ INSERT INTO categories (name, description) VALUES
                                                ('Dessert', 'Sweet dishes to finish the meal'),
                                                ('Beverage', 'Drinks including soft drinks and juices');
 
-INSERT INTO stores (name, address) VALUES
-                                       ('Nhà hàng A - Quận 1', '123 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP.HCM'),
-                                       ('Nhà hàng B - Hoàn Kiếm', '45 Hàng Bông, Phường Hàng Bông, Quận Hoàn Kiếm, Hà Nội'),
-                                       ('Nhà hàng C - Quận 7', '789 Nguyễn Lương Bằng, Phường Tân Phú, Quận 7, TP.HCM');
+INSERT INTO location (name, description)
+VALUES
+    ('Đà Nẵng', 'Thành phố đáng sống'),
+    ('Hải Phòng', 'Thành phố cảng'),
+    ('Cần Thơ', 'Thành phố miền Tây');
+
+INSERT INTO tables (table_number, capacity, location_id, status)
+VALUES
+    ('T03', 2, '1', 'Available'),
+    ('T04', 8, '2', 'Occupied'),
+    ('T05', 4, '3', 'Available');
+
 
 
 INSERT INTO location (name, description)
@@ -369,10 +362,58 @@ INSERT INTO roles (name, description) VALUES
                                           ('ADMIN', 'Quản trị hệ thống, có toàn quyền'),
                                           ('WAITSTAFF', 'Nhân viên phục vụ bàn, nhận order từ khách'),
                                           ('KITCHEN_STAFF', 'Nhân viên bếp, chế biến món ăn'),
-                                          ('CASHIER', 'Thu ngân, xử lý thanh toán');
+                                          ('CASHIER', 'Thu ngân, xử lý thanh toán'),
+                                          ('CUSTOMER', 'Khách hàng');
+
+# SELECT * FROM customers;
 # SELECT * FROM stores WHERE name = 'Nhà hàng A - Quận 1';
 # SELECT * FROM users
-                    # SELECT * FROM staff
-      # SELECT * FROM roles
-                          # DELETE FROM users
-SELECT * FROM stores
+# SELECT * FROM staff
+# SELECT * FROM roles
+# DELETE FROM users where id = 2
+# DELETE FROM customer where id = 4
+SELECT * FROM tables;
+SELECT * FROM orders
+SELECT * FROM transactions
+SELECT * FROM order_details
+# SELECT * FROM roles;
+# SELECT * FROM user_roles;
+
+SHOW CREATE TABLE users;
+ALTER TABLE users MODIFY full_name VARCHAR(100) NULL;
+SELECT * FROM roles;
+
+DROP TABLE IF EXISTS floor_elements;
+
+CREATE TABLE floor_elements (
+                                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                x DOUBLE NOT NULL,
+                                y DOUBLE NOT NULL,
+                                width DOUBLE NOT NULL,
+                                height DOUBLE NOT NULL,
+                                rotation DOUBLE DEFAULT 0,
+                                color VARCHAR(20),
+                                type VARCHAR(20),
+                                label VARCHAR(100),
+
+
+    -- Audit fields
+                                created_by BIGINT,
+                                updated_by BIGINT,
+                                deleted_by BIGINT,
+                                created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
+                                updated_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+                                deleted_at DATETIME(6) NULL,
+                                is_deleted TINYINT(1) DEFAULT 0,
+                                is_activated TINYINT(1) DEFAULT 1
+);
+
+SELECT * FROM tables;
+ALTER TABLE bookings
+    ADD customer_email VARCHAR(100) NOT NULL DEFAULT '';
+
+DESC customers;
+
+
+ALTER TABLE customers MODIFY user_id BIGINT NULL;
+

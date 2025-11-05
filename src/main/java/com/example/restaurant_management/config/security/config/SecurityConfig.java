@@ -27,26 +27,43 @@ public class SecurityConfig {
 
     private final AuthenticationProvider authenticationProvider;
     private final JWTAuthenticationFilter jwtAuthenticationFilter;
-    private final AuthenticationEntryPoint internalAuthEntryPoint;
+
+    private static final String[] AUTH_WHITELIST = {
+            "/api/auth/**",
+            "/ping/**",
+            "/api/menu-items",
+            "/api/categories",
+            "/api/categories/**",
+            "/api/menu-items/**",
+            "/ping/**",
+            "/api/users/**",
+            "/api/bookings/**",
+            "/api/bookings",
+            "/api/files/upload",
+            "/storage/**",
+            "/api/orders",
+            "/api/payments/webhook"
+            "/api/locations",
+            "/api/elements",
+            "/api/tables"
+    };
+
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling(eh -> eh.authenticationEntryPoint(internalAuthEntryPoint))
-                .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/error").permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/**", "/ping/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/kitchen/**").permitAll()
-                        // DEV: chỉ cần đăng nhập để PATCH kitchen (không check role để loại trừ biến số)
-                        .requestMatchers(HttpMethod.PATCH, "/api/kitchen/**").authenticated()
-                        .anyRequest().authenticated()
-                );
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        http.cors(corsConfigurer -> corsConfigurer.configurationSource(request -> {
+            CorsConfiguration configuration = new CorsConfiguration();
+            configuration.setAllowedOriginPatterns(List.of("http://localhost:*",
+                    "https://fe-admin-jet.vercel.app/",
+                    "*"));
+            configuration.setAllowedHeaders(
+                    Arrays.asList("Accept", "Content-Type", "Authorization"));
+            configuration.setAllowedMethods(
+                    Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+            configuration.setAllowCredentials(true);
+            return configuration;
+        }));
 
         return http.build();
     }

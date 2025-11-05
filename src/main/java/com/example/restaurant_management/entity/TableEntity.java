@@ -20,7 +20,7 @@ public class TableEntity extends AbstractEntity<Long> {
     private Integer capacity;
 
     @ManyToOne
-    @JoinColumn(name = "location_id", nullable = false)
+    @JoinColumn(name = "locationId", nullable = false)
     private Location location;
 
     @Column(nullable = false)
@@ -29,8 +29,9 @@ public class TableEntity extends AbstractEntity<Long> {
     @OneToMany(mappedBy = "table", fetch = FetchType.LAZY)
     private List<Order> orders = new ArrayList<>();
 
-    @OneToMany(mappedBy = "table", fetch = FetchType.LAZY)
-    private List<Booking> bookings = new ArrayList<>();
+    @ManyToMany(mappedBy = "tables")
+    private List<Booking> bookings;
+
 
     @OneToMany(mappedBy = "table", fetch = FetchType.LAZY)
     private List<SupportRequest> supportRequests = new ArrayList<>();

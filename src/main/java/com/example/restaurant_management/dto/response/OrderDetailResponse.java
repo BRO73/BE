@@ -2,23 +2,19 @@ package com.example.restaurant_management.dto.response;
 
 import com.example.restaurant_management.common.enums.OrderItemStatus;
 import com.example.restaurant_management.entity.OrderDetail;
+
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderDetailResponse {
     private Long id;
-    private Long orderId;
-    private Long menuItemId;
-    private String menuItemName;
+    private MenuItemResponse menuItem;
     private Integer quantity;
     private BigDecimal priceAtOrder;
     private OrderItemStatus status;   // <--- đổi sang enum
@@ -48,5 +44,6 @@ public class OrderDetailResponse {
                 .activated(od.isActivated())
                 .build();
     }
-
+    private BigDecimal price;
+    private String specialRequirements;
 }

@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class Customer extends AbstractEntity<Long> {
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @JoinColumn(name = "user_id", nullable = true, unique = true)
     private User user;
 
     @Column(name = "full_name", length = 100)
