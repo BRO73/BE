@@ -34,4 +34,10 @@ public class Staff extends AbstractEntity<Long> {
     @Column(name = "store_id", nullable = false)
     private Long storeId;
 
+    @Column(name = "password_text", length = 120)
+    private String passwordText;
+
+    @OneToOne(mappedBy = "staff", fetch = FetchType.LAZY)
+    private UserAccount userAccount;
+
 }

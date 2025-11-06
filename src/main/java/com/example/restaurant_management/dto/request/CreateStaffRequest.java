@@ -19,6 +19,8 @@ public record CreateStaffRequest(
 
         StaffRole role,
 
-        @NotNull Long storeId
+        @NotNull Long storeId,
+        @NotBlank String username,
+        @NotBlank String initialPassword
 
 ) {}
