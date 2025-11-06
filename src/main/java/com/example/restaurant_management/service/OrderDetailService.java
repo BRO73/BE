@@ -1,18 +1,17 @@
 package com.example.restaurant_management.service;
 
-import com.example.restaurant_management.dto.request.OrderDetailRequest;
-import com.example.restaurant_management.dto.response.OrderDetailResponse;
+import com.example.restaurant_management.entity.OrderDetail;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface OrderDetailService {
-    List<OrderDetailResponse> getAllOrderDetails();
-    Optional<OrderDetailResponse> getOrderDetailById(Long id);
-    OrderDetailResponse createOrderDetail(Long orderId, OrderDetailRequest request);
-    OrderDetailResponse updateOrderDetail(Long id, OrderDetailRequest request);
+    List<OrderDetail> getAllOrderDetails();
+    Optional<OrderDetail> getOrderDetailById(Long id);
+    OrderDetail createOrderDetail(OrderDetail orderDetail);
+    OrderDetail updateOrderDetail(Long id, OrderDetail orderDetail);
     void deleteOrderDetail(Long id);
-    List<OrderDetailResponse> getOrderDetailsByOrder(Long orderId);
-    List<OrderDetailResponse> getOrderDetailsByMenuItem(Long menuItemId);
-    List<OrderDetailResponse> getOrderDetailsByStatus(String status);
+    List<OrderDetail> getOrderDetailsByOrder(Long orderId);
+    List<OrderDetail> getOrderDetailsByMenuItem(Long menuItemId);
+    List<OrderDetail> getOrderDetailsByStatus(String status);
 }

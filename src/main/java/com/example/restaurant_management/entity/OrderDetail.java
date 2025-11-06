@@ -27,9 +27,11 @@ public class OrderDetail extends AbstractEntity<Long> {
     @Column(name = "price_at_order", nullable = false, precision = 10, scale = 2)
     private BigDecimal priceAtOrder;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false)
     private String status;
 
     @Column(columnDefinition = "TEXT")
     private String notes;
+
+
 }
