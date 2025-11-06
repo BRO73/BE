@@ -1,7 +1,5 @@
 package com.example.restaurant_management.dto.response;
 
-import com.example.restaurant_management.dto.response.CustomerSimpleResponse;
-import com.example.restaurant_management.dto.response.TableSimpleResponse;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 

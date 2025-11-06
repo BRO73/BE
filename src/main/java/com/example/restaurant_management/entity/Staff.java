@@ -4,8 +4,6 @@ import com.example.restaurant_management.common.enums.StaffRole;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
 @AllArgsConstructor

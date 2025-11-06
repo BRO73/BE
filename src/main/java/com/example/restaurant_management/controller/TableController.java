@@ -4,7 +4,6 @@ import com.example.restaurant_management.dto.request.TableRequest;
 import com.example.restaurant_management.dto.response.TableResponse;
 import com.example.restaurant_management.service.TableService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -59,6 +58,7 @@ public class TableController {
     public ResponseEntity<List<TableResponse>> getTablesByStatus(@PathVariable String status) {
         return ResponseEntity.ok(tableService.getTablesByStatus(status));
     }
+
 
     @GetMapping("/capacity/{capacity}")
     public ResponseEntity<List<TableResponse>> getTablesByCapacity(@PathVariable Integer capacity) {

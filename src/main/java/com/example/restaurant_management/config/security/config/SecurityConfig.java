@@ -40,6 +40,8 @@ public class SecurityConfig {
             "/api/bookings",
             "/api/files/upload",
             "/storage/**",
+            "/api/orders",
+            "/api/payments/webhook",
             "/api/locations",
             "/api/elements",
             "/api/tables"
@@ -51,7 +53,9 @@ public class SecurityConfig {
 
         http.cors(corsConfigurer -> corsConfigurer.configurationSource(request -> {
             CorsConfiguration configuration = new CorsConfiguration();
-            configuration.setAllowedOriginPatterns(List.of("http://localhost:*", "https://fe-admin-jet.vercel.app/"));
+            configuration.setAllowedOriginPatterns(List.of("http://localhost:*",
+                    "https://fe-admin-jet.vercel.app/",
+                    "*"));
             configuration.setAllowedHeaders(
                     Arrays.asList("Accept", "Content-Type", "Authorization"));
             configuration.setAllowedMethods(

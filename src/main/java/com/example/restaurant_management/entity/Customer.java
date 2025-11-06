@@ -19,7 +19,7 @@ public class Customer extends AbstractEntity<Long> {
     private User user;
 
     @Column(name = "full_name", length = 100)
-    private String fullName;
+        private String fullName;
 
     private String address;
 
