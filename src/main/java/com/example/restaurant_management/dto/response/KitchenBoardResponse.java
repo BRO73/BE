@@ -19,7 +19,7 @@ public class KitchenBoardResponse {
     private Integer totalQuantity;
     private OrderItemStatus status;
     private boolean overtime;
-    private LocalDateTime serverTime;                 // <-- thêm field này
+    private String  serverTime;                 // <-- thêm field này
     private List<KitchenTicketResponse> items;
 
     public static KitchenBoardResponse from(List<OrderDetail> details) {

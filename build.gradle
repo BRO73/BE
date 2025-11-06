@@ -18,7 +18,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+		languageVersion = JavaLanguageVersion.of(22)
 	}
 }
 
@@ -63,6 +63,9 @@ dependencies {
 
 	implementation 'com.google.firebase:firebase-admin:9.4.3'
 	implementation("vn.payos:payos-java:2.0.1")
+
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework:spring-messaging'
 }
 
 //test {

@@ -8,25 +8,40 @@ import com.example.restaurant_management.repository.MenuItemRepository;
 import com.example.restaurant_management.repository.OrderDetailRepository;
 import com.example.restaurant_management.service.KitchenService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
 public class KitchenServiceImpl implements KitchenService {
 
+    private static final String TOPIC_BOARD = "/topic/kitchen/board";
+
     private final OrderDetailRepository repo;
     private final MenuItemRepository menuItemRepo;
+    private final SimpMessagingTemplate simp;
+
+    private int defaultLimit() {
+        return 200; // tùy bạn cấu hình
+    }
+
+    /** Gửi snapshot board lên topic. */
+    private void broadcastBoardSnapshot() {
+        KitchenBoardResponse snapshot = board(defaultLimit());
+        // Bắn snapshot ra topic
+        simp.convertAndSend(TOPIC_BOARD, snapshot);
+    }
 
     @Override
     @Transactional(readOnly = true)
     public KitchenBoardResponse board(int limit) {
         List<OrderDetail> all = repo.findAll();
-
         Comparator<OrderDetail> byCreated = Comparator.comparing(OrderDetail::getCreatedAt);
 
         List<KitchenTicketResponse> items = all.stream()
@@ -36,7 +51,7 @@ public class KitchenServiceImpl implements KitchenService {
                 .toList();
 
         return KitchenBoardResponse.builder()
-                .serverTime(LocalDateTime.now())
+                .serverTime(Instant.now().toString())
                 .items(items)
                 .build();
     }
@@ -51,6 +66,9 @@ public class KitchenServiceImpl implements KitchenService {
                 : com.example.restaurant_management.common.enums.MenuItemAvailability.UNAVAILABLE);
         menu.setUpdatedAt(LocalDateTime.now());
         menuItemRepo.save(menu);
+
+        // WS notify
+        broadcastBoardSnapshot();
     }
 
     /**
@@ -108,6 +126,9 @@ public class KitchenServiceImpl implements KitchenService {
                             od.setStatus(status);
                             od.setUpdatedAt(LocalDateTime.now());
                             repo.save(od);
+
+                            // WS notify trước khi return sớm
+                            broadcastBoardSnapshot();
                             return;
                         }
 
@@ -118,6 +139,9 @@ public class KitchenServiceImpl implements KitchenService {
 
                         // Xoá dòng DONE sau khi gộp
                         repo.delete(od);
+
+                        // WS notify trước khi return sớm
+                        broadcastBoardSnapshot();
                         return;
                     }
                     // Không có dòng phù hợp -> rơi xuống đổi trạng thái tại chỗ
@@ -132,6 +156,9 @@ public class KitchenServiceImpl implements KitchenService {
         od.setStatus(status);
         od.setUpdatedAt(LocalDateTime.now());
         repo.save(od);
+
+        // WS notify
+        broadcastBoardSnapshot();
     }
 
     @Override
@@ -144,13 +171,20 @@ public class KitchenServiceImpl implements KitchenService {
         if (cur == OrderItemStatus.CANCELED || cur == OrderItemStatus.SERVED) {
             throw new IllegalStateException("Invalid state to complete-one: " + cur);
         }
-        if (cur == OrderItemStatus.DONE) return;
+        if (cur == OrderItemStatus.DONE) {
+            // đã DONE rồi thì không đổi gì nhưng vẫn bắn snapshot để đồng bộ UI (tuỳ chọn)
+            broadcastBoardSnapshot();
+            return;
+        }
 
         int qty = src.getQuantity();
         if (qty <= 1) {
             src.setStatus(OrderItemStatus.DONE);
             src.setUpdatedAt(LocalDateTime.now());
             repo.save(src);
+
+            // WS notify rồi return
+            broadcastBoardSnapshot();
             return;
         }
 
@@ -166,7 +200,12 @@ public class KitchenServiceImpl implements KitchenService {
         readyOne.setPriceAtOrder(src.getPriceAtOrder());
         readyOne.setNotes(src.getNotes());
         readyOne.setStatus(OrderItemStatus.DONE);
+        readyOne.setCreatedAt(LocalDateTime.now());
+        readyOne.setUpdatedAt(LocalDateTime.now());
         repo.save(readyOne);
+
+        // WS notify
+        broadcastBoardSnapshot();
     }
 
     @Override
@@ -181,10 +220,18 @@ public class KitchenServiceImpl implements KitchenService {
         int qty = src.getQuantity();
         if (qty <= 1) {
             repo.delete(src);
+
+            // WS notify rồi return
+            broadcastBoardSnapshot();
             return;
         }
         src.setQuantity(qty - 1);
         src.setUpdatedAt(LocalDateTime.now());
         repo.save(src);
+
+        // WS notify
+        broadcastBoardSnapshot();
     }
+
+
 }

@@ -44,7 +44,8 @@ public class SecurityConfig {
             "/api/payments/webhook",
             "/api/locations",
             "/api/elements",
-            "/api/tables"
+            "/api/tables",
+            "/api/kitchen/**"
     };
 
 
@@ -59,7 +60,7 @@ public class SecurityConfig {
             configuration.setAllowedHeaders(
                     Arrays.asList("Accept", "Content-Type", "Authorization"));
             configuration.setAllowedMethods(
-                    Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+                    Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
             configuration.setAllowCredentials(true);
             return configuration;
         }));
@@ -69,18 +70,24 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable);
         http.logout(AbstractHttpConfigurer::disable);
 
+
         http.authorizeHttpRequests(
-                        authorize -> authorize.requestMatchers(AUTH_WHITELIST).permitAll()
+                        authorize -> authorize
+                                .requestMatchers("/ws/**").permitAll()
+                                .requestMatchers(AUTH_WHITELIST).permitAll()
                                 .anyRequest()
                                 .authenticated())
+
                 .exceptionHandling(
                         exceptionHandlingConfigurer -> exceptionHandlingConfigurer.authenticationEntryPoint(
                                 internalAuthEntryPoint)
                 )
+
                 .sessionManagement(
                         sessionManagementConfigurer -> sessionManagementConfigurer.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider);
+
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
