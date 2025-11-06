@@ -42,7 +42,8 @@ public class SecurityConfig {
             "/storage/**",
             "/api/locations",
             "/api/elements",
-            "/api/tables"
+            "/api/tables",
+            "/api/tables/day/**"
     };
 
 
