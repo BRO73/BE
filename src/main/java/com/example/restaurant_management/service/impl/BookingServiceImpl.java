@@ -13,6 +13,7 @@ import com.example.restaurant_management.repository.CustomerRepository;
 import com.example.restaurant_management.repository.TableRepository;
 import com.example.restaurant_management.repository.UserRepository;
 import com.example.restaurant_management.service.BookingService;
+import com.example.restaurant_management.util.EmailService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,34 +33,46 @@ public class BookingServiceImpl implements BookingService {
     private final UserRepository userRepository;
     private final BookingMapper bookingMapper;
     private final CustomerRepository customerRepository;
+    private final EmailService emailService;
 
+    // ======================================================
+    // ✅ HELPER: cập nhật trạng thái bàn theo tất cả booking trong ngày
+    // ======================================================
+    private void updateTableStatusByDay(TableEntity table, LocalDateTime date) {
+        List<Booking> bookingsToday = bookingRepository.findByTableAndDay(table.getId(), date);
+        String status = "Available";
 
+        for (Booking b : bookingsToday) {
+            if ("Confirmed".equalsIgnoreCase(b.getStatus())) {
+                status = "Reserved"; // ưu tiên Confirmed
+                break;
+            } else if ("Pending".equalsIgnoreCase(b.getStatus())) {
+                status = "Occupied";
+            }
+        }
+
+        table.setStatus(status);
+        tableRepository.save(table);
+    }
+
+    // ======================================================
+    // ✅ CREATE BOOKING
+    // ======================================================
     @Override
     public BookingResponse createBooking(BookingRequest request) {
-        // ✅ 1. Lấy danh sách bàn
         List<TableEntity> tables = new ArrayList<>();
-        for(TableEntity tableEntity : tableRepository.findAll()){
-            for(Long tbId : request.getTableIds()){
-                if(tbId == tableEntity.getId()) tables.add(tableEntity);
-            }
-        }
-        if (tables.isEmpty()) {
-            throw new EntityNotFoundException("No tables found for provided IDs");
-        }
-
-        // ✅ 2. Kiểm tra bàn có trống không
-        for (TableEntity table : tables) {
-            if (!"Available".equalsIgnoreCase(table.getStatus())) {
-                throw new IllegalStateException("Table " + table.getTableNumber() + " is currently not available!");
-            }
-
-            List<Booking> existing = bookingRepository.findByTableAndDay(table.getId(), request.getBookingTime());
-            if (!existing.isEmpty()) {
+        for (Long tbId : request.getTableIds()) {
+            TableEntity table = tableRepository.findById(tbId)
+                    .orElseThrow(() -> new EntityNotFoundException("Table not found with id: " + tbId));
+            // Check booking trùng trong ngày
+            List<Booking> bookingsToday = bookingRepository.findByTableAndDay(table.getId(), request.getBookingTime());
+            if (!bookingsToday.isEmpty()) {
                 throw new IllegalStateException("Table " + table.getTableNumber() + " already has a booking on this day!");
             }
+            tables.add(table);
         }
 
-        // ✅ 3. Tìm hoặc tạo Customer qua số điện thoại
+        // Tìm hoặc tạo Customer qua số điện thoại
         Customer customer = customerRepository.findByPhoneNumber(request.getCustomerPhone())
                 .orElseGet(() -> {
                     Customer newCustomer = Customer.builder()
@@ -70,21 +83,18 @@ public class BookingServiceImpl implements BookingService {
                     return customerRepository.save(newCustomer);
                 });
 
-        // ✅ 4. Lấy User gắn với Customer (nếu có)
         User customerUser = customer.getUser();
 
-        // ✅ 5. Map sang entity
+        // Map sang entity
         Booking booking = bookingMapper.toEntity(request, tables, customerUser);
         booking.setStatus(request.getStatus() != null ? request.getStatus() : "Pending");
 
         Booking saved = bookingRepository.save(booking);
 
-        // ✅ 6. Cập nhật trạng thái bàn
+        // Cập nhật trạng thái bàn theo ngày booking
         for (TableEntity table : tables) {
-            table.setStatus("Occupied");
-            tableRepository.save(table);
+            updateTableStatusByDay(table, request.getBookingTime());
         }
-
         return bookingMapper.toResponse(saved);
     }
 
@@ -96,50 +106,49 @@ public class BookingServiceImpl implements BookingService {
         Booking existing = bookingRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Booking not found"));
 
+        String oldStatus = existing.getStatus(); // 🔹 Lưu trạng thái cũ
+
         validateBookingRequest(request);
 
-        List<TableEntity> newTables = tableRepository.findAllById(request.getTableIds());
-        if (newTables.isEmpty()) {
-            throw new EntityNotFoundException("No tables found for the provided IDs");
+        List<TableEntity> newTables = new ArrayList<>();
+        for (Long tbId : request.getTableIds()) {
+            TableEntity table = tableRepository.findById(tbId)
+                    .orElseThrow(() -> new EntityNotFoundException("Table not found with id: " + tbId));
+            // Check booking trùng trong ngày, trừ chính booking này
+            List<Booking> bookingsToday = bookingRepository.findByTableAndDay(table.getId(), request.getBookingTime());
+            boolean conflict = bookingsToday.stream().anyMatch(b -> !b.getId().equals(id));
+            if (conflict) {
+                throw new IllegalStateException("Table " + table.getTableNumber() + " already has a booking on this day!");
+            }
+            newTables.add(table);
         }
 
-        // 🔹 Kiểm tra xung đột và tình trạng bàn
-        for (TableEntity table : newTables) {
-            boolean isCurrentTable = existing.getTables().contains(table);
-
-            if (!isCurrentTable && !"Available".equalsIgnoreCase(table.getStatus())) {
-                throw new IllegalStateException("Table " + table.getTableNumber() + " is currently not available!");
-            }
-
-            List<Booking> conflicts = bookingRepository.findByTableAndDay(table.getId(), request.getBookingTime());
-            if (!conflicts.isEmpty() && !conflicts.get(0).getId().equals(id)) {
-                throw new IllegalStateException("Table " + table.getTableNumber() + " already has a booking on that day");
-            }
-        }
-
-        // 🔹 Map dữ liệu mới từ request vào entity
+        // Map dữ liệu mới vào entity
         bookingMapper.updateEntityFromRequest(existing, request, newTables);
         Booking updated = bookingRepository.save(existing);
 
-        // 🔹 Xử lý trạng thái bàn cũ không còn trong booking -> Available
-        for (TableEntity oldTable : existing.getTables()) {
-            if (!newTables.contains(oldTable)) {
-                oldTable.setStatus("Available");
-                tableRepository.save(oldTable);
+        // 🔹 Gửi email nếu trạng thái chuyển từ Pending → Confirmed
+        if ("Pending".equalsIgnoreCase(oldStatus) && "Confirmed".equalsIgnoreCase(updated.getStatus())) {
+            String toEmail = updated.getCustomerName()!= null ? updated.getCustomerEmail(): null;
+
+            if (toEmail != null && !toEmail.isBlank()) {
+                emailService.sendBookingConfirmation(
+                        toEmail,
+                        updated.getCustomerName(),
+                        updated.getBookingTime().toLocalDate().toString(),
+                        updated.getBookingTime().toLocalTime().toString()
+                );
+            } else {
+                System.out.println("⚠️ Không thể gửi email vì khách hàng chưa có email.");
             }
         }
 
-        // 🔹 Cập nhật trạng thái bàn mới theo trạng thái booking
-        String newStatus = request.getStatus();
+        // 🔹 Cập nhật trạng thái bàn
+        for (TableEntity table : existing.getTables()) {
+            updateTableStatusByDay(table, request.getBookingTime());
+        }
         for (TableEntity table : newTables) {
-            if ("Confirmed".equalsIgnoreCase(newStatus)) {
-                table.setStatus("Reserved");
-            } else if ("Cancelled".equalsIgnoreCase(newStatus) || "Completed".equalsIgnoreCase(newStatus)) {
-                table.setStatus("Available");
-            } else {
-                table.setStatus("Occupied");
-            }
-            tableRepository.save(table);
+            updateTableStatusByDay(table, request.getBookingTime());
         }
 
         return bookingMapper.toResponse(updated);
@@ -158,13 +167,12 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalStateException("Cannot delete a completed booking");
         }
 
-        // Trả bàn về Available
-        for (TableEntity table : existing.getTables()) {
-            table.setStatus("Available");
-            tableRepository.save(table);
-        }
-
         bookingRepository.delete(existing);
+
+        // Cập nhật trạng thái bàn
+        for (TableEntity table : existing.getTables()) {
+            updateTableStatusByDay(table, existing.getBookingTime());
+        }
     }
 
     // ======================================================
@@ -174,6 +182,8 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponse updateStatus(Long id, String status) {
         Booking existing = bookingRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Booking not found"));
+
+        String oldStatus = existing.getStatus(); // 🔹 Lưu lại trạng thái cũ
 
         switch (status) {
             case "Pending":
@@ -188,16 +198,30 @@ public class BookingServiceImpl implements BookingService {
 
         Booking updated = bookingRepository.save(existing);
 
-        // Nếu bị Cancelled hoặc Completed → bàn Available
-        if ("Cancelled".equalsIgnoreCase(status) || "Completed".equalsIgnoreCase(status)) {
-            for (TableEntity table : existing.getTables()) {
-                table.setStatus("Available");
-                tableRepository.save(table);
+        // 🔹 Nếu chuyển từ Pending -> Confirmed thì gửi email xác nhận
+        if ("Pending".equalsIgnoreCase(oldStatus) && "Confirmed".equalsIgnoreCase(status)) {
+            String toEmail = existing.getCustomerEmail() != null ? existing.getCustomerEmail() : null;
+
+            if (toEmail != null && !toEmail.isBlank()) {
+                emailService.sendBookingConfirmation(
+                        toEmail,
+                        existing.getCustomerName(),
+                        existing.getBookingTime().toLocalDate().toString(),
+                        existing.getBookingTime().toLocalTime().toString()
+                );
+            } else {
+                System.out.println("⚠️ Không thể gửi email vì khách hàng chưa có email.");
             }
+        }
+
+        // 🔹 Cập nhật trạng thái bàn
+        for (TableEntity table : existing.getTables()) {
+            updateTableStatusByDay(table, existing.getBookingTime());
         }
 
         return bookingMapper.toResponse(updated);
     }
+
 
     // ======================================================
     // ✅ CHECK TABLE AVAILABILITY
@@ -208,13 +232,13 @@ public class BookingServiceImpl implements BookingService {
         TableEntity table = tableRepository.findById(tableId)
                 .orElseThrow(() -> new EntityNotFoundException("Table not found"));
 
-        List<Booking> sameDayBookings = bookingRepository.findByTableAndDay(tableId, bookingTime);
-        boolean available = sameDayBookings.isEmpty() && "Available".equalsIgnoreCase(table.getStatus());
+        List<Booking> bookingsToday = bookingRepository.findByTableAndDay(tableId, bookingTime);
+        boolean available = bookingsToday.isEmpty();
 
         return TableAvailabilityResponse.builder()
                 .tableId(tableId)
                 .available(available)
-                .message(available ? "Table is available" : "Table is already booked or occupied")
+                .message(available ? "Table is available" : "Table already has a booking today")
                 .build();
     }
 
