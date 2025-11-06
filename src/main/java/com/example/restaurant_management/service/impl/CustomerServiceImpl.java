@@ -67,7 +67,6 @@ public class CustomerServiceImpl implements CustomerService {
                 .fullName(customer.getFullName())
                 .email(customer.getEmail())
                 .phoneNumber(customer.getPhoneNumber())
-                .dateOfBirth(customer.getDateOfBirth())
                 .build();
     }
 }

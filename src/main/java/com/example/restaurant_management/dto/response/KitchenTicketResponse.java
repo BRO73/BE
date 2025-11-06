@@ -22,7 +22,7 @@ public class KitchenTicketResponse {
     private String dishName;
     private Integer quantity;
     private MenuItemAvailability availability;
-    private OrderItemStatus status;
+    private String status;
 
     private String notes;
     private String  orderedAt;

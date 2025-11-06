@@ -47,7 +47,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
             @Param("orderId") Long orderId,
             @Param("excludeId") Long excludeId,
             @Param("menuItemId") Long menuItemId,
-            @Param("statuses") List<OrderItemStatus> statuses,
+            @Param("statuses") List<String> statuses,
             @Param("priceAtOrder") BigDecimal priceAtOrder,
             @Param("notes") String notes
     );

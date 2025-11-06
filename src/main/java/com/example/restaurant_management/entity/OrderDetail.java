@@ -27,9 +27,8 @@ public class OrderDetail extends AbstractEntity<Long> {
     @Column(name = "price_at_order", nullable = false, precision = 10, scale = 2)
     private BigDecimal priceAtOrder;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private com.example.restaurant_management.common.enums.OrderItemStatus status = com.example.restaurant_management.common.enums.OrderItemStatus.PENDING;
+    private String status;
 
     @Column(columnDefinition = "TEXT")
     private String notes;
