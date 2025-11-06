@@ -33,4 +33,25 @@ public class Transaction extends AbstractEntity<Long> {
 
     @Column(name = "transaction_code")
     private String transactionCode;
+
+    @Column(name = "payment_status", length = 20)
+    private String paymentStatus;
+
+    @Column(name = "payment_code")
+    private Long paymentCode;
+
+    @Column(name = "payment_link_id")
+    private String paymentLinkId;
+
+    @Column(name = "checkout_url", length = 500)
+    private String checkoutUrl;
+
+    @Column(name = "qr_code", columnDefinition = "TEXT")
+    private String qrCode;
+
+    @Column(name = "payos_reference")
+    private String payosReference;
+
+    @Column(columnDefinition = "TEXT")
+    private String notes;
 }

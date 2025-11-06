@@ -17,5 +17,5 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
     List<Role> findAllByIdIn(List<Long> ids);
     Optional<Role> findByName(String name);
     @Query("SELECT r FROM Role r JOIN UserRole ur ON r.id = ur.roleId WHERE ur.userId = :userId")
-    Set<Role> findByUserId(@Param("userId") Long userId);
+    Optional<Set<Role>> findByUserId(@Param("userId") Long userId);
 }

@@ -148,7 +148,7 @@ public class CustomerAuthService {
                 .toList();
 
         claims.put(ClaimConstant.AUTH_USER_ROLES, roles);
-
+        claims.put(ClaimConstant.AUTH_USER_ID, ((UserDetailsImpl) user).getUserId());
         return jwtService.generateToken(claims, authentication);
     }
 

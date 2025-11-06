@@ -2,6 +2,7 @@ package com.example.restaurant_management.mapper;
 
 import com.example.restaurant_management.dto.request.BookingRequest;
 import com.example.restaurant_management.dto.response.BookingResponse;
+import com.example.restaurant_management.dto.response.CustomerResponse;
 import com.example.restaurant_management.dto.response.CustomerSimpleResponse;
 import com.example.restaurant_management.dto.response.TableSimpleResponse;
 import com.example.restaurant_management.entity.Booking;
@@ -63,6 +64,7 @@ public class BookingMapper {
                 .table(tableResponses)
                 .customer(customerResponse)
                 .createdAt(booking.getCreatedAt())
+
                 .updatedAt(booking.getUpdatedAt())
                 .customerEmail(booking.getCustomerEmail())
                 .build();

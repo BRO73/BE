@@ -1,21 +1,19 @@
 package com.example.restaurant_management.dto.request;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderDetailRequest {
-    private Long orderId;
+    @NotNull
     private Long menuItemId;
+
+    @NotNull
     private Integer quantity;
-    private BigDecimal priceAtOrder;
-    private String status;
-    private String notes;
+
+    private String specialRequirements;
 }
