@@ -359,10 +359,10 @@ INSERT INTO roles (name, description) VALUES
 # SELECT * FROM roles
 # DELETE FROM users where id = 2
 # DELETE FROM customer where id = 4
-SELECT * FROM tables;
-SELECT * FROM orders
-SELECT * FROM transactions
-SELECT * FROM order_details
+# SELECT * FROM tables;
+# SELECT * FROM orders
+# SELECT * FROM transactions
+# SELECT * FROM order_details
 # SELECT * FROM roles;
 # SELECT * FROM user_roles;
 
