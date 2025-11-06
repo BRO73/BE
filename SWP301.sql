@@ -23,6 +23,7 @@ CREATE TABLE users (
 CREATE TABLE staff (
                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
                        user_id BIGINT NULL UNIQUE,
+                       store_id BIGINT NOT NULL,
                        full_name VARCHAR(100) NOT NULL,
                        position VARCHAR(50),
                        phone_number VARCHAR(15) NULL UNIQUE,
@@ -153,7 +154,6 @@ CREATE TABLE tables (
                         deleted_at DATETIME(6) NULL,
                         is_deleted TINYINT(1) DEFAULT 0,
                         is_activated TINYINT(1) DEFAULT 1,
-
                         CONSTRAINT fk_table_location FOREIGN KEY (location_id) REFERENCES location(id)
 );
 
@@ -185,7 +185,7 @@ CREATE TABLE orders (
                         customer_user_id BIGINT NULL COMMENT 'ID của user là khách hàng của order này',
                         promotion_id BIGINT,
                         total_amount DECIMAL(12,2) NOT NULL DEFAULT '0.00',
-                        status VARCHAR(20) NOT NULL DEFAULT 'New',
+                        status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
                         notes TEXT,
                         completed_at DATETIME(6),
                         created_by BIGINT,
@@ -323,9 +323,7 @@ INSERT INTO tables (table_number, capacity, location_id, status)
 VALUES
     ('T03', 2, '1', 'Available'),
     ('T04', 8, '2', 'Occupied'),
-    ('T05', 4, '3', 'Available'),
-    ('T06', 4, '3', 'Available');
-
+    ('T05', 4, '3', 'Available');
 
 
 INSERT INTO menu_items (category_id, name, description, price, status) VALUES
@@ -353,6 +351,58 @@ INSERT INTO roles (name, description) VALUES
                                           ('KITCHEN', 'Nhân viên bếp, chế biến món ăn'),
                                           ('CASHIER', 'Thu ngân, xử lý thanh toán'),
                                           ('CUSTOMER', 'Khách hàng');
+
+# SELECT * FROM customers;
+# SELECT * FROM stores WHERE name = 'Nhà hàng A - Quận 1';
+# SELECT * FROM users
+# SELECT * FROM staff
+# SELECT * FROM roles
+# DELETE FROM users where id = 2
+# DELETE FROM customer where id = 4
+# SELECT * FROM tables;
+# SELECT * FROM orders
+# SELECT * FROM transactions
+# SELECT * FROM order_details
+# SELECT * FROM roles;
+# SELECT * FROM user_roles;
+
+# SHOW CREATE TABLE users;
+# ALTER TABLE users MODIFY full_name VARCHAR(100) NULL;
+# SELECT * FROM roles;
+
+DROP TABLE IF EXISTS floor_elements;
+
+CREATE TABLE floor_elements (
+                                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                x DOUBLE NOT NULL,
+                                y DOUBLE NOT NULL,
+                                width DOUBLE NOT NULL,
+                                height DOUBLE NOT NULL,
+                                rotation DOUBLE DEFAULT 0,
+                                color VARCHAR(20),
+                                type VARCHAR(20),
+                                label VARCHAR(100),
+
+
+    -- Audit fields
+                                created_by BIGINT,
+                                updated_by BIGINT,
+                                deleted_by BIGINT,
+                                created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
+                                updated_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+                                deleted_at DATETIME(6) NULL,
+                                is_deleted TINYINT(1) DEFAULT 0,
+                                is_activated TINYINT(1) DEFAULT 1
+);
+
+# SELECT * FROM tables;
+# ALTER TABLE bookings
+#     ADD customer_email VARCHAR(100) NOT NULL DEFAULT '';
+#
+# DESC customers;
+
+#
+# ALTER TABLE customers MODIFY user_id BIGINT NULL;
 
 
 INSERT INTO promotions
@@ -445,35 +495,5 @@ VALUES
 -- Order #4 (Hoàn tất, có khuyến mãi)
 (4, 4, 2, 85000.00, 'Completed', 'Cơm tấm sườn bì chả giảm giá 20%'),
 (4, 9, 1, 40000.00, 'Completed', 'Nước chanh sả kèm món chính');
-
-
-
-# SELECT * FROM customers;
-# SELECT * FROM users
-# SELECT * FROM staff
-# SELECT * FROM roles
-# SELECT * FROM orders
-# SELECT * FROM promotions
-# SELECT * FROM tables
-# SELECT * FROM reviews
-# SELECT * FROM order_details
-
-# DELETE FROM users where id = 6
-# DELETE FROM promotions where id = 1
-# DELETE FROM customer where id = 4
-# DELETE FROM user_roles where id = 4
-# DELETE FROM roles where id = 3
-
-# SELECT * FROM orders;
-# SELECT * FROM user_roles;
-# DESCRIBE users;
-
-# DROP TABLE users;
-# DROP TABLE orders;
-# DROP TABLE order_details;
-# DROP TABLE user_roles;
-# DROP TABLE transactions;
-# DROP TABLE reviews;
-
 
 

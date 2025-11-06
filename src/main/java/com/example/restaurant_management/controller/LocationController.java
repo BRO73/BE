@@ -14,7 +14,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/locations")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class LocationController {
 
     private final LocationService locationService;

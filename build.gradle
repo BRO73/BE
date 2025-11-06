@@ -62,7 +62,31 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
 	implementation 'com.google.firebase:firebase-admin:9.4.3'
+	implementation("vn.payos:payos-java:2.0.1")
+}
 
+//test {
+//	useJUnitPlatform()
+//	finalizedBy jacocoTestReport
+//}
+//
+//jacoco {
+//	toolVersion = "0.8.10"
+//}
+//
+//jacocoTestReport {
+//	reports {
+//		xml.required = true
+//		html.required = true
+//	}
+//}
+
+test {
+	useJUnitPlatform()
+	testLogging {
+		events "passed", "skipped", "failed", "standardOut", "standardError"
+		showStandardStreams = true
+	}
 }
 
 //test {

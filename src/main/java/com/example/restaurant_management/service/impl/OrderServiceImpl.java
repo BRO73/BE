@@ -1,167 +1,181 @@
 package com.example.restaurant_management.service.impl;
 
-import com.example.restaurant_management.dto.request.OrderDetailRequest;
+import com.example.restaurant_management.common.constant.ErrorEnum;
+import com.example.restaurant_management.common.exception.RestaurantException;
+import com.example.restaurant_management.dto.request.AddItemsRequest;
 import com.example.restaurant_management.dto.request.OrderRequest;
-import com.example.restaurant_management.dto.response.OrderDetailResponse;
 import com.example.restaurant_management.dto.response.OrderResponse;
 import com.example.restaurant_management.entity.*;
+import com.example.restaurant_management.mapper.OrderMapper;
 import com.example.restaurant_management.repository.*;
 import com.example.restaurant_management.service.OrderService;
-import lombok.RequiredArgsConstructor;
+import com.example.restaurant_management.util.SecurityUtils;
+import lombok.AllArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderDetailRepository orderDetailRepository;
-    private final MenuItemRepository menuItemRepository;
+    private final OrderMapper orderMapper;
     private final TableRepository tableRepository;
     private final UserRepository userRepository;
-
+    private final RoleRepository roleRepository;
+    private final MenuItemRepository menuItemRepository;
+    private final OrderDetailRepository orderDetailRepository;
     @Override
     public List<OrderResponse> getAllOrders() {
-        return orderRepository.findAll().stream().map(this::toResponse).toList();
+        return orderRepository.findAll().stream()
+                .map(orderMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<OrderResponse> getOrderById(Long id) {
-        return orderRepository.findById(id).map(this::toResponse);
-    }
-
-    @Transactional
-    @Override
-    public OrderResponse createOrder(OrderRequest request) {
-        TableEntity table = tableRepository.findById(request.getTableId())
-                .orElseThrow(() -> new RuntimeException("Table not found"));
-
-        User staff = userRepository.findById(request.getStaffId()).orElse(null);
-        User customer = userRepository.findById(request.getCustomerId()).orElse(null);
-
-        Order order = Order.builder()
-                .table(table)
-                .staffUser(staff)
-                .customerUser(customer)
-                .status(request.getStatus())
-                .notes(request.getNotes())
-                .totalAmount(BigDecimal.ZERO)
-                .build();
-
-        order = orderRepository.save(order);
-
-        BigDecimal total = BigDecimal.ZERO;
-        List<OrderDetailResponse> details = new ArrayList<>();
-
-        if (request.getOrderDetails() != null) {
-            for (OrderDetailRequest d : request.getOrderDetails()) {
-                MenuItem item = menuItemRepository.findById(d.getMenuItemId())
-                        .orElseThrow(() -> new RuntimeException("Menu item not found"));
-
-                BigDecimal lineTotal = item.getPrice().multiply(BigDecimal.valueOf(d.getQuantity()));
-                total = total.add(lineTotal);
-
-                OrderDetail od = OrderDetail.builder()
-                        .order(order)
-                        .menuItem(item)
-                        .quantity(d.getQuantity())
-                        .priceAtOrder(item.getPrice())
-                        .status("Pending")
-                        .notes(d.getNotes())
-                        .build();
-                od = orderDetailRepository.save(od);
-                details.add(toDetailResponse(od));
-            }
-        }
-
-        order.setTotalAmount(total);
-        order.setUpdatedAt(LocalDateTime.now());
-        orderRepository.save(order);
-
-        return toResponse(order, details);
-    }
-
-    @Transactional
-    @Override
-    public OrderResponse updateOrder(Long id, OrderRequest request) {
+    public OrderResponse getOrderById(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
+        return orderMapper.toResponse(order);
 
-        order.setNotes(request.getNotes());
-        order.setStatus(request.getStatus());
-        order.setUpdatedAt(LocalDateTime.now());
-        orderRepository.save(order);
+    }
+    @Override
+    @Transactional
+    public OrderResponse createOrder(OrderRequest request,
+                                     Authentication authentication) {
+        Long userId = SecurityUtils.getCurrentUserId(authentication);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RestaurantException(ErrorEnum.USER_NOT_FOUND));
 
-        return toResponse(order);
+        Order order = orderMapper.toEntity(request);
+        Set<Role> role = roleRepository.findByUserId(userId)
+                .orElseThrow(() -> new RestaurantException(ErrorEnum.ROLE_NOT_FOUND));
+        if (role.stream().anyMatch(r -> r.getName().equals("CUSTOMER"))) {
+            order.setCustomerUser(user);
+        } else if (role.stream().anyMatch(r -> r.getName().equals("WAITSTAFF"))) {
+            order.setStaffUser(user);
+        }
+
+        order = orderRepository.save(order);
+        return orderMapper.toResponse(order);
+    }
+
+    @Transactional
+    public OrderResponse updateOrder(Long id, OrderRequest request) {
+        if (!orderRepository.existsById(id)) {
+            throw new RuntimeException("Order not found");
+        }
+        Order order = orderMapper.toEntity(request);
+        order.setId(id);
+        order = orderRepository.save(order);
+        return orderMapper.toResponse(order);
     }
 
     @Override
     public void deleteOrder(Long id) {
+        if (!orderRepository.existsById(id)) {
+            throw new RuntimeException("Order not found");
+        }
         orderRepository.deleteById(id);
     }
 
     @Override
     public List<OrderResponse> getOrdersByTable(Long tableId) {
-        return orderRepository.findByTableId(tableId).stream().map(this::toResponse).toList();
+        return orderRepository.findByTableId(tableId).stream()
+                .map(orderMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<OrderResponse> getOrdersByStatus(String status) {
-        return orderRepository.findByStatus(status).stream().map(this::toResponse).toList();
+        return orderRepository.findByStatus(status).stream()
+                .map(orderMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<OrderResponse> getOrdersByStaff(Long staffId) {
-        return orderRepository.findByStaffUserId(staffId).stream().map(this::toResponse).toList();
+        return orderRepository.findByStaffUserId(staffId).stream()
+                .map(orderMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<OrderResponse> getOrdersBetween(LocalDateTime start, LocalDateTime end) {
-        return orderRepository.findByCreatedAtBetween(start, end).stream().map(this::toResponse).toList();
+        return orderRepository.findByCreatedAtBetween(start, end).stream()
+                .map(orderMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
-    // ✅ Mapper thủ công
-    private OrderResponse toResponse(Order order) {
-        List<OrderDetailResponse> details = orderDetailRepository.findByOrderId(order.getId())
-                .stream().map(this::toDetailResponse).toList();
-        return toResponse(order, details);
+    @Override
+    public List<OrderResponse> getActiveOrdersByTable(Long tableId) {
+        TableEntity table = tableRepository.findById(tableId)
+                .orElseThrow(() -> new RuntimeException("Table not found"));
+
+        return orderRepository.findByTableAndStatus(table, "PENDING").stream()
+                .map(orderMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
-    private OrderResponse toResponse(Order order, List<OrderDetailResponse> details) {
-        return OrderResponse.builder()
-                .id(order.getId())
-                .tableId(order.getTable() != null ? order.getTable().getId() : null)
-                .staffId(order.getStaffUser() != null ? order.getStaffUser().getId() : null)
-                .customerId(order.getCustomerUser() != null ? order.getCustomerUser().getId() : null)
-                .promotionId(order.getPromotion() != null ? order.getPromotion().getId() : null)
-                .status(order.getStatus())
-                .notes(order.getNotes())
-                .totalAmount(order.getTotalAmount())
-                .createdAt(order.getCreatedAt())
-                .updatedAt(order.getUpdatedAt())
-                .orderDetails(details)
-                .build();
-    }
+    @Transactional
+    @Override
+    public OrderResponse addItemsToOrder(Long orderId, AddItemsRequest request, Authentication authentication) {
+        // 1. Kiểm tra order tồn tại
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order không tồn tại với id: " + orderId));
 
-    private OrderDetailResponse toDetailResponse(OrderDetail d) {
-        return OrderDetailResponse.builder()
-                .id(d.getId())
-                .orderId(d.getOrder().getId())
-                .menuItemId(d.getMenuItem().getId())
-                .menuItemName(d.getMenuItem().getName())
-                .quantity(d.getQuantity())
-                .priceAtOrder(d.getPriceAtOrder())
-                .status(d.getStatus())
-                .notes(d.getNotes())
-                .createdAt(d.getCreatedAt())
-                .updatedAt(d.getUpdatedAt())
-                .build();
+        // 2. Kiểm tra order phải ở trạng thái PENDING (chưa gửi bếp hoặc đang chờ)
+        if (!order.getStatus().equals("PENDING")) {
+            throw new RuntimeException("Chỉ có thể thêm món vào order đang ở trạng thái PENDING");
+        }
+
+        // 3. Xử lý từng món trong request
+        for (AddItemsRequest.OrderDetailItem itemRequest : request.getItems()) {
+            // Lấy thông tin món ăn
+            MenuItem menuItem = menuItemRepository.findById(itemRequest.getMenuItemId())
+                    .orElseThrow(() -> new RuntimeException("MenuItem không tồn tại với id: " + itemRequest.getMenuItemId()));
+
+            // Kiểm tra món có available không
+            if (!menuItem.getStatus().equalsIgnoreCase("Available")) {
+                throw new RuntimeException("Món " + menuItem.getName() + " hiện không có sẵn");
+            }
+
+            // Tạo OrderDetail mới
+            OrderDetail orderDetail = new OrderDetail();
+            orderDetail.setOrder(order);
+            orderDetail.setMenuItem(menuItem);
+            orderDetail.setQuantity(itemRequest.getQuantity());
+            orderDetail.setPriceAtOrder(menuItem.getPrice()); // Lấy giá hiện tại
+            orderDetail.setNotes(itemRequest.getSpecialRequirements());
+            orderDetail.setStatus("PENDING"); // Món mới vào luôn ở trạng thái PENDING
+
+            // Lưu OrderDetail
+            orderDetailRepository.save(orderDetail);
+
+            // Thêm vào order
+            order.getOrderDetails().add(orderDetail);
+        }
+
+        // 4. Cập nhật tổng tiền của order
+        BigDecimal newTotal = order.getOrderDetails().stream()
+                .map(item -> item.getPriceAtOrder().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        order.setTotalAmount(newTotal);
+
+        // 5. Cập nhật thời gian
+        order.setUpdatedAt(LocalDateTime.now());
+
+        // 6. Lưu order
+        Order savedOrder = orderRepository.save(order);
+
+        // 7. Trả về response
+        return orderMapper.toResponse(savedOrder);
     }
 }

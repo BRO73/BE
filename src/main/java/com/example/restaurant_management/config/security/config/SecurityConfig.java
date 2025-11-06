@@ -21,6 +21,7 @@ import org.springframework.web.cors.CorsConfiguration;
 @RequiredArgsConstructor
 @EnableWebSecurity
 @EnableMethodSecurity
+
 public class SecurityConfig {
 
     private final InternalAuthEntryPoint internalAuthEntryPoint;
@@ -36,13 +37,18 @@ public class SecurityConfig {
             "/api/menu-items/**",
             "/ping/**",
             "/api/users/**",
+            "/api/bookings/**",
+            "/api/bookings",
             "/api/promotions/**",
             "/api/reviews/**",
             "/api/reports/**",
-
-            // thêm endpoint upload file
             "/api/files/upload",
-            "/storage/**" // để frontend truy cập file tĩnh
+            "/storage/**",
+            "/api/orders",
+            "/api/payments/webhook",
+            "/api/locations",
+            "/api/elements",
+            "/api/tables"
     };
 
 
@@ -51,7 +57,9 @@ public class SecurityConfig {
 
         http.cors(corsConfigurer -> corsConfigurer.configurationSource(request -> {
             CorsConfiguration configuration = new CorsConfiguration();
-            configuration.setAllowedOriginPatterns(List.of("http://localhost:*", "https://fe-admin-jet.vercel.app/", "http://192.168.16.*:*"));
+            configuration.setAllowedOriginPatterns(List.of("http://localhost:*",
+                    "https://fe-admin-jet.vercel.app/",
+                    "*"));
             configuration.setAllowedHeaders(
                     Arrays.asList("Accept", "Content-Type", "Authorization"));
             configuration.setAllowedMethods(

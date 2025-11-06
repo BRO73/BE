@@ -1,26 +1,28 @@
 package com.example.restaurant_management.service;
 
-import com.example.restaurant_management.entity.Booking;
+import com.example.restaurant_management.dto.request.BookingRequest;
+import com.example.restaurant_management.dto.response.BookingResponse;
+import com.example.restaurant_management.dto.response.TableAvailabilityResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 public interface BookingService {
 
-    List<Booking> getAllBookings();
+    BookingResponse createBooking(BookingRequest request);
 
-    Optional<Booking> getBookingById(Long id);
+    BookingResponse updateBooking(Long id, BookingRequest request);
 
-    Booking createBooking(Booking booking);
-
-    Booking updateBooking(Long id, Booking booking);
 
     void deleteBooking(Long id);
 
-    List<Booking> getBookingsByStatus(String status);
+    BookingResponse updateStatus(Long id, String status);
 
-    List<Booking> getBookingsBetween(LocalDateTime start, LocalDateTime end);
+    TableAvailabilityResponse isTableAvailable(Long tableId, LocalDateTime bookingTime);
 
-    List<Booking> getBookingsByCustomerPhone(String phone);
+    List<BookingResponse> getAllBookings();
+
+    List<BookingResponse> getBookingsByCustomer(Long customerUserId);
+
+    BookingResponse getBookingById(Long id);
 }

@@ -33,4 +33,12 @@ public class SecurityUtils {
         SecurityContextHolder.getContext().setAuthentication(auth);
 
     }
+
+    public static Long getCurrentUserId(Authentication authentication) {
+        if (authentication != null && authentication.getCredentials() instanceof CredentialPayload) {
+            CredentialPayload payload = (CredentialPayload) authentication.getCredentials();
+            return payload.getUserId();
+        }
+        return null;
+    }
 }
