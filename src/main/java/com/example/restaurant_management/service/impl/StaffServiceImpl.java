@@ -41,50 +41,47 @@ public class StaffServiceImpl implements StaffService {
     @Override
     @Transactional
     public StaffResponse createStaff(CreateStaffRequest req, Authentication authentication) {
-        // 0) Chuẩn hóa username (nếu không gửi thì lấy từ email; nếu vẫn trống thì phát sinh)
-        String username = (req.username() != null && !req.username().isBlank())
-                ? req.username().trim()
-                : usernameFromEmail(req.email());
+        try {
+            System.out.println("=== CREATE STAFF DEBUG ===");
+            System.out.println("Request role: " + req.role());
+            System.out.println("Authenticated user: " + authentication.getName());
+            System.out.println("User authorities: " + authentication.getAuthorities());
 
-        if (username == null || username.isBlank()) {
-            username = "user" + System.currentTimeMillis();
+            // 1) Tạo username từ email
+            String username = extractUsernameFromEmail(req.email());
+            String finalUsername = generateUniqueUsername(username);
+            System.out.println("Generated username: " + finalUsername);
+
+            // 2) Tạo User
+            User user = User.builder()
+                    .username(finalUsername)
+                    .hashedPassword(passwordEncoder.encode(req.initialPassword()))
+                    .build();
+            user = userRepository.save(user);
+            System.out.println("User created: " + user.getId());
+
+            // 3) Tạo Staff
+            Staff staff = Staff.builder()
+                    .fullName(req.fullName())
+                    .email(req.email())
+                    .phoneNumber(req.phoneNumber())
+                    .role(req.role() != null ? req.role() : StaffRole.WAITER)
+                    .storeId(req.storeId())
+                    .user(user)
+                    .passwordText(req.initialPassword())
+                    .build();
+
+            staff = staffRepository.save(staff);
+            System.out.println("Staff created with role: " + staff.getRole());
+
+            return toResponse(staff);
+
+        } catch (Exception e) {
+            System.out.println("ERROR in createStaff: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
-
-        // 1) Lấy mật khẩu khởi tạo (fallback "123456") + encode (KHÔNG BAO GIỜ null)
-        String rawInitPassword = (req.initialPassword() != null && !req.initialPassword().isBlank())
-                ? req.initialPassword()
-                : "123456";
-        String encoded = passwordEncoder.encode(rawInitPassword);
-
-        // (tuỳ chọn) chặn trùng username
-        if (userRepository.findByUsername(username).isPresent()) {
-            throw new RestaurantException("Username already exists: " + username);
-        }
-
-        // 2) Tạo User (username + hashed_password)
-        User user = User.builder()
-                .username(username)
-                .hashedPassword(encoded) // dùng encoded, không dùng req.initialPassword() nữa
-                .build();
-        user = userRepository.save(user);
-
-        // 3) Tạo Staff liên kết với User + LƯU plain password vào passwordText để FE prefill
-        Staff staff = Staff.builder()
-                .fullName(req.fullName())
-                .email(req.email())
-                .phoneNumber(req.phoneNumber())
-                .role(req.role() != null ? req.role() : StaffRole.WAITER)
-                .storeId(req.storeId())
-                .user(user)
-                .passwordText(rawInitPassword) // dùng rawInitPassword (đã fallback)
-                .build();
-
-        staff = staffRepository.save(staff);
-
-        // 4) map entity -> response
-        return toResponse(staff);
     }
-
 
     /** Cập nhật staff — cho phép đổi role, liên kết user theo username nếu được cung cấp */
     @Override
@@ -113,8 +110,9 @@ public class StaffServiceImpl implements StaffService {
 
     @Override
     public UserProfileResponse getProfile(Authentication authentication) {
-        CredentialPayload credentialPayload = (CredentialPayload) authentication.getCredentials();
+        CredentialPayload credentialPayload = (CredentialPayload) authentication.getPrincipal();
         Long userId = credentialPayload.getUserId();
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RestaurantException("User not found"));
 
@@ -123,6 +121,7 @@ public class StaffServiceImpl implements StaffService {
                 .username(user.getUsername())
                 .build();
     }
+
 
     /** Nếu vẫn cần method này ở nơi khác — giữ nguyên, hiện không encode password tại đây */
     @Override
@@ -163,11 +162,28 @@ public class StaffServiceImpl implements StaffService {
                 .createdAt(s.getCreatedAt())
                 .build();
     }
-    private String usernameFromEmail(String email) {
-        if (email == null || email.isBlank()) return null;
-        int at = email.indexOf('@');
-        String base = (at > 0 ? email.substring(0, at) : email);
-        String cleaned = base.replaceAll("[^a-zA-Z0-9._-]", "");
-        return cleaned.isBlank() ? null : cleaned;
+
+    private String extractUsernameFromEmail(String email) {
+        if (email == null || !email.contains("@")) {
+            throw new RestaurantException("Invalid email format");
+        }
+        return email.split("@")[0];
+    }
+
+    private String generateUniqueUsername(String baseUsername) {
+        String username = baseUsername;
+        int counter = 1;
+
+        // Kiểm tra username đã tồn tại chưa
+        while (userRepository.findByUsername(username).isPresent()) {
+            username = baseUsername + counter;
+            counter++;
+
+            // Giới hạn số lần thử để tránh vòng lặp vô hạn
+            if (counter > 100) {
+                throw new RestaurantException("Cannot generate unique username for: " + baseUsername);
+            }
+        }
+        return username;
     }
 }
