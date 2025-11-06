@@ -11,7 +11,7 @@ public class StaffMapper {
     public StaffResponse toResponse(Staff staff) {
         return StaffResponse.builder()
                 .id(staff.getId())
-                .fullName(staff.getFullName())
+                .name(staff.getFullName())
                 .email(staff.getEmail())
                 .phoneNumber(staff.getPhoneNumber())
                 .isActivated(true)
