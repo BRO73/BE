@@ -426,6 +426,27 @@ VALUES
     (11, 'Ngô Đức Phúc',     'Manager',    '0909567890', 'phuc.manager@example.com', 1, 1, 0, 1);
 
 
+INSERT INTO order_details (order_id, menu_item_id, quantity, price_at_order, status, notes)
+VALUES
+-- Order #1 (Khách gọi 2 món chính và 1 nước)
+(1, 3, 1, 95000.00, 'Completed', 'Phở bò đặc biệt cho khách A'),
+(1, 4, 1, 85000.00, 'Completed', 'Cơm tấm sườn bì chả cho khách A'),
+(1, 9, 1, 40000.00, 'Completed', 'Nước chanh sả kèm món chính'),
+
+-- Order #2 (Đang xử lý)
+(2, 5, 2, 80000.00, 'Processing', 'Bún chả Hà Nội cho bàn 2'),
+(2, 10, 1, 35000.00, 'Processing', 'Cà phê sữa đá cho bàn 2'),
+
+-- Order #3 (Hoàn tất)
+(3, 2, 1, 75000.00, 'Completed', 'Chả giò hải sản'),
+(3, 3, 1, 95000.00, 'Completed', 'Phở bò đặc biệt'),
+(3, 6, 1, 45000.00, 'Completed', 'Chè khúc bạch tráng miệng'),
+
+-- Order #4 (Hoàn tất, có khuyến mãi)
+(4, 4, 2, 85000.00, 'Completed', 'Cơm tấm sườn bì chả giảm giá 20%'),
+(4, 9, 1, 40000.00, 'Completed', 'Nước chanh sả kèm món chính');
+
+
 
 # SELECT * FROM customers;
 # SELECT * FROM users
