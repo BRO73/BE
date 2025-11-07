@@ -19,11 +19,11 @@ public abstract class MenuItemMapper {
     @Autowired
     protected CategoryService categoryService;
 
-//    @Mapping(target = "category", expression = "java(toCategory(menuItemRequest.getCategoryName()))")
+    @Mapping(target = "category", expression = "java(toCategory(menuItemRequest.getCategoryName()))")
     public abstract MenuItem toEntity(MenuItemRequest menuItemRequest);
 
 
-//    @Mapping(source = "category.name", target = "categoryName")
+    @Mapping(source = "category.name", target = "categoryName")
     public abstract MenuItemResponse toDTO(MenuItem menuItem);
 
     public List<MenuItemResponse> toDTOList(List<MenuItem> menuItems) {
