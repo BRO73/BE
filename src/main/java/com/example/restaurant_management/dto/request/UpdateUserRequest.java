@@ -10,7 +10,7 @@ public record UpdateUserRequest(
         String username,
 
         @NotBlank
-        @Size(min = 8, message = "Password must be at least 8 characters long")
+        @Size(min = 5, message = "Password must be at least 5 characters long")
         String password,
 
         @NotBlank

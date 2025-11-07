@@ -1,5 +1,6 @@
 package com.example.restaurant_management.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,6 +15,7 @@ public class Review extends AbstractEntity<Long> {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false, unique = true)
+    @JsonIgnoreProperties({"reviews", "table", "staffUser", "customerUser"})
     private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -21,6 +21,7 @@ import org.springframework.web.cors.CorsConfiguration;
 @RequiredArgsConstructor
 @EnableWebSecurity
 @EnableMethodSecurity
+
 public class SecurityConfig {
 
     private final InternalAuthEntryPoint internalAuthEntryPoint;
@@ -38,6 +39,9 @@ public class SecurityConfig {
             "/api/users/**",
             "/api/bookings/**",
             "/api/bookings",
+            "/api/promotions/**",
+            "/api/reviews/**",
+            "/api/reports/**",
             "/api/files/upload",
             "/storage/**",
             "/api/orders",
