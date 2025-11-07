@@ -45,8 +45,10 @@ public class SecurityConfig {
             "/api/locations",
             "/api/elements",
             "/api/tables",
-            "/api/tables/day/**"
-            "/api/kitchen/**"
+            "/api/tables/day/**",
+            "/api/kitchen/**",
+            "/api/chatbot",
+            "/api/chatbot/**",
     };
 
 
