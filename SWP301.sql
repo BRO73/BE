@@ -370,7 +370,7 @@ INSERT INTO roles (name, description) VALUES
 # ALTER TABLE users MODIFY full_name VARCHAR(100) NULL;
 # SELECT * FROM roles;
 
-DROP TABLE IF EXISTS floor_elements;
+# DROP TABLE IF EXISTS floor_elements;
 
 CREATE TABLE floor_elements (
                                 id BIGINT AUTO_INCREMENT PRIMARY KEY,

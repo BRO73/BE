@@ -1,9 +1,12 @@
 package com.example.restaurant_management.service.impl;
 
+import com.example.restaurant_management.entity.Order;
 import com.example.restaurant_management.repository.OrderRepository;
 import com.example.restaurant_management.service.ReportService;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -52,7 +55,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<Map<String, Object>> getPeakHours() {
+    public List<Map<String, Object>> getPeakHours12() {
         List<Object[]> results = orderRepository.findPeakHours();
 
         return results.stream()
@@ -95,5 +98,94 @@ public class ReportServiceImpl implements ReportService {
             return m;
         }).toList();
     }
+
+    public Map<String, Object> getSummaryReport(int days) {
+        LocalDateTime endDate = LocalDateTime.now();
+        LocalDateTime startDate = endDate.minusDays(days);
+
+        List<Order> orders = orderRepository.findByCreatedAtBetween(startDate, endDate);
+
+        BigDecimal totalRevenue = orders.stream()
+                .map(Order::getTotalAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        int totalOrders = orders.size();
+        BigDecimal avgOrderValue = totalOrders > 0
+                ? totalRevenue.divide(BigDecimal.valueOf(totalOrders), 2, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO;
+
+        // Số khách hàng (tính distinct theo customer_user_id)
+        long customerVisits = orders.stream()
+                .map(o -> o.getCustomerUser() != null ? o.getCustomerUser().getId() : null)
+                .filter(Objects::nonNull)
+                .distinct()
+                .count();
+
+        Map<String, Object> summary = new HashMap<>();
+        summary.put("totalRevenue", totalRevenue);
+        summary.put("totalOrders", totalOrders);
+        summary.put("avgOrderValue", avgOrderValue);
+        summary.put("customerVisits", customerVisits);
+        summary.put("days", days);
+
+        return summary;
+    }
+
+    @Override
+    public List<Map<String, Object>> getPeakHours(int days) {
+        LocalDateTime endDate = LocalDateTime.now();
+        LocalDateTime startDate = endDate.minusDays(days);
+
+        List<Order> orders = orderRepository.findByCreatedAtBetween(startDate, endDate);
+
+        Map<Integer, BigDecimal> revenueByHour = new HashMap<>();
+        for (Order order : orders) {
+            if (order.getCreatedAt() != null && order.getTotalAmount() != null) {
+                int hour = order.getCreatedAt().getHour();
+                revenueByHour.merge(hour, order.getTotalAmount(), BigDecimal::add);
+            }
+        }
+
+        return revenueByHour.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(e -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("hour", e.getKey());
+                    map.put("revenue", e.getValue());
+                    return map;
+                })
+                .collect(Collectors.toList());
+    }
+
+
+    // Top khách hàng chi tiêu cao nhất
+    @Override
+    public List<Map<String, Object>> getTopCustomers(int days) {
+        LocalDateTime endDate = LocalDateTime.now();
+        LocalDateTime startDate = endDate.minusDays(days);
+
+        List<Order> orders = orderRepository.findByCreatedAtBetween(startDate, endDate);
+
+        Map<String, BigDecimal> customerRevenue = new HashMap<>();
+        for (Order order : orders) {
+            if (order.getCustomerUser() != null && order.getTotalAmount() != null) {
+                String name = order.getCustomerUser().getUsername();
+                customerRevenue.merge(name, order.getTotalAmount(), BigDecimal::add);
+            }
+        }
+
+        return customerRevenue.entrySet().stream()
+                .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
+                .limit(5)
+                .map(e -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("name", e.getKey());
+                    map.put("revenue", e.getValue());
+                    return map;
+                })
+                .collect(Collectors.toList());
+    }
+
 
 }

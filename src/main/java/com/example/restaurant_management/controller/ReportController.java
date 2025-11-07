@@ -32,9 +32,9 @@ public class ReportController {
         return reportService.getTopItems();
     }
 
-    @GetMapping("/peak-hours")
+    @GetMapping("/peak-hours1")
     public List<Map<String, Object>> getPeakHours() {
-        return reportService.getPeakHours();
+        return reportService.getPeakHours12();
     }
 
     @GetMapping("/last-7-days/revenue")
@@ -46,6 +46,27 @@ public class ReportController {
     @GetMapping("/last-7-days/top-items")
     public List<Map<String, Object>> getTopItemsLast7Days() {
         return reportService.getTopItemsLast7Days();
+    }
+
+    @GetMapping("/summary")
+    public Map<String, Object> getSummaryReport(
+            @RequestParam(defaultValue = "7") int days
+    ) {
+        return reportService.getSummaryReport(days);
+    }
+
+    @GetMapping("/peak-hours")
+    public List<Map<String, Object>> getPeakHours(
+            @RequestParam(defaultValue = "7") int days
+    ) {
+        return reportService.getPeakHours(days);
+    }
+
+    @GetMapping("/top-customers")
+    public List<Map<String, Object>> getTopCustomers(
+            @RequestParam(defaultValue = "7") int days
+    ) {
+        return reportService.getTopCustomers(days);
     }
 
 }
