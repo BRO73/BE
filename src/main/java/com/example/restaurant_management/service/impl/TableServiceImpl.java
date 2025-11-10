@@ -13,8 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -161,6 +163,18 @@ public class TableServiceImpl implements TableService {
         updateAllTablesStatusToday();
 
         return tableRepository.findByLocation(location).stream()
+                .map(TableResponse::fromEntity)
+                .toList();
+    }
+
+    @Override
+    public List<TableResponse> getTablesByBooking(Booking booking) {
+        List<Long> tableIds = booking.getTables().stream().map(tb -> tb.getId()).toList();
+        List<TableEntity> tbs = new ArrayList<>();
+        for (Long tableId : tableIds) {
+            tableRepository.findById(tableId).ifPresent(tbs::add);
+        }
+        return tbs.stream()
                 .map(TableResponse::fromEntity)
                 .toList();
     }
