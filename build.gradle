@@ -18,7 +18,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+		languageVersion = JavaLanguageVersion.of(22)
 	}
 }
 
@@ -27,6 +27,9 @@ repositories {
 }
 
 dependencies {
+
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
@@ -63,6 +66,33 @@ dependencies {
 
 	implementation 'com.google.firebase:firebase-admin:9.4.3'
 	implementation("vn.payos:payos-java:2.0.1")
+
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework:spring-messaging'
+}
+
+//test {
+//	useJUnitPlatform()
+//	finalizedBy jacocoTestReport
+//}
+//
+//jacoco {
+//	toolVersion = "0.8.10"
+//}
+//
+//jacocoTestReport {
+//	reports {
+//		xml.required = true
+//		html.required = true
+//	}
+//}
+
+test {
+	useJUnitPlatform()
+	testLogging {
+		events "passed", "skipped", "failed", "standardOut", "standardError"
+		showStandardStreams = true
+	}
 }
 
 //test {

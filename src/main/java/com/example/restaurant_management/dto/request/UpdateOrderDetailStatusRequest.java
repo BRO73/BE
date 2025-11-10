@@ -15,5 +15,5 @@ public class UpdateOrderDetailStatusRequest {
      * Hợp lệ: PENDING, IN_PROGRESS, DONE, CANCELED
      */
     @NotNull
-    private OrderItemStatus status;
+    private String status;
 }

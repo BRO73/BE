@@ -4,9 +4,10 @@ import com.example.restaurant_management.common.enums.MenuItemAvailability;
 import com.example.restaurant_management.common.enums.OrderItemStatus;
 import com.example.restaurant_management.entity.OrderDetail;
 import lombok.*;
-
+import java.time.ZoneId;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Getter
 @Setter
@@ -21,10 +22,10 @@ public class KitchenTicketResponse {
     private String dishName;
     private Integer quantity;
     private MenuItemAvailability availability;
-    private OrderItemStatus status;
+    private String status;
 
     private String notes;
-    private LocalDateTime orderedAt;
+    private String  orderedAt;
 
     public static KitchenTicketResponse from(OrderDetail od) {
         return KitchenTicketResponse.builder()
@@ -41,7 +42,12 @@ public class KitchenTicketResponse {
                 .availability(od.getMenuItem() != null ? od.getMenuItem().getAvailability() : null)
                 .status(od.getStatus())
                 .notes(od.getNotes())
-                .orderedAt(od.getCreatedAt())
+                .orderedAt(toIsoUtc(od.getCreatedAt()))
                 .build();
     }
+
+    private static String toIsoUtc(LocalDateTime ldt) {
+        return ldt == null ? null : ldt.atOffset(ZoneOffset.UTC).toInstant().toString();
+    }
+
 }

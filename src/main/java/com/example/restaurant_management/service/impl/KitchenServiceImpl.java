@@ -8,25 +8,41 @@ import com.example.restaurant_management.repository.MenuItemRepository;
 import com.example.restaurant_management.repository.OrderDetailRepository;
 import com.example.restaurant_management.service.KitchenService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.time.Instant;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 public class KitchenServiceImpl implements KitchenService {
 
+    private static final String TOPIC_BOARD = "/topic/kitchen/board";
+
     private final OrderDetailRepository repo;
     private final MenuItemRepository menuItemRepo;
+    private final SimpMessagingTemplate simp;
+
+    private int defaultLimit() {
+        return 200; // tùy bạn cấu hình
+    }
+
+    /** Gửi snapshot board lên topic. */
+    private void broadcastBoardSnapshot() {
+        KitchenBoardResponse snapshot = board(defaultLimit());
+        // Bắn snapshot ra topic
+        simp.convertAndSend(TOPIC_BOARD, snapshot);
+    }
 
     @Override
     @Transactional(readOnly = true)
     public KitchenBoardResponse board(int limit) {
         List<OrderDetail> all = repo.findAll();
-
         Comparator<OrderDetail> byCreated = Comparator.comparing(OrderDetail::getCreatedAt);
 
         List<KitchenTicketResponse> items = all.stream()
@@ -36,7 +52,7 @@ public class KitchenServiceImpl implements KitchenService {
                 .toList();
 
         return KitchenBoardResponse.builder()
-                .serverTime(LocalDateTime.now())
+                .serverTime(Instant.now().toString())
                 .items(items)
                 .build();
     }
@@ -51,6 +67,9 @@ public class KitchenServiceImpl implements KitchenService {
                 : com.example.restaurant_management.common.enums.MenuItemAvailability.UNAVAILABLE);
         menu.setUpdatedAt(LocalDateTime.now());
         menuItemRepo.save(menu);
+
+        // WS notify
+        broadcastBoardSnapshot();
     }
 
     /**
@@ -62,39 +81,39 @@ public class KitchenServiceImpl implements KitchenService {
      */
     @Override
     @Transactional
-    public void updateOrderDetailStatus(Long orderDetailId, OrderItemStatus status) {
+    public void updateOrderDetailStatus(Long orderDetailId, String status) {
         OrderDetail od = repo.findByIdForUpdate(orderDetailId)
                 .orElseThrow(() -> new IllegalArgumentException("OrderDetail not found: " + orderDetailId));
 
-        OrderItemStatus cur = od.getStatus();
+        String cur = od.getStatus();
 
         switch (cur) {
-            case PENDING -> {
-                if (status != OrderItemStatus.DONE
-                        && status != OrderItemStatus.CANCELED
-                        && status != OrderItemStatus.IN_PROGRESS) {
+            case "PENDING" -> {
+                if (!Objects.equals(status, "DONE")
+                        && !Objects.equals(status, "CANCELED")
+                        && !Objects.equals(status, "IN_PROGRESS")) {
                     throw new IllegalStateException("Invalid transition from PENDING to " + status);
                 }
             }
-            case IN_PROGRESS -> {
-                if (status != OrderItemStatus.DONE
-                        && status != OrderItemStatus.CANCELED) {
+            case "IN_PROGRESS" -> {
+                if (!Objects.equals(status, "DONE")
+                        && !Objects.equals(status, "CANCELED")) {
                     throw new IllegalStateException("Invalid transition from IN_PROGRESS to " + status);
                 }
             }
-            case DONE -> {
-                if (status != OrderItemStatus.SERVED
-                        && status != OrderItemStatus.IN_PROGRESS) {
+            case "DONE" -> {
+                if (!Objects.equals(status, "SERVED")
+                        && !Objects.equals(status, "IN_PROGRESS")) {
                     throw new IllegalStateException("Invalid transition from DONE to " + status);
                 }
 
-                if (status == OrderItemStatus.IN_PROGRESS) {
+                if (status.equals("IN_PROGRESS")) {
                     // TÌM DÒNG GỐC TRONG CÙNG ORDER (SIẾT CHẶT)
                     List<OrderDetail> targets = repo.findMergeTargetsForRollback(
                             od.getOrder().getId(),
                             od.getId(), // loại trừ chính nó
                             od.getMenuItem().getId(),
-                            List.of(OrderItemStatus.PENDING, OrderItemStatus.IN_PROGRESS),
+                            List.of("PENDING", "IN_PROGRESS"),
                             od.getPriceAtOrder(),
                             od.getNotes()
                     );
@@ -108,6 +127,9 @@ public class KitchenServiceImpl implements KitchenService {
                             od.setStatus(status);
                             od.setUpdatedAt(LocalDateTime.now());
                             repo.save(od);
+
+                            // WS notify trước khi return sớm
+                            broadcastBoardSnapshot();
                             return;
                         }
 
@@ -118,12 +140,15 @@ public class KitchenServiceImpl implements KitchenService {
 
                         // Xoá dòng DONE sau khi gộp
                         repo.delete(od);
+
+                        // WS notify trước khi return sớm
+                        broadcastBoardSnapshot();
                         return;
                     }
                     // Không có dòng phù hợp -> rơi xuống đổi trạng thái tại chỗ
                 }
             }
-            case SERVED, CANCELED -> {
+            case "SERVED", "CANCELED" -> {
                 throw new IllegalStateException("Item already finished. Current status=" + cur);
             }
         }
@@ -132,6 +157,9 @@ public class KitchenServiceImpl implements KitchenService {
         od.setStatus(status);
         od.setUpdatedAt(LocalDateTime.now());
         repo.save(od);
+
+        // WS notify
+        broadcastBoardSnapshot();
     }
 
     @Override
@@ -140,17 +168,24 @@ public class KitchenServiceImpl implements KitchenService {
         OrderDetail src = repo.findByIdForUpdate(orderDetailId)
                 .orElseThrow(() -> new IllegalArgumentException("OrderDetail not found: " + orderDetailId));
 
-        OrderItemStatus cur = src.getStatus();
-        if (cur == OrderItemStatus.CANCELED || cur == OrderItemStatus.SERVED) {
+        String cur = src.getStatus();
+        if (Objects.equals(cur, "CANCELED") || Objects.equals(cur, "SERVED")) {
             throw new IllegalStateException("Invalid state to complete-one: " + cur);
         }
-        if (cur == OrderItemStatus.DONE) return;
+        if (cur == "DONE") {
+            // đã DONE rồi thì không đổi gì nhưng vẫn bắn snapshot để đồng bộ UI (tuỳ chọn)
+            broadcastBoardSnapshot();
+            return;
+        }
 
         int qty = src.getQuantity();
         if (qty <= 1) {
-            src.setStatus(OrderItemStatus.DONE);
+            src.setStatus("DONE");
             src.setUpdatedAt(LocalDateTime.now());
             repo.save(src);
+
+            // WS notify rồi return
+            broadcastBoardSnapshot();
             return;
         }
 
@@ -165,8 +200,13 @@ public class KitchenServiceImpl implements KitchenService {
         readyOne.setQuantity(1);
         readyOne.setPriceAtOrder(src.getPriceAtOrder());
         readyOne.setNotes(src.getNotes());
-        readyOne.setStatus(OrderItemStatus.DONE);
+        readyOne.setStatus("DONE");
+        readyOne.setCreatedAt(LocalDateTime.now());
+        readyOne.setUpdatedAt(LocalDateTime.now());
         repo.save(readyOne);
+
+        // WS notify
+        broadcastBoardSnapshot();
     }
 
     @Override
@@ -175,16 +215,49 @@ public class KitchenServiceImpl implements KitchenService {
         OrderDetail src = repo.findByIdForUpdate(orderDetailId)
                 .orElseThrow(() -> new IllegalArgumentException("OrderDetail not found: " + orderDetailId));
 
-        if (src.getStatus() != OrderItemStatus.DONE) {
+        if (src.getStatus() != "DONE") {
             throw new IllegalStateException("serve-one chỉ áp dụng cho trạng thái DONE");
         }
         int qty = src.getQuantity();
         if (qty <= 1) {
             repo.delete(src);
+
+            // WS notify rồi return
+            broadcastBoardSnapshot();
             return;
         }
         src.setQuantity(qty - 1);
         src.setUpdatedAt(LocalDateTime.now());
         repo.save(src);
+
+        // WS notify
+        broadcastBoardSnapshot();
     }
+
+    @Override
+    @Transactional
+    public void completeAllUnits(Long orderDetailId) {
+        OrderDetail src = repo.findByIdForUpdate(orderDetailId)
+                .orElseThrow(() -> new IllegalArgumentException("OrderDetail not found: " + orderDetailId));
+
+        String cur = src.getStatus();
+        if (Objects.equals(cur, "CANCELED") || Objects.equals(cur, "SERVED")) {
+            throw new IllegalStateException("Invalid state to complete-all: " + cur);
+        }
+        if (Objects.equals(cur, "DONE")) {
+            // đã DONE rồi thì không đổi gì nhưng vẫn bắn snapshot để đồng bộ UI
+            broadcastBoardSnapshot();
+            return;
+        }
+
+        // Chuyển toàn bộ sang DONE
+        src.setStatus("DONE");
+        src.setUpdatedAt(LocalDateTime.now());
+        repo.save(src);
+
+        // WS notify
+        broadcastBoardSnapshot();
+    }
+
+
 }

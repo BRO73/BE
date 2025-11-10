@@ -26,3 +26,4 @@ public class OtpController {
         return ResponseEntity.ok(customerAuthService.registerCustomer(request));
     }
 }
+

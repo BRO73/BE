@@ -348,7 +348,7 @@ INSERT INTO menu_items (category_id, name, description, price, status) VALUES
 INSERT INTO roles (name, description) VALUES
                                           ('ADMIN', 'Quản trị hệ thống, có toàn quyền'),
                                           ('WAITSTAFF', 'Nhân viên phục vụ bàn, nhận order từ khách'),
-                                          ('KITCHEN_STAFF', 'Nhân viên bếp, chế biến món ăn'),
+                                          ('KITCHEN', 'Nhân viên bếp, chế biến món ăn'),
                                           ('CASHIER', 'Thu ngân, xử lý thanh toán'),
                                           ('CUSTOMER', 'Khách hàng');
 
@@ -359,10 +359,10 @@ INSERT INTO roles (name, description) VALUES
 # SELECT * FROM roles
 # DELETE FROM users where id = 2
 # DELETE FROM customer where id = 4
-SELECT * FROM tables;
-SELECT * FROM orders
-SELECT * FROM transactions
-SELECT * FROM order_details
+# SELECT * FROM tables;
+# SELECT * FROM orders
+# SELECT * FROM transactions
+# SELECT * FROM order_details
 # SELECT * FROM roles;
 # SELECT * FROM user_roles;
 
@@ -370,7 +370,7 @@ SELECT * FROM order_details
 # ALTER TABLE users MODIFY full_name VARCHAR(100) NULL;
 # SELECT * FROM roles;
 
-DROP TABLE IF EXISTS floor_elements;
+# DROP TABLE IF EXISTS floor_elements;
 
 CREATE TABLE floor_elements (
                                 id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -395,11 +395,105 @@ CREATE TABLE floor_elements (
                                 is_activated TINYINT(1) DEFAULT 1
 );
 
-SELECT * FROM tables;
-ALTER TABLE bookings
-    ADD customer_email VARCHAR(100) NOT NULL DEFAULT '';
+# SELECT * FROM tables;
+# ALTER TABLE bookings
+#     ADD customer_email VARCHAR(100) NOT NULL DEFAULT '';
+#
+# DESC customers;
 
-DESC customers;
+#
+# ALTER TABLE customers MODIFY user_id BIGINT NULL;
 
 
-ALTER TABLE customers MODIFY user_id BIGINT NULL;
+INSERT INTO promotions
+(name, code, description, promotion_type, value, min_spend, start_date, end_date, usage_limit, created_by, updated_by, is_deleted, is_activated)
+VALUES
+-- ACTIVE: nằm trong khoảng ngày hiện tại
+('Weekend Special', 'WEEKEND20', '20% off all main courses during weekends', 'percentage', 20.00, NULL,
+ '2025-10-01 00:00:00', '2025-12-31 23:59:59', 100, 1, 1, 0, 1),
+
+-- ACTIVE (tháng 11)
+('Happy Hour', 'HAPPY5', '$5 off all beverages from 5-7 PM', 'fixed', 5.00, NULL,
+ '2025-11-01 00:00:00', '2025-11-30 23:59:59', NULL, 1, 1, 0, 1),
+
+-- ACTIVE (trải dài cả năm 2025)
+('First Timer', 'FIRSTTIME15', '15% discount for new customers', 'percentage', 15.00, NULL,
+ '2025-01-01 00:00:00', '2025-12-31 23:59:59', NULL, 1, 1, 0, 1),
+
+-- EXPIRED (đã hết hạn từ 14/02/2025)
+('Valentine''s Special', 'VALENTINE', 'Buy one get one free dessert', 'percentage', 50.00, NULL,
+ '2025-02-10 00:00:00', '2025-02-14 23:59:59', 50, 1, 1, 0, 1),
+
+-- SCHEDULED (chưa đến ngày bắt đầu)
+('Holiday Season', 'HOLIDAY25', '25% off holiday season menu items', 'percentage', 25.00, NULL,
+ '2025-12-15 00:00:00', '2026-01-05 23:59:59', 200, 1, 1, 0, 1),
+
+-- INACTIVE (đang trong khoảng ngày nhưng bị tắt kích hoạt)
+('Student Discount', 'STUDENT10', '$10 off orders above $50 for students', 'fixed', 10.00, 50.00,
+ '2025-01-01 00:00:00', '2025-12-31 23:59:59', NULL, 1, 1, 0, 0);
+
+INSERT INTO orders (
+    table_id, staff_user_id, customer_user_id, promotion_id,
+    total_amount, status, notes, completed_at,
+    created_by, updated_by, is_deleted, is_activated
+)
+VALUES
+-- Đơn hàng mới (chưa hoàn thành)
+(1, 2, 1, NULL, 350.00, 'NEW', 'Khách vừa gọi 2 món chính và 1 nước', NULL, 2, 2, 0, 1),
+
+-- Đơn hàng đang xử lý
+(2, 7, 10, 4, 420.00, 'PROCESSING', 'Đang chế biến', NULL, 3, 3, 0, 1),
+
+-- Đơn hàng đã hoàn tất
+(3, 8, 11, 5, 580.00, 'COMPLETED', 'Khách đã thanh toán bằng tiền mặt', NOW(), 4, 4, 0, 1),
+
+-- Đơn hàng áp dụng khuyến mãi
+(5, 9, 12, 6, 320.00, 'COMPLETED', 'Giảm giá 20% cho món chính', NOW(), 3, 3, 0, 1);
+
+INSERT INTO customers (full_name, user_id, phone_number, email, is_deleted, is_activated)
+VALUES
+    ('Nguyễn Văn A', 9, '0905123456', 'vana@example.com', 0, 1),
+    ('Trần Thị B', 10, '0906234567', 'thib@example.com', 0, 1),
+    ('Lê Văn C', 11, '0907345678', 'vanc@example.com', 0, 1),
+    ('Phạm Thị D', 12, '0908456789', 'thid@example.com', 0, 1);
+
+INSERT INTO staff (
+    user_id,
+    full_name,
+    position,
+    phone_number,
+    email,
+    created_by,
+    updated_by,
+    is_deleted,
+    is_activated
+)
+VALUES
+    (7, 'Nguyễn Văn Minh',  'Waitstaff',  '0905123456', 'minh.waiter@example.com', 1, 1, 0, 1),
+    (8, 'Trần Thị Hoa',     'Cashier',    '0906234567', 'hoa.cashier@example.com', 1, 1, 0, 1),
+    (9, 'Lê Văn Nam',       'Kitchen',    '0907345678', 'nam.kitchen@example.com', 1, 1, 0, 1),
+    (10, 'Phạm Thị Linh',    'Waitstaff',  '0908456789', 'linh.waiter@example.com', 1, 1, 0, 1),
+    (11, 'Ngô Đức Phúc',     'Manager',    '0909567890', 'phuc.manager@example.com', 1, 1, 0, 1);
+
+
+INSERT INTO order_details (order_id, menu_item_id, quantity, price_at_order, status, notes)
+VALUES
+-- Order #1 (Khách gọi 2 món chính và 1 nước)
+(1, 3, 1, 95000.00, 'Completed', 'Phở bò đặc biệt cho khách A'),
+(1, 4, 1, 85000.00, 'Completed', 'Cơm tấm sườn bì chả cho khách A'),
+(1, 9, 1, 40000.00, 'Completed', 'Nước chanh sả kèm món chính'),
+
+-- Order #2 (Đang xử lý)
+(2, 5, 2, 80000.00, 'Processing', 'Bún chả Hà Nội cho bàn 2'),
+(2, 10, 1, 35000.00, 'Processing', 'Cà phê sữa đá cho bàn 2'),
+
+-- Order #3 (Hoàn tất)
+(3, 2, 1, 75000.00, 'Completed', 'Chả giò hải sản'),
+(3, 3, 1, 95000.00, 'Completed', 'Phở bò đặc biệt'),
+(3, 6, 1, 45000.00, 'Completed', 'Chè khúc bạch tráng miệng'),
+
+-- Order #4 (Hoàn tất, có khuyến mãi)
+(4, 4, 2, 85000.00, 'Completed', 'Cơm tấm sườn bì chả giảm giá 20%'),
+(4, 9, 1, 40000.00, 'Completed', 'Nước chanh sả kèm món chính');
+
+

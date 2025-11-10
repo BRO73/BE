@@ -16,4 +16,6 @@ public interface TableService {
     List<TableResponse> getTablesByStatus(String status);
     List<TableResponse> getTablesByCapacity(Integer capacity);
     List<TableResponse> getTablesByLocation(Long locationId);
+    List<TableResponse> getTablesByDay(String date);
+
 }

@@ -73,4 +73,10 @@ public class KitchenController {
         kitchenService.serveOneUnit(id);
         return ResponseEntity.ok().build();
     }
+
+    @PatchMapping("/order-details/{id}/complete-all")
+    public ResponseEntity<Void> completeAllUnits(@PathVariable Long id) {
+        kitchenService.completeAllUnits(id);
+        return ResponseEntity.ok().build();
+    }
 }

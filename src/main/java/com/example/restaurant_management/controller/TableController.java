@@ -69,4 +69,9 @@ public class TableController {
     public ResponseEntity<List<TableResponse>> getTablesByLocation(@PathVariable Long locationId) {
         return ResponseEntity.ok(tableService.getTablesByLocation(locationId));
     }
+    @GetMapping("/day/{date}")
+    public ResponseEntity<List<TableResponse>> getTablesByDay(@PathVariable String date) {
+        return ResponseEntity.ok(tableService.getTablesByDay(date));
+    }
+
 }

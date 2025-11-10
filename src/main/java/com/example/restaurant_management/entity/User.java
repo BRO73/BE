@@ -14,7 +14,7 @@ import java.util.ArrayList;
 @Builder
 @Entity
 @Table(name = "users", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"username", "store_id"})
+        @UniqueConstraint(columnNames = {"username"})
 })
 public class User extends AbstractEntity<Long> implements Serializable {
     @Column(length = 50)
