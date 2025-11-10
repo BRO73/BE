@@ -35,4 +35,10 @@ public class CustomerController {
         customerService.deleteCustomer(id);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/verify-phone")
+    public ResponseEntity<Boolean> verifyCustomerPhone(@RequestParam String phoneNumber) {
+        boolean exists = customerService.existsByPhoneNumber(phoneNumber);
+        return ResponseEntity.ok(exists);
+    }
+
 }

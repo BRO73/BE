@@ -1,10 +1,12 @@
 package com.example.restaurant_management.service.impl;
 
+import com.example.restaurant_management.dto.ChatMessage;
 import com.example.restaurant_management.dto.request.ChatbotRequest;
 import com.example.restaurant_management.dto.request.BookingRequest;
 import com.example.restaurant_management.dto.response.BookingResponse;
 import com.example.restaurant_management.dto.response.ChatbotResponse;
 import com.example.restaurant_management.dto.response.TableResponse;
+import com.example.restaurant_management.repository.BookingRepository;
 import com.example.restaurant_management.service.BookingService;
 import com.example.restaurant_management.service.ChatHistoryService;
 import com.example.restaurant_management.service.ChatbotService;
@@ -37,6 +39,7 @@ public class ChatbotServiceImpl implements ChatbotService {
         put("numGuests", "số lượng khách");
         put("customerEmail", "email của bạn");
     }};
+    private final BookingRepository bookingRepository;
 
     @Override
     public ChatbotResponse chat(ChatbotRequest request) {
@@ -46,7 +49,8 @@ public class ChatbotServiceImpl implements ChatbotService {
         chatHistoryService.addMessage(clientId, "user", request.getMessage());
 
         // 2️⃣ Parse intent & entity bằng LLMService
-        LLMService.IntentEntity intentEntity = llmService.parseIntent(request.getMessage());
+        List<ChatMessage> history = chatHistoryService.getHistory(clientId);
+        LLMService.IntentEntity intentEntity = llmService.parseIntent(request.getMessage(),history);
 
         String reply;
 
@@ -108,13 +112,12 @@ public class ChatbotServiceImpl implements ChatbotService {
                 bookingRequest.getCustomerPhone() == null ||
                 bookingRequest.getBookingTime() == null ||
                 bookingRequest.getTableIds() == null || bookingRequest.getTableIds().isEmpty()) {
-            return "Để đặt bàn, vui lòng cung cấp đầy đủ thông tin: tên, số điện thoại, thời gian và bàn muốn đặt.";
+            return "Để đặt bàn, vui lòng cung cấp đầy đủ thông tin: tên, số điện thoại, email, thời gian và bàn muốn đặt.";
         }
 
         LocalDate bookingDate = bookingRequest.getBookingTime().toLocalDate();
         List<Long> requestedTableIds = bookingRequest.getTableIds();
 
-        List<TableResponse> allTables = tableService.getAllTables();
         List<Long> unavailableTables = new ArrayList<>();
 
         for (Long tableId : requestedTableIds) {
@@ -132,9 +135,13 @@ public class ChatbotServiceImpl implements ChatbotService {
 
         try {
             BookingResponse saved = bookingService.createBooking(bookingRequest);
-            return "Đã đặt thành công bàn " + requestedTableIds +
-                    " vào ngày " + bookingDate +
-                    " cho " + bookingRequest.getCustomerName();
+            List<TableResponse> bookedTables = tableService.getTablesByBooking(bookingRepository.findById(saved.getId()).get());
+            return "Đã đặt thành công bàn " + bookedTables +
+                    "\nThời gian: " + bookingDate +
+                    "\nTên khách hàng: " + bookingRequest.getCustomerName() +
+                    "\nSố điện thoại: " +bookingRequest.getCustomerPhone() +
+                    "\nTrạng thái: PENDING \nChúng tôi sẽ liên hệ với bạn sớm nhất có thể, cảm ơn đã đặt bàn tai Riversider Terrace Restaurant.";
+
         } catch (Exception e) {
             return "Lỗi khi tạo booking: " + e.getMessage();
         }

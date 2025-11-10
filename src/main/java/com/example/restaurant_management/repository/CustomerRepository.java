@@ -25,4 +25,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
            OR c.phoneNumber LIKE CONCAT('%', :keyword, '%')
     """)
     List<Customer> searchCustomers(@Param("keyword") String keyword);
+
+    boolean existsByPhoneNumber(String phoneNumber);
 }
