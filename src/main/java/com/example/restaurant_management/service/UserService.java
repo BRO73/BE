@@ -19,4 +19,5 @@ public interface UserService {
     Optional<User> getUserByUsername(String username);
     Optional<User> getUserByPhoneNumber(String phoneNumber);
     List<User> getUsersByEmail(String email);
+
 }

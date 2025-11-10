@@ -22,28 +22,28 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     private final PasswordEncoder passwordEncoder;
     private final CustomUserDetailsService userDetailsService;
 
-    @Override
-    public Authentication authenticate(Authentication authentication)
-            throws AuthenticationException {
-        final String username = (String) authentication.getPrincipal();
-        final String password = (String) authentication.getCredentials();
+        @Override
+        public Authentication authenticate(Authentication authentication)
+                throws AuthenticationException {
+            final String username = (String) authentication.getPrincipal();
+            final String password = (String) authentication.getCredentials();
 
-        final UserDetails user = userDetailsService.loadUserByUsername(username);
+            final UserDetails user = userDetailsService.loadUserByUsername(username);
 
-        if (StringUtils.isBlank(password) || !passwordEncoder.matches(password, user.getPassword())) {
-            throw new RestaurantException(ErrorEnum.PASSWORD_INCORRECT);
+            if (StringUtils.isBlank(password) || !passwordEncoder.matches(password, user.getPassword())) {
+                throw new RestaurantException(ErrorEnum.PASSWORD_INCORRECT);
+            }
+
+            if (Boolean.FALSE.equals(user.isEnabled())) {
+                throw new RestaurantException(ErrorEnum.USER_DISABLED);
+            }
+
+            CredentialPayload credentialPayload = CredentialPayload.builder()
+                    .userId(((UserDetailsImpl) user).getUserId())
+                    .build();
+
+            return new UsernamePasswordAuthenticationToken(user.getUsername(), credentialPayload, user.getAuthorities());
         }
-
-        if (Boolean.FALSE.equals(user.isEnabled())) {
-            throw new RestaurantException(ErrorEnum.USER_DISABLED);
-        }
-
-        CredentialPayload credentialPayload = CredentialPayload.builder()
-                .userId(((UserDetailsImpl) user).getUserId())
-                .build();
-
-        return new UsernamePasswordAuthenticationToken(user.getUsername(), credentialPayload, user.getAuthorities());
-    }
 
     @Override
     public boolean supports(Class<?> authentication) {
