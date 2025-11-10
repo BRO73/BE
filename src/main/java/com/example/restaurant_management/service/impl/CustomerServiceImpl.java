@@ -69,4 +69,9 @@ public class CustomerServiceImpl implements CustomerService {
                 .phoneNumber(customer.getPhoneNumber())
                 .build();
     }
+
+    @Override
+    public boolean existsByPhoneNumber(String phoneNumber) {
+        return customerRepository.existsByPhoneNumber(phoneNumber);
+    }
 }

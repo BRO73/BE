@@ -12,4 +12,6 @@ public interface CustomerService {
     List<CustomerResponse> searchCustomers(String keyword);
 
     void deleteCustomer(Long id);
+
+    boolean existsByPhoneNumber(String phoneNumber);
 }
