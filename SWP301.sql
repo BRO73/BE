@@ -365,6 +365,9 @@ INSERT INTO roles (name, description) VALUES
 # SELECT * FROM order_details
 # SELECT * FROM roles;
 # SELECT * FROM user_roles;
+# SELECT * FROM menu_items;
+# SELECT * FROM categories;
+# SELECT * FROM promotions;
 
 # SHOW CREATE TABLE users;
 # ALTER TABLE users MODIFY full_name VARCHAR(100) NULL;
@@ -497,3 +500,83 @@ VALUES
 (4, 9, 1, 40000.00, 'Completed', 'Nước chanh sả kèm món chính');
 
 
+INSERT INTO orders (table_id, staff_user_id, customer_user_id, total_amount, status, completed_at, created_at, is_deleted, is_activated)
+VALUES
+-- Ngày 11/1/2025
+(1, 7, 9, 280000.00, 'COMPLETED', '2025-11-01 14:30:00', '2025-11-01 12:00:00', 0, 1),
+(2, 8, 10, 420000.00, 'COMPLETED', '2025-11-01 19:45:00', '2025-11-01 18:30:00', 0, 1),
+(3, 9, 11, 350000.00, 'COMPLETED', '2025-11-01 20:15:00', '2025-11-01 19:00:00', 0, 1),
+
+-- Ngày 11/2/2025
+(1, 7, 9, 520000.00, 'COMPLETED', '2025-11-02 13:20:00', '2025-11-02 12:15:00', 0, 1),
+(2, 8, 10, 380000.00, 'COMPLETED', '2025-11-02 18:45:00', '2025-11-02 17:30:00', 0, 1),
+(3, 9, 11, 610000.00, 'COMPLETED', '2025-11-02 21:00:00', '2025-11-02 19:45:00', 0, 1),
+
+-- Ngày 11/3/2025
+(1, 7, 9, 290000.00, 'COMPLETED', '2025-11-03 14:10:00', '2025-11-03 12:45:00', 0, 1),
+(2, 8, 10, 480000.00, 'COMPLETED', '2025-11-03 19:30:00', '2025-11-03 18:15:00', 0, 1),
+(3, 9, 11, 390000.00, 'COMPLETED', '2025-11-03 20:45:00', '2025-11-03 19:30:00', 0, 1),
+
+-- Ngày 11/4/2025 (hôm nay - cao điểm)
+(1, 7, 9, 680000.00, 'COMPLETED', '2025-11-04 15:30:00', '2025-11-04 13:15:00', 0, 1),
+(2, 8, 10, 720000.00, 'COMPLETED', '2025-11-04 19:15:00', '2025-11-04 17:45:00', 0, 1),
+(3, 9, 11, 890000.00, 'COMPLETED', '2025-11-04 21:30:00', '2025-11-04 20:00:00', 0, 1),
+(5, 10, 12, 450000.00, 'COMPLETED', '2025-11-04 20:00:00', '2025-11-04 18:30:00', 0, 1),
+
+-- Ngày 11/5/2025
+(1, 7, 9, 320000.00, 'COMPLETED', '2025-11-05 14:45:00', '2025-11-05 13:00:00', 0, 1),
+(2, 8, 10, 550000.00, 'COMPLETED', '2025-11-05 19:00:00', '2025-11-05 17:30:00', 0, 1),
+
+-- Ngày 11/6/2025
+(1, 7, 9, 410000.00, 'COMPLETED', '2025-11-06 15:15:00', '2025-11-06 13:45:00', 0, 1),
+(2, 8, 10, 670000.00, 'COMPLETED', '2025-11-06 20:30:00', '2025-11-06 19:00:00', 0, 1),
+(3, 9, 11, 380000.00, 'COMPLETED', '2025-11-06 21:15:00', '2025-11-06 19:45:00', 0, 1),
+
+-- Ngày 11/7/2025
+(1, 7, 9, 290000.00, 'COMPLETED', '2025-11-07 14:20:00', '2025-11-07 12:30:00', 0, 1),
+(2, 8, 10, 510000.00, 'COMPLETED', '2025-11-07 18:45:00', '2025-11-07 17:15:00', 0, 1);
+
+INSERT INTO order_details (order_id, menu_item_id, quantity, price_at_order, status)
+VALUES
+-- Order cho ngày 11/4 (cao điểm)
+(5, 3, 2, 95000.00, 'Completed'),  -- Phở bò
+(5, 4, 1, 85000.00, 'Completed'),  -- Cơm tấm
+(5, 9, 3, 40000.00, 'Completed'),  -- Nước chanh sả
+(6, 2, 2, 75000.00, 'Completed'),  -- Chả giò
+(6, 5, 3, 80000.00, 'Completed'),  -- Bún chả
+(6, 10, 2, 35000.00, 'Completed'), -- Cà phê
+(7, 1, 1, 65000.00, 'Completed'),  -- Gỏi cuốn
+(7, 3, 4, 95000.00, 'Completed'),  -- Phở bò
+(7, 6, 2, 45000.00, 'Completed'),  -- Chè khúc bạch
+(8, 4, 3, 85000.00, 'Completed'),  -- Cơm tấm
+(8, 9, 2, 40000.00, 'Completed'),  -- Nước chanh sả
+
+-- Thêm order_details cho các order khác...
+(9, 3, 1, 95000.00, 'Completed'),
+(9, 4, 1, 85000.00, 'Completed'),
+(9, 9, 1, 40000.00, 'Completed'),
+(10, 2, 2, 75000.00, 'Completed'),
+(10, 5, 2, 80000.00, 'Completed'),
+(10, 10, 1, 35000.00, 'Completed');
+
+SELECT mi.name,
+       SUM(od.quantity) AS total_qty,
+       SUM(od.price_at_order * od.quantity) AS revenue
+FROM order_details od
+         JOIN menu_items mi ON mi.id = od.menu_item_id
+         JOIN orders o ON o.id = od.order_id
+WHERE DATE(o.created_at) BETWEEN DATE(NOW() - INTERVAL 7 DAY) AND DATE(NOW())
+GROUP BY mi.name
+ORDER BY revenue DESC
+LIMIT 5;
+
+
+INSERT INTO orders (table_id, staff_user_id, customer_user_id, total_amount, status, created_at, completed_at)
+VALUES
+    (1, 7, 9, 500000, 'COMPLETED', NOW(), NOW()),
+    (2, 8, 10, 350000, 'COMPLETED', NOW(), NOW());
+
+INSERT INTO order_details (order_id, menu_item_id, quantity, price_at_order, status)
+VALUES
+    (LAST_INSERT_ID(), 3, 2, 95000, 'Completed'),
+    (LAST_INSERT_ID(), 4, 1, 85000, 'Completed');

@@ -43,11 +43,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public TokenResponse authenticate(SignInRequest request) {
-
         Authentication authentication = authenticationProvider.authenticate(
                 new UsernamePasswordAuthenticationToken(request.username(), request.password())
         );
-
         Map<String, Object> claimsAccessToken = buildClaimsAccessToken(authentication);
         Map<String, Object> claimsRefreshToken = buildClaimsRefreshToken(authentication);
 
