@@ -22,7 +22,6 @@ public class Booking extends AbstractEntity<Long> {
     )
     private List<TableEntity> tables;
 
-
     @Column(name = "customer_name", nullable = false, length = 100)
     private String customerName;
 
