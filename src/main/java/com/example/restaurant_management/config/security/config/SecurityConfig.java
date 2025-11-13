@@ -49,7 +49,11 @@ public class SecurityConfig {
             "/api/locations",
             "/api/elements",
             "/api/tables",
-            "/api/kitchen/**"
+            "/api/tables/day/**",
+            "/api/kitchen/**",
+            "/api/chatbot",
+            "/api/chatbot/**",
+            "/api/customers/verify-phone"
     };
 
 
