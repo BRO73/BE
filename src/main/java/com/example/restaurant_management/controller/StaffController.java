@@ -7,6 +7,7 @@ import com.example.restaurant_management.dto.response.StaffResponse;
 import com.example.restaurant_management.dto.response.UserProfileResponse;
 import com.example.restaurant_management.entity.User;
 import com.example.restaurant_management.service.StaffService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,7 +33,7 @@ public class StaffController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<StaffResponse> createStaff(
-            @RequestBody CreateStaffRequest createStaffRequest,
+            @Valid @RequestBody CreateStaffRequest createStaffRequest,
             Authentication authentication) {
         return ResponseEntity.ok(staffService.createStaff(createStaffRequest, authentication));
     }
@@ -40,7 +41,7 @@ public class StaffController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{staffId}")
     public ResponseEntity<StaffResponse> updateStaff(
-            @PathVariable Long staffId,
+            @Valid @PathVariable Long staffId,
             @RequestBody UpdateStaffRequest updateStaffRequest,
             Authentication authentication) {
         return ResponseEntity.ok(

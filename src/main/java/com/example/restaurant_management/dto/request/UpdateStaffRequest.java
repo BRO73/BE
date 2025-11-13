@@ -20,7 +20,5 @@ public record UpdateStaffRequest(
 
         Boolean isActivated,
 
-        String username,
-
         StaffRole role
 ) {}

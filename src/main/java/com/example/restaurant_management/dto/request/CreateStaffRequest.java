@@ -14,13 +14,13 @@ public record CreateStaffRequest(
         @Email(message = "Email should be valid.")
         String email,
 
-        @NotBlank
+        @NotBlank(message = "Phone number is required.")
         String phoneNumber,
 
-        StaffRole role,
+        @NotNull(message = "Store is required.")
+        Long storeId,
 
-        @NotNull Long storeId,
-        @NotBlank String username,
-        @NotBlank String initialPassword
-
+        // Role nghiệp vụ của staff (WAITER, CHEF, CASHIER, ADMIN...)
+        @NotNull(message = "Role is required.")
+        StaffRole role
 ) {}

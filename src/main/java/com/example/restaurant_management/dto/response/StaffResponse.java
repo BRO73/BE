@@ -15,5 +15,5 @@ public record StaffResponse(
         boolean isActivated,
         LocalDateTime createdAt,
         Long userId,
-        StaffRole role
+        String role
 ) {}
