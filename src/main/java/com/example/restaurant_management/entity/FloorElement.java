@@ -11,7 +11,7 @@ import lombok.*;
 @Entity
 @ToString
 @Table(name = "floor_elements")
-public class FloorElement extends AbstractEntity<String> {
+public class FloorElement extends AbstractEntity<Long> {
 
     @Column(nullable = false, length = 50)
     private String type;
@@ -36,8 +36,6 @@ public class FloorElement extends AbstractEntity<String> {
 
     @Column(length = 100)
     private String label;
-
-    // ====== NEW FIELDS ======
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id", nullable = false)
