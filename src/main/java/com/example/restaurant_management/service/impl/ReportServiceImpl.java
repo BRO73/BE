@@ -3,7 +3,9 @@ package com.example.restaurant_management.service.impl;
 import com.example.restaurant_management.entity.Order;
 import com.example.restaurant_management.repository.OrderRepository;
 import com.example.restaurant_management.service.ReportService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -11,10 +13,14 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
 @Service
 public class ReportServiceImpl implements ReportService {
 
     private final OrderRepository orderRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     public ReportServiceImpl(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
@@ -90,13 +96,18 @@ public class ReportServiceImpl implements ReportService {
         LocalDateTime start = end.minusDays(7);
 
         List<Object[]> rows = orderRepository.topItemsRevenueBetween(start, end);
-        return rows.stream().map(r -> {
+        int index = 1;
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (Object[] r : rows) {
             Map<String, Object> m = new HashMap<>();
+            m.put("id", index++); // 👈 Thêm ID
             m.put("name",    (String) r[0]);
             m.put("orders",  ((Number) r[1]).longValue());
             m.put("revenue", ((Number) r[2]).doubleValue());
-            return m;
-        }).toList();
+            result.add(m);
+        }
+        return result;
     }
 
     public Map<String, Object> getSummaryReport(int days) {
@@ -185,6 +196,23 @@ public class ReportServiceImpl implements ReportService {
                     return map;
                 })
                 .collect(Collectors.toList());
+    }
+
+    // Thêm vào ReportService.java
+    public List<Map<String, Object>> getLowRatingReviews() {
+        String sql = """
+        SELECT r.id, r.order_id as orderId, c.full_name as customerName, 
+               c.email as customerEmail, r.rating_score as ratingScore, 
+               r.comment, r.created_at as createdAt
+        FROM reviews r
+        LEFT JOIN customers c ON r.customer_user_id = c.user_id
+        WHERE r.rating_score <= 3 
+        AND r.is_deleted = 0
+        ORDER BY r.rating_score ASC, r.created_at DESC
+        LIMIT 10
+        """;
+
+        return jdbcTemplate.queryForList(sql);
     }
 
 

@@ -69,4 +69,9 @@ public class ReportController {
         return reportService.getTopCustomers(days);
     }
 
+    @GetMapping("/reviews/low-rating")
+    public List<Map<String, Object>> getLowRatingReviews() {
+        return reportService.getLowRatingReviews();
+    }
+
 }

@@ -68,17 +68,17 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     /** Top 5 món theo doanh thu trong 7 ngày gần nhất */
     @Query(value = """
-        SELECT mi.name AS item_name,
-               SUM(od.quantity) AS total_qty,
-               SUM(od.price_at_order * od.quantity) AS revenue
-        FROM order_details od
-        JOIN menu_items mi ON mi.id = od.menu_item_id
-        JOIN orders o      ON o.id  = od.order_id
-        WHERE o.created_at BETWEEN :start AND :end
-        GROUP BY mi.name
-        ORDER BY revenue DESC
-        LIMIT 5
-        """, nativeQuery = true)
+    SELECT mi.name AS item_name,
+           SUM(od.quantity) AS total_qty,
+           SUM(od.price_at_order * od.quantity) AS revenue
+    FROM order_details od
+    JOIN menu_items mi ON mi.id = od.menu_item_id
+    JOIN orders o      ON o.id  = od.order_id
+    WHERE DATE(o.created_at) BETWEEN DATE(:start) AND DATE(:end)
+    GROUP BY mi.name
+    ORDER BY revenue DESC
+    LIMIT 5
+    """, nativeQuery = true)
     List<Object[]> topItemsRevenueBetween(@Param("start") LocalDateTime start,
                                           @Param("end") LocalDateTime end);
 

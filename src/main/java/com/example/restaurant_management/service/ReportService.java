@@ -21,4 +21,6 @@ public interface ReportService {
     List<Map<String, Object>> getPeakHours(int days);
 
     List<Map<String, Object>> getTopCustomers(int days);
+
+    List<Map<String, Object>> getLowRatingReviews();
 }
