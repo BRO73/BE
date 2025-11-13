@@ -13,14 +13,9 @@ import lombok.*;
 @Table(name = "reviews")
 public class Review extends AbstractEntity<Long> {
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false, unique = true)
-    @JsonIgnoreProperties({"reviews", "table", "staffUser", "customerUser"})
-    private Order order;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_user_id", nullable = false)
-    private User customerUser;
+    @JoinColumn(name = "customer_id", nullable = false)
+    private Customer customer;
 
     @Column(name = "rating_score", nullable = false)
     private int ratingScore;

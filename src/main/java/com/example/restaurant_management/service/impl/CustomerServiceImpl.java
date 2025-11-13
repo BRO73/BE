@@ -10,6 +10,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,6 +49,15 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    public CustomerResponse findByPhoneNumber(String phoneNumber) {
+        Customer customer = customerRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new NoSuchElementException("Customer with phone number " + phoneNumber + " not found"));
+        return mapToResponse(customer);
+    }
+
+
+
+    @Override
     public void deleteCustomer(Long id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + id));
@@ -63,7 +73,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     private CustomerResponse mapToResponse(Customer customer) {
         return CustomerResponse.builder()
-                .userId(customer.getId())
+                .id(customer.getId())
                 .fullName(customer.getFullName())
                 .email(customer.getEmail())
                 .phoneNumber(customer.getPhoneNumber())

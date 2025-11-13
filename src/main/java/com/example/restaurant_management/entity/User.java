@@ -44,9 +44,6 @@ public class User extends AbstractEntity<Long> implements Serializable {
     @OneToMany(mappedBy = "customerUser", fetch = FetchType.LAZY)
     private List<Booking> bookingsAsCustomer = new ArrayList<>();
 
-    @OneToMany(mappedBy = "customerUser", fetch = FetchType.LAZY)
-    private List<Review> reviews = new ArrayList<>();
-
     @OneToMany(mappedBy = "staffUser", fetch = FetchType.LAZY)
     private List<SupportRequest> supportRequestsAsStaff = new ArrayList<>();
 

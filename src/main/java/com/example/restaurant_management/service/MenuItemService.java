@@ -19,4 +19,5 @@ public interface MenuItemService {
     List<MenuItem> getMenuItemsByStatus(String status);
     List<MenuItem> searchMenuItemsByName(String name);
     Page<MenuItemResponse> getAllMenuItemsPaged(Pageable pageable);
+    List<MenuItemResponse> getTop4MostOrderedMenuItems();
 }

@@ -8,11 +8,8 @@ import java.util.Optional;
 
 public interface ReviewService {
     List<ReviewResponse> getAllReviews();
-    Optional<ReviewResponse> getReviewById(Long id);
     ReviewResponse createReview(ReviewRequest request);
-    ReviewResponse updateReview(Long id, ReviewRequest request);
-    void deleteReview(Long id);
-    Optional<ReviewResponse> getReviewByOrder(Long orderId);
     List<ReviewResponse> getReviewsByRating(Byte rating);
     List<ReviewResponse> getReviewsByMinRating(Byte minRating);
+    List<ReviewResponse> findTop5ByOrderByCreatedAtDesc();
 }

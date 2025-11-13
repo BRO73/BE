@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReviewRequest {
-    private Long orderId;
+    private Long customerId;
     private Byte ratingScore;
     private String comment;
 }
