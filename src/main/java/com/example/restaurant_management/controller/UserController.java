@@ -4,9 +4,11 @@ import com.example.restaurant_management.dto.request.UpdateStaffRequest;
 import com.example.restaurant_management.dto.request.CreateUserRequest;
 import com.example.restaurant_management.dto.request.UpdateUserRequest;
 import com.example.restaurant_management.dto.response.RestaurantResponse;
+import com.example.restaurant_management.dto.response.StaffProfileResponse;
 import com.example.restaurant_management.dto.response.UserProfileResponse;
 import com.example.restaurant_management.dto.response.UserResponse;
 import com.example.restaurant_management.entity.User;
+import com.example.restaurant_management.service.StaffService;
 import com.example.restaurant_management.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,9 +23,11 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final StaffService staffService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, StaffService staffService) {
         this.userService = userService;
+        this.staffService = staffService;
     }
 
     @GetMapping
@@ -57,14 +61,6 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-//    @GetMapping("/profile")
-//    public ResponseEntity<RestaurantResponse<UserProfileResponse>> getProfile(
-//            @AuthenticationPrincipal String username
-//    ) {
-//        UserProfileResponse profile = userService.getProfile(username);
-//        return RestaurantResponse.ok(profile, "Staff profile fetched successfully");
-//    }
-
     @GetMapping("/username/{username}")
     public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
         return userService.getUserByUsername(username)
@@ -83,4 +79,10 @@ public class UserController {
     public ResponseEntity<List<User>> getUsersByEmail(@PathVariable String email) {
         return ResponseEntity.ok(userService.getUsersByEmail(email));
     }
+
+    @GetMapping("/profile")
+    public ResponseEntity<RestaurantResponse<StaffProfileResponse>> getStaffProfile(Authentication authentication) {
+        return RestaurantResponse.ok(staffService.getProfile(authentication));
+    }
+
 }

@@ -28,7 +28,7 @@ private final LocationRepository locationRepository;
 
     private FloorElementResponse toResponse(FloorElement e) {
         return FloorElementResponse.builder()
-                .id(e.getId())
+                .id(e.getId().toString())
                 .type(e.getType())
                 .x(e.getX())
                 .y(e.getY())

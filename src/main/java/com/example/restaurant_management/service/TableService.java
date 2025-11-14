@@ -2,6 +2,7 @@ package com.example.restaurant_management.service;
 
 import com.example.restaurant_management.dto.request.TableRequest;
 import com.example.restaurant_management.dto.response.TableResponse;
+import com.example.restaurant_management.entity.Booking;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,5 +18,5 @@ public interface TableService {
     List<TableResponse> getTablesByCapacity(Integer capacity);
     List<TableResponse> getTablesByLocation(Long locationId);
     List<TableResponse> getTablesByDay(String date);
-
+    List<TableResponse> getTablesByBooking(Booking b);
 }

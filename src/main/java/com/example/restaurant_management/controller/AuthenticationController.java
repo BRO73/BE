@@ -5,6 +5,7 @@ import com.example.restaurant_management.dto.request.SignInRequest;
 import com.example.restaurant_management.dto.response.RestaurantResponse;
 import com.example.restaurant_management.dto.response.TokenResponse;
 import com.example.restaurant_management.service.AuthenticationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public ResponseEntity<RestaurantResponse<TokenResponse>> login(@RequestBody SignInRequest request) {
+    public ResponseEntity<RestaurantResponse<TokenResponse>> login( @Valid @RequestBody SignInRequest request) {
         TokenResponse token = authenticationService.authenticate(request);
         return RestaurantResponse.ok(token, "Login successful");
     }
