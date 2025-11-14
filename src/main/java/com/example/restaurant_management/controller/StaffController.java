@@ -23,9 +23,16 @@ public class StaffController {
 
     // 🟢 Lấy thông tin profile staff hiện tại
     @GetMapping("/profile")
-    @PreAuthorize("hasRole('WAITSTAFF')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RestaurantResponse<StaffProfileResponse>> getProfile(Authentication authentication) {
         return RestaurantResponse.ok(staffService.getProfile(authentication));
     }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<RestaurantResponse<List<StaffResponse>>> getAllStaff() {
+        return RestaurantResponse.ok(staffService.getAllStaff());
+    }
+
 
 }

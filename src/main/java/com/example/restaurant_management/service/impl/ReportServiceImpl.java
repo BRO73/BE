@@ -198,22 +198,4 @@ public class ReportServiceImpl implements ReportService {
                 .collect(Collectors.toList());
     }
 
-    // Thêm vào ReportService.java
-    public List<Map<String, Object>> getLowRatingReviews() {
-        String sql = """
-        SELECT r.id, r.order_id as orderId, c.full_name as customerName, 
-               c.email as customerEmail, r.rating_score as ratingScore, 
-               r.comment, r.created_at as createdAt
-        FROM reviews r
-        LEFT JOIN customers c ON r.customer_user_id = c.user_id
-        WHERE r.rating_score <= 3 
-        AND r.is_deleted = 0
-        ORDER BY r.rating_score ASC, r.created_at DESC
-        LIMIT 10
-        """;
-
-        return jdbcTemplate.queryForList(sql);
-    }
-
-
 }

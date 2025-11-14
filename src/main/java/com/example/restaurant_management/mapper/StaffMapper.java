@@ -5,10 +5,12 @@ import com.example.restaurant_management.dto.response.StaffProfileResponse;
 import com.example.restaurant_management.entity.Staff;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 @Component
 public class StaffMapper {
 
-    public StaffResponse toResponse(Staff staff) {
+    public StaffResponse toResponse(Staff staff, Set<String> roles) {
         return StaffResponse.builder()
                 .id(staff.getId())
                 .name(staff.getFullName())
@@ -17,6 +19,7 @@ public class StaffMapper {
                 .isActivated(true)
                 .createdAt(staff.getCreatedAt())
                 .userId(staff.getUser().getId())
+                .roles(roles)
                 .build();
     }
 
