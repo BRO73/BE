@@ -1,6 +1,7 @@
 package com.example.restaurant_management.service;
 
 import com.example.restaurant_management.dto.request.CreateStaffRequest;
+import com.example.restaurant_management.dto.request.UpdateProfileRequest;
 import com.example.restaurant_management.dto.request.UpdateStaffRequest;
 import com.example.restaurant_management.dto.response.StaffProfileResponse;
 import com.example.restaurant_management.dto.response.StaffResponse;
@@ -13,4 +14,7 @@ import java.util.List;
 public interface StaffService {
     StaffProfileResponse getProfile(Authentication authentication);
     User updateStaffInfo(String username, UpdateStaffRequest request);
+    StaffProfileResponse updateProfile(String username, UpdateProfileRequest request);
+    List<StaffResponse> getAllStaff();
+
 }
