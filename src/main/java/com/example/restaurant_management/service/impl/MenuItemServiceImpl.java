@@ -24,7 +24,7 @@ public class MenuItemServiceImpl implements MenuItemService {
 
     @Override
     public List<MenuItemResponse> getAllMenuItems() {
-        return menuItemMapper.toDTOList(menuItemRepository.findAll());
+        return menuItemMapper.toDTOList(menuItemRepository.findAllWithCategory());
     }
 
     @Override

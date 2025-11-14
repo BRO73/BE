@@ -57,8 +57,6 @@ public class CustomerController {
         return ResponseEntity.ok(bookings);
     }
 
-
-
     @PutMapping("/{id}")
     public ResponseEntity<CustomerResponse> updateUser(
             @PathVariable Long id,
