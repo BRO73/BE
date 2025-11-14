@@ -8,6 +8,7 @@ import com.example.restaurant_management.dto.response.OrderResponse;
 import com.example.restaurant_management.entity.*;
 import com.example.restaurant_management.mapper.OrderMapper;
 import com.example.restaurant_management.repository.*;
+import com.example.restaurant_management.service.KitchenService;
 import com.example.restaurant_management.service.OrderService;
 import com.example.restaurant_management.util.SecurityUtils;
 import lombok.AllArgsConstructor;
@@ -32,6 +33,7 @@ public class OrderServiceImpl implements OrderService {
     private final RoleRepository roleRepository;
     private final MenuItemRepository menuItemRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private final KitchenService kitchenService;
     @Override
     public List<OrderResponse> getAllOrders() {
         return orderRepository.findAll().stream()
@@ -174,6 +176,8 @@ public class OrderServiceImpl implements OrderService {
 
         // 6. Lưu order
         Order savedOrder = orderRepository.save(order);
+
+        kitchenService.notifyBoardUpdate();
 
         // 7. Trả về response
         return orderMapper.toResponse(savedOrder);

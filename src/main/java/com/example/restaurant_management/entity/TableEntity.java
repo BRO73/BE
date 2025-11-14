@@ -19,7 +19,7 @@ public class TableEntity extends AbstractEntity<Long> {
     @Column(nullable = false)
     private Integer capacity;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "locationId", nullable = false)
     private Location location;
 

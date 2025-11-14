@@ -51,4 +51,17 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
             @Param("priceAtOrder") BigDecimal priceAtOrder,
             @Param("notes") String notes
     );
+
+    @Query("""
+        SELECT od FROM OrderDetail od
+        JOIN FETCH od.menuItem m
+        JOIN FETCH od.order o
+        LEFT JOIN FETCH o.table t      
+        LEFT JOIN FETCH t.location        
+        LEFT JOIN FETCH m.category   
+        WHERE od.status IN :statuses
+        """)
+    List<OrderDetail> findAllByStatusInWithDetails(
+            @Param("statuses") List<String> statuses
+    );
 }

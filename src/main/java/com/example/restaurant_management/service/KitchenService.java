@@ -19,4 +19,6 @@ public interface KitchenService {
 
 
     void completeAllUnits(Long id);
+
+    void notifyBoardUpdate();
 }
