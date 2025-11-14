@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -19,4 +20,6 @@ public class StaffResponse {
     private boolean isActivated;
     private LocalDateTime createdAt;
     private Long userId;
+    private Set<String> roles;  // 👈 Thêm chỗ này
+
 }

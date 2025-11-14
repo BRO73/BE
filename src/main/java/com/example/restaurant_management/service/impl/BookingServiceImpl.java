@@ -60,11 +60,12 @@ public class BookingServiceImpl implements BookingService {
     // ======================================================
     @Override
     public BookingResponse createBooking(BookingRequest request) {
+        validateBookingRequest(request); // ✅ thêm để tránh NPE
+
         List<TableEntity> tables = new ArrayList<>();
         for (Long tbId : request.getTableIds()) {
             TableEntity table = tableRepository.findById(tbId)
                     .orElseThrow(() -> new EntityNotFoundException("Table not found with id: " + tbId));
-            // Check booking trùng trong ngày
             List<Booking> bookingsToday = bookingRepository.findByTableAndDay(table.getId(), request.getBookingTime());
             if (!bookingsToday.isEmpty()) {
                 throw new IllegalStateException("Table " + table.getTableNumber() + " already has a booking on this day!");
@@ -72,31 +73,38 @@ public class BookingServiceImpl implements BookingService {
             tables.add(table);
         }
 
-        // Tìm hoặc tạo Customer qua số điện thoại
         Customer customer = customerRepository.findByPhoneNumber(request.getCustomerPhone())
                 .orElseGet(() -> {
                     Customer newCustomer = Customer.builder()
                             .fullName(request.getCustomerName())
                             .phoneNumber(request.getCustomerPhone())
-                            .email(null)
+                            .email(request.getCustomerEmail()) // optional
                             .build();
                     return customerRepository.save(newCustomer);
                 });
 
         User customerUser = customer.getUser();
-
-        // Map sang entity
         Booking booking = bookingMapper.toEntity(request, tables, customerUser);
         booking.setStatus(request.getStatus() != null ? request.getStatus() : "Pending");
 
         Booking saved = bookingRepository.save(booking);
 
-        // Cập nhật trạng thái bàn theo ngày booking
+        // ✅ Optional: gửi email khi tạo mới
+        if (customer.getEmail() != null && !customer.getEmail().isBlank()) {
+            emailService.sendBookingConfirmation(
+                    customer.getEmail(),
+                    customer.getFullName(),
+                    request.getBookingTime().toLocalDate().toString(),
+                    request.getBookingTime().toLocalTime().toString()
+            );
+        }
+
         for (TableEntity table : tables) {
             updateTableStatusByDay(table, request.getBookingTime());
         }
         return bookingMapper.toResponse(saved);
     }
+
 
     // ======================================================
     // ✅ UPDATE BOOKING
@@ -255,7 +263,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional(readOnly = true)
     public List<BookingResponse> getBookingsByCustomer(Long customerUserId) {
-        List<Booking> bookings = bookingRepository.findByCustomerUserId(customerUserId);
+        List<Booking> bookings = bookingRepository.findByCustomerUser(userRepository.findByCustomer(customerRepository.findById(customerUserId).get()).get());
         return bookingMapper.toResponseList(bookings);
     }
 
@@ -284,4 +292,12 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalArgumentException("At least one table must be selected");
         }
     }
+    @Override
+    @Transactional(readOnly = true)
+    public List<BookingResponse> getBookingsByCustomerId(Long customerId) {
+        List<Booking> bookings = bookingRepository.findByCustomerUser(userRepository.findByCustomer(customerRepository.findById(customerId).get()).get());
+        return bookingMapper.toResponseList(bookings);
+    }
+
+
 }

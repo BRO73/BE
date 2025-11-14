@@ -6,10 +6,12 @@ import com.example.restaurant_management.dto.request.RegisterRequest;
 import com.example.restaurant_management.dto.request.SignInRequest;
 import com.example.restaurant_management.dto.response.TokenResponse;
 import com.example.restaurant_management.entity.Role;
+import com.example.restaurant_management.entity.Staff;
 import com.example.restaurant_management.entity.User;
 import com.example.restaurant_management.entity.UserRole;
 import com.example.restaurant_management.model.CredentialPayload;
 import com.example.restaurant_management.repository.RoleRepository;
+import com.example.restaurant_management.repository.StaffRepository;
 import com.example.restaurant_management.repository.UserRepository;
 import com.example.restaurant_management.repository.UserRoleRepository;
 import com.example.restaurant_management.service.AuthenticationService;
@@ -37,6 +39,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
+    private final StaffRepository staffRepository;
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
@@ -59,12 +62,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     @Transactional
     public String register(RegisterRequest request) {
+
+        // 1. Tạo user
         User user = User.builder()
                 .username(request.username())
                 .hashedPassword(passwordEncoder.encode(request.password()))
                 .build();
         userRepository.save(user);
 
+        // 2. Gán role cho user
         Role role = roleRepository.findByName(request.role())
                 .orElseThrow(() -> new RestaurantException("Role not found"));
 
@@ -72,8 +78,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .roleId(role.getId())
                 .userId(user.getId())
                 .build();
-
         userRoleRepository.save(userRole);
+
+        // 3. ⭐ TỰ ĐỘNG TẠO STAFF CHO USER MỚI
+        Staff staff = Staff.builder()
+                .user(user)
+                .fullName(user.getUsername()) // tạm dùng username làm tên
+                .email(null)
+                .phoneNumber(null)
+                .build();
+
+        staffRepository.save(staff);
 
         return "Register Success";
     }

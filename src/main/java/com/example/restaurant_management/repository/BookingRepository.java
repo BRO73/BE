@@ -1,6 +1,7 @@
 package com.example.restaurant_management.repository;
 
 import com.example.restaurant_management.entity.Booking;
+import com.example.restaurant_management.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -61,5 +62,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end
     );
+
+    List<Booking> findByCustomerUser(User user);
 
 }
