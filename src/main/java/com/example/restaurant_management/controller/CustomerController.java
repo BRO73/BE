@@ -1,5 +1,6 @@
 package com.example.restaurant_management.controller;
 
+import com.example.restaurant_management.dto.request.CustomerRequest;
 import com.example.restaurant_management.dto.response.CustomerResponse;
 import com.example.restaurant_management.service.CustomerService;
 import lombok.RequiredArgsConstructor;
@@ -46,5 +47,14 @@ public class CustomerController {
         CustomerResponse customer = customerService.findByPhoneNumber(phoneNumber);
         return ResponseEntity.ok(customer);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CustomerResponse> updateUser(
+            @PathVariable Long id,
+            @RequestBody CustomerRequest request
+    ) {
+        return ResponseEntity.ok(customerService.updateCustomer(id, request));
+    }
+
 
 }

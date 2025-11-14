@@ -22,7 +22,7 @@ public abstract class MenuItemMapper {
     @Mapping(target = "category", expression = "java(toCategory(menuItemRequest.getCategoryName()))")
     public abstract MenuItem toEntity(MenuItemRequest menuItemRequest);
 
-
+    @Mapping(source = "category.id", target = "categoryId")
     @Mapping(source = "category.name", target = "categoryName")
     public abstract MenuItemResponse toDTO(MenuItem menuItem);
 

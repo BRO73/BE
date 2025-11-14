@@ -1,5 +1,6 @@
 package com.example.restaurant_management.service.impl;
 
+import com.example.restaurant_management.dto.request.CustomerRequest;
 import com.example.restaurant_management.dto.response.CustomerResponse;
 import com.example.restaurant_management.entity.Customer;
 import com.example.restaurant_management.entity.User;
@@ -70,6 +71,29 @@ public class CustomerServiceImpl implements CustomerService {
             customerRepository.delete(customer);
         }
     }
+
+    @Override
+    public CustomerResponse updateCustomer(Long id, CustomerRequest request) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+
+        if (request.getFullName() != null)
+            customer.setFullName(request.getFullName());
+
+        if (request.getEmail() != null)
+            customer.setEmail(request.getEmail());
+
+        if (request.getPhone() != null)
+            customer.setPhoneNumber(request.getPhone());
+
+        if (request.getActivated() != null)
+            customer.setActivated(request.getActivated());
+
+        customerRepository.save(customer);
+
+        return mapToResponse(customer);
+    }
+
 
     private CustomerResponse mapToResponse(Customer customer) {
         return CustomerResponse.builder()

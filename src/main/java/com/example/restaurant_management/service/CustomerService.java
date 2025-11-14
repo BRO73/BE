@@ -1,5 +1,6 @@
 package com.example.restaurant_management.service;
 
+import com.example.restaurant_management.dto.request.CustomerRequest;
 import com.example.restaurant_management.dto.response.CustomerResponse;
 import com.example.restaurant_management.entity.Customer;
 
@@ -16,6 +17,6 @@ public interface CustomerService {
     CustomerResponse findByPhoneNumber(String phoneNumber);
 
     void deleteCustomer(Long id);
-
+    CustomerResponse updateCustomer(Long id, CustomerRequest customer);
     boolean existsByPhoneNumber(String phoneNumber);
 }
