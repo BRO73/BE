@@ -1,6 +1,5 @@
 package com.example.restaurant_management.dto.response;
 
-import com.example.restaurant_management.entity.UserAccount;
 import java.time.LocalDateTime;
 
 public record StaffAccountResponse(

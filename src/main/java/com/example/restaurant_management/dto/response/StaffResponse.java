@@ -1,19 +1,22 @@
 package com.example.restaurant_management.dto.response;
 
-import com.example.restaurant_management.common.enums.StaffRole;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public record StaffResponse(
-        Long id,
-        String fullName,
-        String email,
-        String phoneNumber,
-        boolean isActivated,
-        LocalDateTime createdAt,
-        Long userId,
-        String role
-) {}
+public class StaffResponse {
+    private Long id;
+    private String name;
+    private String email;
+    private String phoneNumber;
+    private boolean isActivated;
+    private LocalDateTime createdAt;
+    private Long userId;
+}
