@@ -247,13 +247,9 @@ CREATE TABLE users (
                        hashed_password varchar(255) DEFAULT NULL COMMENT 'Chỉ cho staff',
                        phone_number varchar(15) DEFAULT NULL,
                        email varchar(255) DEFAULT NULL,
-                       store_id bigint DEFAULT NULL,
                        PRIMARY KEY (id),
                        UNIQUE KEY username (username),
                        UNIQUE KEY phone_number (phone_number),
-                       UNIQUE KEY UKowbd7kqb60wnmhjyyjnku6tt0 (username,store_id),
-                       KEY fk_store (store_id),
-                       CONSTRAINT fk_store FOREIGN KEY (store_id) REFERENCES stores (id)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Dữ liệu cho bảng users
@@ -368,14 +364,11 @@ CREATE TABLE staff (
                        email varchar(255) DEFAULT NULL,
                        full_name varchar(100) NOT NULL,
                        phone_number varchar(15) DEFAULT NULL,
-                       store_id bigint NOT NULL,
                        user_id bigint DEFAULT NULL,
                        PRIMARY KEY (id),
                        UNIQUE KEY UKpvctx4dbua9qh4p4s3gm3scrh (email),
                        UNIQUE KEY UKrpkd84jnduk7tp07j3tlpne15 (phone_number),
                        UNIQUE KEY UK7qatq4kob2sr6rlp44khhj53g (user_id),
-                       KEY FK68xevww9py6d2ieym64tiyehm (store_id),
-                       CONSTRAINT FK68xevww9py6d2ieym64tiyehm FOREIGN KEY (store_id) REFERENCES stores (id),
                        CONSTRAINT FKdlvw23ak3u9v9bomm8g12rtc0 FOREIGN KEY (user_id) REFERENCES users (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 

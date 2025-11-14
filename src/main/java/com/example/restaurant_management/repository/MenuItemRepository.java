@@ -21,4 +21,8 @@ public interface MenuItemRepository extends JpaRepository<MenuItem, Long> {
         ORDER BY SUM(od.quantity) DESC
         """)
     List<MenuItem> findTop4MostOrderedMenuItems();
+
+    // Trong MenuItemRepository.java
+    @Query("SELECT m FROM MenuItem m LEFT JOIN FETCH m.category")
+    List<MenuItem> findAllWithCategory();
 }

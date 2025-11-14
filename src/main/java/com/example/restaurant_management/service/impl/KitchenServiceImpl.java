@@ -8,6 +8,7 @@ import com.example.restaurant_management.repository.MenuItemRepository;
 import com.example.restaurant_management.repository.OrderDetailRepository;
 import com.example.restaurant_management.service.KitchenService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,31 +19,53 @@ import java.util.List;
 import java.time.Instant;
 import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KitchenServiceImpl implements KitchenService {
 
     private static final String TOPIC_BOARD = "/topic/kitchen/board";
 
-    private final OrderDetailRepository repo;
+    private final OrderDetailRepository orderDetailRepository;
     private final MenuItemRepository menuItemRepo;
     private final SimpMessagingTemplate simp;
 
     private int defaultLimit() {
-        return 200; // tùy bạn cấu hình
+        return 200;
     }
 
     /** Gửi snapshot board lên topic. */
     private void broadcastBoardSnapshot() {
-        KitchenBoardResponse snapshot = board(defaultLimit());
-        // Bắn snapshot ra topic
-        simp.convertAndSend(TOPIC_BOARD, snapshot);
+        try {
+            KitchenBoardResponse snapshot = board(defaultLimit());
+            simp.convertAndSend(TOPIC_BOARD, snapshot);
+            log.info("✅ Broadcasted board snapshot: {} items", snapshot.getItems().size());
+            System.out.println("✅ [WS] Broadcasted to /topic/kitchen/board - Items: " + snapshot.getItems().size());
+        } catch (Exception e) {
+            log.error("❌ Failed to broadcast board snapshot", e);
+            System.err.println("❌ [WS] Broadcast failed: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void notifyBoardUpdate() {
+        log.info("🔔 Received external notification to update board, broadcasting...");
+        System.out.println("🔔 [WS] Received notify from other service. Broadcasting...");
+        broadcastBoardSnapshot(); // Gọi lại hàm private đã có
     }
 
     @Override
     @Transactional(readOnly = true)
     public KitchenBoardResponse board(int limit) {
-        List<OrderDetail> all = repo.findAll();
+        List<String> activeStatuses = List.of(
+                OrderItemStatus.PENDING.name(),
+                OrderItemStatus.IN_PROGRESS.name(),
+                OrderItemStatus.DONE.name()
+        );
+
+        List<OrderDetail> all = orderDetailRepository.findAllByStatusInWithDetails(activeStatuses);
+
         Comparator<OrderDetail> byCreated = Comparator.comparing(OrderDetail::getCreatedAt);
 
         List<KitchenTicketResponse> items = all.stream()
@@ -68,84 +91,70 @@ public class KitchenServiceImpl implements KitchenService {
         menu.setUpdatedAt(LocalDateTime.now());
         menuItemRepo.save(menu);
 
-        // WS notify
         broadcastBoardSnapshot();
     }
 
-    /**
-     * Cập nhật trạng thái OrderDetail.
-     * Hỗ trợ rollback DONE -> IN_PROGRESS:
-     *  - Nếu tìm được dòng gốc (PENDING/IN_PROGRESS) cùng order + menu + priceAtOrder + notes,
-     *    sẽ GỘP quantity về dòng gốc và XÓA dòng DONE (giữ ID cũ của dòng gốc).
-     *  - Nếu không tìm được dòng phù hợp: đổi trạng thái tại chỗ (giữ ID hiện tại).
-     */
     @Override
     @Transactional
     public void updateOrderDetailStatus(Long orderDetailId, String status) {
-        OrderDetail od = repo.findByIdForUpdate(orderDetailId)
+        OrderDetail od = orderDetailRepository.findByIdForUpdate(orderDetailId)
                 .orElseThrow(() -> new IllegalArgumentException("OrderDetail not found: " + orderDetailId));
 
         String cur = od.getStatus();
+        log.info("🔄 Status transition: {} -> {} for orderDetailId={}", cur, status, orderDetailId);
+        System.out.println("🔄 [STATUS] " + cur + " -> " + status + " (ID: " + orderDetailId + ")");
 
         switch (cur) {
             case "PENDING" -> {
-                if (!Objects.equals(status, "DONE")
-                        && !Objects.equals(status, "CANCELED")
-                        && !Objects.equals(status, "IN_PROGRESS")) {
+                if (!status.equals("DONE")
+                        && !status.equals("CANCELED")
+                        && !status.equals("IN_PROGRESS")) {
                     throw new IllegalStateException("Invalid transition from PENDING to " + status);
                 }
             }
             case "IN_PROGRESS" -> {
-                if (!Objects.equals(status, "DONE")
-                        && !Objects.equals(status, "CANCELED")) {
+                if (!status.equals("DONE") && !status.equals("CANCELED")) {
                     throw new IllegalStateException("Invalid transition from IN_PROGRESS to " + status);
                 }
             }
             case "DONE" -> {
-                if (!Objects.equals(status, "SERVED")
-                        && !Objects.equals(status, "IN_PROGRESS")) {
+                if (!status.equals("SERVED") && !status.equals("IN_PROGRESS")) {
                     throw new IllegalStateException("Invalid transition from DONE to " + status);
                 }
 
                 if (status.equals("IN_PROGRESS")) {
-                    // TÌM DÒNG GỐC TRONG CÙNG ORDER (SIẾT CHẶT)
-                    List<OrderDetail> targets = repo.findMergeTargetsForRollback(
-                            od.getOrder().getId(),
-                            od.getId(), // loại trừ chính nó
-                            od.getMenuItem().getId(),
-                            List.of("PENDING", "IN_PROGRESS"),
-                            od.getPriceAtOrder(),
-                            od.getNotes()
-                    );
+                    synchronized (this) {
+                        List<OrderDetail> targets = orderDetailRepository.findMergeTargetsForRollback(
+                                od.getOrder().getId(),
+                                od.getId(),
+                                od.getMenuItem().getId(),
+                                List.of("PENDING", "IN_PROGRESS"),
+                                od.getPriceAtOrder(),
+                                od.getNotes()
+                        );
 
-                    if (!targets.isEmpty()) {
-                        OrderDetail tgt = targets.get(0);
+                        if (!targets.isEmpty()) {
+                            OrderDetail tgt = targets.get(0);
 
-                        // AN TOÀN HƠN: kiểm tra lại orderId (phòng trường hợp mapping khác)
-                        if (!tgt.getOrder().getId().equals(od.getOrder().getId())) {
-                            // Không cùng order => không gộp, fallback đổi trạng thái tại chỗ
-                            od.setStatus(status);
-                            od.setUpdatedAt(LocalDateTime.now());
-                            repo.save(od);
+                            if (!tgt.getOrder().getId().equals(od.getOrder().getId())) {
+                                od.setStatus(status);
+                                od.setUpdatedAt(LocalDateTime.now());
+                                orderDetailRepository.save(od);
+                                broadcastBoardSnapshot();
+                                return;
+                            }
 
-                            // WS notify trước khi return sớm
+                            tgt.setQuantity(tgt.getQuantity() + od.getQuantity());
+                            tgt.setUpdatedAt(LocalDateTime.now());
+                            orderDetailRepository.save(tgt);
+
+                            orderDetailRepository.delete(od);
+                            log.info("✅ Rollback merged: {} units back to orderDetailId={}", od.getQuantity(), tgt.getId());
+                            System.out.println("✅ [ROLLBACK] Merged " + od.getQuantity() + " units to ID: " + tgt.getId());
                             broadcastBoardSnapshot();
                             return;
                         }
-
-                        // Gộp quantity về dòng gốc
-                        tgt.setQuantity(tgt.getQuantity() + od.getQuantity());
-                        tgt.setUpdatedAt(LocalDateTime.now());
-                        repo.save(tgt);
-
-                        // Xoá dòng DONE sau khi gộp
-                        repo.delete(od);
-
-                        // WS notify trước khi return sớm
-                        broadcastBoardSnapshot();
-                        return;
                     }
-                    // Không có dòng phù hợp -> rơi xuống đổi trạng thái tại chỗ
                 }
             }
             case "SERVED", "CANCELED" -> {
@@ -153,27 +162,28 @@ public class KitchenServiceImpl implements KitchenService {
             }
         }
 
-        // Mặc định: đổi trạng thái tại chỗ
         od.setStatus(status);
         od.setUpdatedAt(LocalDateTime.now());
-        repo.save(od);
+        orderDetailRepository.save(od);
 
-        // WS notify
         broadcastBoardSnapshot();
     }
 
     @Override
     @Transactional
     public void completeOneUnit(Long orderDetailId) {
-        OrderDetail src = repo.findByIdForUpdate(orderDetailId)
+        OrderDetail src = orderDetailRepository.findByIdForUpdate(orderDetailId)
                 .orElseThrow(() -> new IllegalArgumentException("OrderDetail not found: " + orderDetailId));
 
         String cur = src.getStatus();
-        if (Objects.equals(cur, "CANCELED") || Objects.equals(cur, "SERVED")) {
+        System.out.println(">>> [COMPLETE_ONE] orderDetailId=" + orderDetailId + ", status=" + cur);
+
+        if (cur.equals("CANCELED") || cur.equals("SERVED")) {
             throw new IllegalStateException("Invalid state to complete-one: " + cur);
         }
-        if (cur == "DONE") {
-            // đã DONE rồi thì không đổi gì nhưng vẫn bắn snapshot để đồng bộ UI (tuỳ chọn)
+
+        if (cur.equals("DONE")) {
+            System.out.println(">>> [COMPLETE_ONE] Already DONE, broadcasting...");
             broadcastBoardSnapshot();
             return;
         }
@@ -182,17 +192,15 @@ public class KitchenServiceImpl implements KitchenService {
         if (qty <= 1) {
             src.setStatus("DONE");
             src.setUpdatedAt(LocalDateTime.now());
-            repo.save(src);
-
-            // WS notify rồi return
+            orderDetailRepository.save(src);
+            System.out.println("✅ [COMPLETE_ONE] Set to DONE (qty was 1)");
             broadcastBoardSnapshot();
             return;
         }
 
-        // Tách 1 đơn vị DONE ra dòng mới
         src.setQuantity(qty - 1);
         src.setUpdatedAt(LocalDateTime.now());
-        repo.save(src);
+        orderDetailRepository.save(src);
 
         OrderDetail readyOne = new OrderDetail();
         readyOne.setOrder(src.getOrder());
@@ -203,61 +211,64 @@ public class KitchenServiceImpl implements KitchenService {
         readyOne.setStatus("DONE");
         readyOne.setCreatedAt(LocalDateTime.now());
         readyOne.setUpdatedAt(LocalDateTime.now());
-        repo.save(readyOne);
+        orderDetailRepository.save(readyOne);
 
-        // WS notify
+        System.out.println("✅ [COMPLETE_ONE] Split: " + (qty-1) + " + 1 DONE");
         broadcastBoardSnapshot();
     }
 
     @Override
     @Transactional
     public void serveOneUnit(Long orderDetailId) {
-        OrderDetail src = repo.findByIdForUpdate(orderDetailId)
+        OrderDetail src = orderDetailRepository.findByIdForUpdate(orderDetailId)
                 .orElseThrow(() -> new IllegalArgumentException("OrderDetail not found: " + orderDetailId));
 
-        if (src.getStatus() != "DONE") {
+        System.out.println(">>> [SERVE_ONE] orderDetailId=" + orderDetailId + ", status=" + src.getStatus());
+
+        if (!src.getStatus().equals("DONE")) {
             throw new IllegalStateException("serve-one chỉ áp dụng cho trạng thái DONE");
         }
+
         int qty = src.getQuantity();
         if (qty <= 1) {
-            repo.delete(src);
-
-            // WS notify rồi return
+            orderDetailRepository.delete(src);
+            System.out.println("✅ [SERVE_ONE] Deleted (qty was 1)");
             broadcastBoardSnapshot();
             return;
         }
+
         src.setQuantity(qty - 1);
         src.setUpdatedAt(LocalDateTime.now());
-        repo.save(src);
+        orderDetailRepository.save(src);
 
-        // WS notify
+        System.out.println("✅ [SERVE_ONE] Decreased qty: " + qty + " -> " + (qty-1));
         broadcastBoardSnapshot();
     }
 
     @Override
     @Transactional
     public void completeAllUnits(Long orderDetailId) {
-        OrderDetail src = repo.findByIdForUpdate(orderDetailId)
+        OrderDetail src = orderDetailRepository.findByIdForUpdate(orderDetailId)
                 .orElseThrow(() -> new IllegalArgumentException("OrderDetail not found: " + orderDetailId));
 
         String cur = src.getStatus();
-        if (Objects.equals(cur, "CANCELED") || Objects.equals(cur, "SERVED")) {
+        System.out.println(">>> [COMPLETE_ALL] orderDetailId=" + orderDetailId + ", status=" + cur);
+
+        if (cur.equals("CANCELED") || cur.equals("SERVED")) {
             throw new IllegalStateException("Invalid state to complete-all: " + cur);
         }
-        if (Objects.equals(cur, "DONE")) {
-            // đã DONE rồi thì không đổi gì nhưng vẫn bắn snapshot để đồng bộ UI
+
+        if (cur.equals("DONE")) {
+            System.out.println(">>> [COMPLETE_ALL] Already DONE, broadcasting...");
             broadcastBoardSnapshot();
             return;
         }
 
-        // Chuyển toàn bộ sang DONE
         src.setStatus("DONE");
         src.setUpdatedAt(LocalDateTime.now());
-        repo.save(src);
+        orderDetailRepository.save(src);
 
-        // WS notify
+        System.out.println("✅ [COMPLETE_ALL] Set to DONE");
         broadcastBoardSnapshot();
     }
-
-
 }
