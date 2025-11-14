@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-    Optional<Review> findByOrderId(Long orderId);
     List<Review> findByRatingScore(Byte ratingScore);
     List<Review> findByRatingScoreGreaterThanEqual(Byte ratingScore);
+    List<Review> findTop5ByOrderByCreatedAtDesc();
 }

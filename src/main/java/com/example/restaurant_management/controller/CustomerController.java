@@ -41,4 +41,10 @@ public class CustomerController {
         return ResponseEntity.ok(exists);
     }
 
+    @GetMapping("/phone/{phoneNumber}")
+    public ResponseEntity<CustomerResponse> getCustomerByPhone(@PathVariable String phoneNumber) {
+        CustomerResponse customer = customerService.findByPhoneNumber(phoneNumber);
+        return ResponseEntity.ok(customer);
+    }
+
 }

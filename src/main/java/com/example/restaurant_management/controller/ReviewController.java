@@ -23,35 +23,15 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getAllReviews());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ReviewResponse> getReviewById(@PathVariable Long id) {
-        return reviewService.getReviewById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/5-reviews")
+    public ResponseEntity<List<ReviewResponse>> getTop5Reviews() {
+        return ResponseEntity.ok(reviewService.findTop5ByOrderByCreatedAtDesc());
     }
-
     @PostMapping
     public ResponseEntity<ReviewResponse> createReview(@RequestBody ReviewRequest request) {
         return ResponseEntity.ok(reviewService.createReview(request));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ReviewResponse> updateReview(@PathVariable Long id, @RequestBody ReviewRequest request) {
-        return ResponseEntity.ok(reviewService.updateReview(id, request));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
-        reviewService.deleteReview(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/order/{orderId}")
-    public ResponseEntity<ReviewResponse> getReviewByOrder(@PathVariable Long orderId) {
-        return reviewService.getReviewByOrder(orderId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
 
     @GetMapping("/rating/{rating}")
     public ResponseEntity<List<ReviewResponse>> getReviewsByRating(@PathVariable Byte rating) {
@@ -62,4 +42,6 @@ public class ReviewController {
     public ResponseEntity<List<ReviewResponse>> getReviewsByMinRating(@PathVariable Byte minRating) {
         return ResponseEntity.ok(reviewService.getReviewsByMinRating(minRating));
     }
+
+
 }

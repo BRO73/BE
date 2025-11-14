@@ -71,4 +71,15 @@ public class MenuItemServiceImpl implements MenuItemService {
         return menuItemRepository.findAll(pageable)
                 .map(menuItemMapper::toDTO);
     }
+
+    @Override
+    public List<MenuItemResponse> getTop4MostOrderedMenuItems() {
+        List<MenuItem> allItems = menuItemRepository.findTop4MostOrderedMenuItems();
+        List<MenuItem> availableItems = allItems.stream()
+                .filter(item -> "Available".equalsIgnoreCase(item.getStatus()))
+                .limit(4)
+                .toList();
+        return menuItemMapper.toDTOList(availableItems);
+    }
+
 }

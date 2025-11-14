@@ -86,4 +86,9 @@ public class MenuItemController {
     public ResponseEntity<List<MenuItem>> searchMenuItemsByName(@RequestParam String name) {
         return ResponseEntity.ok(menuItemService.searchMenuItemsByName(name));
     }
+
+    @GetMapping("/top4")
+    public ResponseEntity<List<MenuItemResponse>> getTop4MostOrderedItems() {
+        return ResponseEntity.ok(menuItemService.getTop4MostOrderedMenuItems());
+    }
 }

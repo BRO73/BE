@@ -6,6 +6,7 @@ import com.example.restaurant_management.entity.Customer;
 import com.example.restaurant_management.entity.Order;
 import com.example.restaurant_management.entity.Review;
 import com.example.restaurant_management.entity.User;
+import com.example.restaurant_management.repository.CustomerRepository;
 import com.example.restaurant_management.repository.OrderRepository;
 import com.example.restaurant_management.repository.ReviewRepository;
 import com.example.restaurant_management.repository.UserRepository;
@@ -20,39 +21,33 @@ import java.util.stream.Collectors;
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final OrderRepository orderRepository;
-    private final UserRepository userRepository;
-
-    public ReviewServiceImpl(ReviewRepository reviewRepository, OrderRepository orderRepository, UserRepository userRepository) {
+    private final CustomerRepository customerRepository;
+    public ReviewServiceImpl(ReviewRepository reviewRepository, CustomerRepository customerRepository) {
         this.reviewRepository = reviewRepository;
-        this.orderRepository = orderRepository;
-        this.userRepository = userRepository;
+        this.customerRepository = customerRepository;
     }
 
     private ReviewResponse mapToResponse(Review review) {
-        var user = review.getCustomerUser();
+        Customer customer = review.getCustomer();
 
         String customerName = "Unknown";
         String customerEmail = "N/A";
+        String customerPhone = "N/A";
 
-        if (user != null) {
-            // Nếu user có liên kết với customer (quan hệ 1-1 trong bảng customers)
-            if (user.getCustomer() != null) {
-                Customer customer = user.getCustomer();
-                if (customer.getFullName() != null)
-                    customerName = customer.getFullName();
-                if (customer.getEmail() != null)
-                    customerEmail = customer.getEmail();
-            } else {
-                // fallback — chỉ có username nếu là staff/admin
-                if (user.getUsername() != null)
-                    customerName = user.getUsername();
+        if (customer != null) {
+            if (customer.getFullName() != null && !customer.getFullName().isBlank()) {
+                customerName = customer.getFullName();
+            }
+            if (customer.getEmail() != null && !customer.getEmail().isBlank()) {
+                customerEmail = customer.getEmail();
+            }
+            if (customer.getPhoneNumber() != null && !customer.getPhoneNumber().isBlank()) {
+                customerPhone = customer.getPhoneNumber();
             }
         }
 
         return ReviewResponse.builder()
                 .id(review.getId())
-                .orderId(review.getOrder().getId())
                 .ratingScore((byte) review.getRatingScore())
                 .comment(review.getComment())
                 .createdAt(review.getCreatedAt())
@@ -61,8 +56,10 @@ public class ReviewServiceImpl implements ReviewService {
                 .activated(review.isActivated())
                 .customerName(customerName)
                 .customerEmail(customerEmail)
+                .customerPhone(customerPhone)
                 .build();
     }
+
 
 
     @Override
@@ -73,46 +70,20 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public Optional<ReviewResponse> getReviewById(Long id) {
-        return reviewRepository.findById(id).map(this::mapToResponse);
-    }
-
-    @Override
     public ReviewResponse createReview(ReviewRequest request) {
-        Order order = orderRepository.findById(request.getOrderId())
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-        User customer = order.getCustomerUser();
+        Customer customer = customerRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
 
         Review review = Review.builder()
-                .order(order)
-                .customerUser(customer)
-                .ratingScore(request.getRatingScore())
+                .customer(customer)
+                .ratingScore(request.getRatingScore() != null ? request.getRatingScore() : 0) // fallback 0 nếu null
                 .comment(request.getComment())
                 .build();
 
         return mapToResponse(reviewRepository.save(review));
     }
 
-    @Override
-    public ReviewResponse updateReview(Long id, ReviewRequest request) {
-        Review review = reviewRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Review not found"));
 
-        review.setRatingScore(request.getRatingScore());
-        review.setComment(request.getComment());
-
-        return mapToResponse(reviewRepository.save(review));
-    }
-
-    @Override
-    public void deleteReview(Long id) {
-        reviewRepository.deleteById(id);
-    }
-
-    @Override
-    public Optional<ReviewResponse> getReviewByOrder(Long orderId) {
-        return reviewRepository.findByOrderId(orderId).map(this::mapToResponse);
-    }
 
     @Override
     public List<ReviewResponse> getReviewsByRating(Byte rating) {
@@ -125,4 +96,13 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewRepository.findByRatingScoreGreaterThanEqual(minRating)
                 .stream().map(this::mapToResponse).collect(Collectors.toList());
     }
+
+    @Override
+    public List<ReviewResponse> findTop5ByOrderByCreatedAtDesc() {
+        return reviewRepository.findAll().stream()
+                .limit(5)
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
 }

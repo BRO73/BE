@@ -12,15 +12,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ReviewResponse {
     private Long id;
-    private Long orderId;
     private Byte ratingScore;
     private String comment;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private boolean deleted;
     private boolean activated;
-
-    // ✅ thêm 2 dòng mới
     private String customerName;
     private String customerEmail;
+    private String customerPhone;
 }
