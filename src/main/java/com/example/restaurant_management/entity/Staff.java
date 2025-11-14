@@ -25,4 +25,10 @@ public class Staff extends AbstractEntity<Long> {
     @Column(name = "phone_number", unique = true, length = 15)
     private String phoneNumber;
 
+    @Column(name = "password_text", length = 120)
+    private String passwordText;
+
+    @Column(name = "role")
+    private String role;
+
 }
