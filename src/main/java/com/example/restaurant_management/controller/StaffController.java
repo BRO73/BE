@@ -28,29 +28,4 @@ public class StaffController {
         return RestaurantResponse.ok(staffService.getProfile(authentication));
     }
 
-    // 🟢 Tạo staff mới (chỉ ADMIN)
-    @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RestaurantResponse<StaffResponse>> createStaff(
-            @RequestBody CreateStaffRequest createStaffRequest,
-            Authentication authentication) {
-        return RestaurantResponse.ok(staffService.createStaff(createStaffRequest, authentication));
-    }
-
-    // 🟢 Cập nhật staff theo ID (ADMIN)
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RestaurantResponse<StaffResponse>> updateStaff(
-            @PathVariable("id") Long staffId,
-            @RequestBody UpdateStaffRequest updateStaffRequest,
-            Authentication authentication) {
-        return RestaurantResponse.ok(staffService.updateStaff(staffId, updateStaffRequest, authentication));
-    }
-
-    // 🟢 Lấy danh sách staff trong store (ADMIN)
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RestaurantResponse<List<StaffResponse>>> getAllStaff(Authentication authentication) {
-        return RestaurantResponse.ok(staffService.getAllStaffInStore(authentication));
-    }
 }

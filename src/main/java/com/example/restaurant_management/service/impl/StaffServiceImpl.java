@@ -77,43 +77,4 @@ public class StaffServiceImpl implements StaffService {
                 roleNames
         );
     }
-
-    @Override
-    @Transactional
-    public StaffResponse createStaff(CreateStaffRequest createStaffRequest, Authentication authentication) {
-        User user = userRepository.findById(createStaffRequest.userId())
-                .orElseThrow(() -> new RestaurantException("User not found with id: " + createStaffRequest.userId()));
-
-        Staff staff = Staff.builder()
-                .user(user)
-                .fullName(createStaffRequest.fullName())
-                .email(createStaffRequest.email())
-                .phoneNumber(createStaffRequest.phoneNumber())
-                .build();
-
-        Staff savedStaff = staffRepository.save(staff);
-        return staffMapper.toResponse(savedStaff);
-    }
-
-    @Override
-    public List<StaffResponse> getAllStaffInStore(Authentication authentication) {
-        List<Staff> staffs = staffRepository.findAll();
-        return staffs.stream()
-                .map(staffMapper::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional
-    public StaffResponse updateStaff(Long staffId, UpdateStaffRequest updateStaffRequest, Authentication authentication) {
-        Staff staff = staffRepository.findById(staffId)
-                .orElseThrow(() -> new RestaurantException("Staff not found with id: " + staffId));
-
-        staff.setFullName(updateStaffRequest.fullName());
-        staff.setEmail(updateStaffRequest.email());
-        staff.setPhoneNumber(updateStaffRequest.phoneNumber());
-
-        Staff updatedStaff = staffRepository.save(staff);
-        return staffMapper.toResponse(updatedStaff);
-    }
 }
