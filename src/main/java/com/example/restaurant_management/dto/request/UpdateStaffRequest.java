@@ -1,16 +1,24 @@
 package com.example.restaurant_management.dto.request;
 
+import com.example.restaurant_management.common.enums.StaffRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 
+@Builder
 public record UpdateStaffRequest(
-        @NotBlank(message = "Full name must not be blank")
+
+        @NotBlank(message = "Full name is required.")
         String fullName,
 
-        @Email(message = "Email should be valid")
-        @NotBlank(message = "Email must not be blank")
+        @NotBlank(message = "Email is required.")
+        @Email(message = "Email should be valid.")
         String email,
 
-        @NotBlank(message = "Phone number must not be blank")
-        String phoneNumber
+        @NotBlank
+        String phoneNumber,
+
+        Boolean isActivated,
+
+        StaffRole role
 ) {}

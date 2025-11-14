@@ -1,5 +1,6 @@
 package com.example.restaurant_management.controller;
 
+import com.example.restaurant_management.dto.request.UpdateProfileRequest;
 import com.example.restaurant_management.dto.request.UpdateStaffRequest;
 import com.example.restaurant_management.dto.request.CreateUserRequest;
 import com.example.restaurant_management.dto.request.UpdateUserRequest;
@@ -84,5 +85,15 @@ public class UserController {
     public ResponseEntity<RestaurantResponse<StaffProfileResponse>> getStaffProfile(Authentication authentication) {
         return RestaurantResponse.ok(staffService.getProfile(authentication));
     }
+
+    @PutMapping("/profile")
+    public ResponseEntity<RestaurantResponse<StaffProfileResponse>> updateProfile(
+            Authentication authentication,
+            @RequestBody UpdateProfileRequest request
+    ) {
+        StaffProfileResponse updated = staffService.updateProfile(authentication.getName(), request);
+        return RestaurantResponse.ok(updated, "Profile updated successfully");
+    }
+
 
 }

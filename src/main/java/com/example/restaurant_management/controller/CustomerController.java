@@ -1,6 +1,7 @@
 package com.example.restaurant_management.controller;
 
 import com.example.restaurant_management.dto.response.BookingResponse;
+import com.example.restaurant_management.dto.request.CustomerRequest;
 import com.example.restaurant_management.dto.response.CustomerResponse;
 import com.example.restaurant_management.service.BookingService;
 import com.example.restaurant_management.service.CustomerService;
@@ -56,6 +57,15 @@ public class CustomerController {
         return ResponseEntity.ok(bookings);
     }
 
+
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CustomerResponse> updateUser(
+            @PathVariable Long id,
+            @RequestBody CustomerRequest request
+    ) {
+        return ResponseEntity.ok(customerService.updateCustomer(id, request));
+    }
 
 
 }

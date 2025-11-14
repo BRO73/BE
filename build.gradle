@@ -71,8 +71,15 @@ dependencies {
 	// Firebase OTP login
 	implementation 'com.google.firebase:firebase-admin:9.4.3'
 
+
 	// PayOS payment gateway
 	implementation 'vn.payos:payos-java:2.0.1'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework:spring-messaging'
+
+    testImplementation 'com.h2database:h2:2.2.224'
+
+}
 
 	/* ==============================
        🔹 TESTING

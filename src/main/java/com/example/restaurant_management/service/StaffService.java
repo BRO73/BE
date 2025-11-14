@@ -1,6 +1,7 @@
 package com.example.restaurant_management.service;
 
 import com.example.restaurant_management.dto.request.CreateStaffRequest;
+import com.example.restaurant_management.dto.request.UpdateProfileRequest;
 import com.example.restaurant_management.dto.request.UpdateStaffRequest;
 import com.example.restaurant_management.dto.response.StaffProfileResponse;
 import com.example.restaurant_management.dto.response.StaffResponse;
@@ -11,12 +12,9 @@ import org.springframework.security.core.Authentication;
 import java.util.List;
 
 public interface StaffService {
-    User updateStaffInfo(String username, UpdateStaffRequest request);
     StaffProfileResponse getProfile(Authentication authentication);
+    User updateStaffInfo(String username, UpdateStaffRequest request);
+    StaffProfileResponse updateProfile(String username, UpdateProfileRequest request);
+    List<StaffResponse> getAllStaff();
 
-    StaffResponse createStaff(CreateStaffRequest createStaffRequest, Authentication authentication);
-
-    List<StaffResponse> getAllStaffInStore(Authentication authentication);
-
-    StaffResponse updateStaff(Long staffId, UpdateStaffRequest updateStaffRequest, Authentication authentication);
 }

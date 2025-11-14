@@ -2,6 +2,7 @@ package com.example.restaurant_management.service.impl;
 
 import com.example.restaurant_management.common.exception.RestaurantException;
 import com.example.restaurant_management.dto.request.CreateStaffRequest;
+import com.example.restaurant_management.dto.request.UpdateProfileRequest;
 import com.example.restaurant_management.dto.request.UpdateStaffRequest;
 import com.example.restaurant_management.dto.response.StaffResponse;
 import com.example.restaurant_management.dto.response.StaffProfileResponse;
@@ -19,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -80,40 +82,53 @@ public class StaffServiceImpl implements StaffService {
 
     @Override
     @Transactional
-    public StaffResponse createStaff(CreateStaffRequest createStaffRequest, Authentication authentication) {
-        User user = userRepository.findById(createStaffRequest.userId())
-                .orElseThrow(() -> new RestaurantException("User not found with id: " + createStaffRequest.userId()));
+    public StaffProfileResponse updateProfile(String username, UpdateProfileRequest request) {
 
-        Staff staff = Staff.builder()
-                .user(user)
-                .fullName(createStaffRequest.fullName())
-                .email(createStaffRequest.email())
-                .phoneNumber(createStaffRequest.phoneNumber())
-                .build();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RestaurantException("User not found"));
 
-        Staff savedStaff = staffRepository.save(staff);
-        return staffMapper.toResponse(savedStaff);
+        Staff staff = staffRepository.findByUser(user)
+                .orElseThrow(() -> new RestaurantException("Staff not found"));
+
+        if (request.fullName() != null) staff.setFullName(request.fullName());
+        if (request.email() != null) staff.setEmail(request.email());
+        if (request.phoneNumber() != null) staff.setPhoneNumber(request.phoneNumber());
+
+        staffRepository.save(staff);
+
+        // Lấy roles
+        java.util.Set<String> roleNames = userRoleRepository.findAllByUserId(user.getId())
+                .stream()
+                .map(ur -> roleRepository.findById(ur.getRoleId())
+                        .orElseThrow(() -> new RestaurantException("Role not found"))
+                        .getName())
+                .collect(java.util.stream.Collectors.toSet());
+
+        return staffMapper.toProfileResponse(
+                user.getId(),
+                user.getUsername(),
+                staff.getFullName(),
+                staff.getEmail(),
+                staff.getPhoneNumber(),
+                roleNames
+        );
     }
 
     @Override
-    public List<StaffResponse> getAllStaffInStore(Authentication authentication) {
-        List<Staff> staffs = staffRepository.findAll();
-        return staffs.stream()
-                .map(staffMapper::toResponse)
-                .collect(Collectors.toList());
-    }
+    public List<StaffResponse> getAllStaff() {
+        List<Staff> staffList = staffRepository.findAll();
 
-    @Override
-    @Transactional
-    public StaffResponse updateStaff(Long staffId, UpdateStaffRequest updateStaffRequest, Authentication authentication) {
-        Staff staff = staffRepository.findById(staffId)
-                .orElseThrow(() -> new RestaurantException("Staff not found with id: " + staffId));
+        return staffList.stream().map(staff -> {
+            Long userId = staff.getUser().getId();
 
-        staff.setFullName(updateStaffRequest.fullName());
-        staff.setEmail(updateStaffRequest.email());
-        staff.setPhoneNumber(updateStaffRequest.phoneNumber());
+            Set<String> roles = userRoleRepository.findAllByUserId(userId)
+                    .stream()
+                    .map(ur -> roleRepository.findById(ur.getRoleId())
+                            .orElseThrow(() -> new RestaurantException("Role not found"))
+                            .getName())
+                    .collect(Collectors.toSet());
 
-        Staff updatedStaff = staffRepository.save(staff);
-        return staffMapper.toResponse(updatedStaff);
+            return staffMapper.toResponse(staff, roles);
+        }).collect(Collectors.toList());
     }
 }
