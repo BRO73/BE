@@ -25,4 +25,7 @@ public interface BookingService {
     List<BookingResponse> getBookingsByCustomer(Long customerUserId);
 
     BookingResponse getBookingById(Long id);
+
+    public List<BookingResponse> getBookingsByCustomerId(Long customerId);
+
 }

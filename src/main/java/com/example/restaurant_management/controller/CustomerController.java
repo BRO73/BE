@@ -1,6 +1,8 @@
 package com.example.restaurant_management.controller;
 
+import com.example.restaurant_management.dto.response.BookingResponse;
 import com.example.restaurant_management.dto.response.CustomerResponse;
+import com.example.restaurant_management.service.BookingService;
 import com.example.restaurant_management.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import java.util.List;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final BookingService bookingService;
 
     @GetMapping
     public ResponseEntity<List<CustomerResponse>> getAllCustomers() {
@@ -41,10 +44,18 @@ public class CustomerController {
         return ResponseEntity.ok(exists);
     }
 
-    @GetMapping("/phone/{phoneNumber}")
-    public ResponseEntity<CustomerResponse> getCustomerByPhone(@PathVariable String phoneNumber) {
-        CustomerResponse customer = customerService.findByPhoneNumber(phoneNumber);
+
+    @GetMapping("/by-phone")
+    public ResponseEntity<CustomerResponse> getCustomerByPhone(@RequestParam String phone) {
+        CustomerResponse customer = customerService.findByPhoneNumber(phone);
         return ResponseEntity.ok(customer);
     }
+    @GetMapping("/{id}/bookings")
+    public ResponseEntity<List<BookingResponse>> getBookingsByCustomer(@PathVariable Long id) {
+        List<BookingResponse> bookings = bookingService.getBookingsByCustomerId(id);
+        return ResponseEntity.ok(bookings);
+    }
+
+
 
 }

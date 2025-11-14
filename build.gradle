@@ -9,16 +9,15 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.3'
 	id 'io.spring.dependency-management' version '1.1.7'
-//	id 'jacoco'
+	 id 'jacoco' // bật nếu cần test coverage
 }
-
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(22)
+		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
 
@@ -27,89 +26,66 @@ repositories {
 }
 
 dependencies {
-
-	implementation 'org.springframework.boot:spring-boot-starter-mail'
-
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	/* ==============================
+       🔹 SPRING BOOT CORE MODULES
+       ============================== */
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation 'org.springframework:spring-messaging'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-//	testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
-//	testImplementation 'org.mockito:mockito-core:5.5.0'
-//	testImplementation 'org.assertj:assertj-core:3.24.2'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
+	/* ==============================
+       🔹 DATABASE
+       ============================== */
 	implementation 'mysql:mysql-connector-java:8.0.33'
 
-	implementation("org.projectlombok:lombok:1.18.30")
+	/* ==============================
+       🔹 LOMBOK & MAPSTRUCT
+       ============================== */
+	implementation 'org.projectlombok:lombok:1.18.30'
 	annotationProcessor 'org.projectlombok:lombok:1.18.30'
+	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
 
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-
+	/* ==============================
+       🔹 AUTHENTICATION / JWT
+       ============================== */
 	implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
 	runtimeOnly "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
 	runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
 
+	/* ==============================
+       🔹 COMMON UTILITIES
+       ============================== */
 	implementation "org.apache.commons:commons-lang3:${commonLang3Version}"
-
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
-	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
-	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
-
 	implementation 'io.github.cdimascio:dotenv-java:2.2.4'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
 
+	/* ==============================
+       🔹 THIRD-PARTY INTEGRATIONS
+       ============================== */
+	// Firebase OTP login
 	implementation 'com.google.firebase:firebase-admin:9.4.3'
-	implementation("vn.payos:payos-java:2.0.1")
 
-    implementation 'org.springframework.boot:spring-boot-starter-websocket'
-    implementation 'org.springframework:spring-messaging'
+	// PayOS payment gateway
+	implementation 'vn.payos:payos-java:2.0.1'
+
+	/* ==============================
+       🔹 TESTING
+       ============================== */
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+	testImplementation 'org.mockito:mockito-core:5.11.0'
+	testImplementation 'org.assertj:assertj-core:3.25.3'
+
+	// UI Testing (optional, cho Selenium/Katalon)
+	testImplementation 'org.seleniumhq.selenium:selenium-java:4.25.0'
 }
-
-//test {
-//	useJUnitPlatform()
-//	finalizedBy jacocoTestReport
-//}
-//
-//jacoco {
-//	toolVersion = "0.8.10"
-//}
-//
-//jacocoTestReport {
-//	reports {
-//		xml.required = true
-//		html.required = true
-//	}
-//}
-
-test {
-	useJUnitPlatform()
-	testLogging {
-		events "passed", "skipped", "failed", "standardOut", "standardError"
-		showStandardStreams = true
-	}
-}
-
-//test {
-//	useJUnitPlatform()
-//	finalizedBy jacocoTestReport
-//}
-//
-//jacoco {
-//	toolVersion = "0.8.10"
-//}
-//
-//jacocoTestReport {
-//	reports {
-//		xml.required = true
-//		html.required = true
-//	}
-//}
 
 test {
 	useJUnitPlatform()
@@ -121,4 +97,23 @@ test {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+/* ==============================
+   🔹 OPTIONAL - JACOCO (COVERAGE)
+   ============================== */
+jacoco {
+    toolVersion = "0.8.10"
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
 }
