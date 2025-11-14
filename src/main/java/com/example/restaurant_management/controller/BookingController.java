@@ -76,4 +76,5 @@ public class BookingController {
         TableAvailabilityResponse response = bookingService.isTableAvailable(tableId, bookingTime);
         return ResponseEntity.ok(response);
     }
+
 }

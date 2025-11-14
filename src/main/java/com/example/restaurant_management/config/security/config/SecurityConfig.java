@@ -56,7 +56,8 @@ public class SecurityConfig {
             "/api/customers/verify-phone",
             "/api/customers/by-phone",
             "/api/customers/by-phone/**",
-            "/api/customers/**/bookings"
+            "/api/customers/*/bookings"
+
     };
 
 

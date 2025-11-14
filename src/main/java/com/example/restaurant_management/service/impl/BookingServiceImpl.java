@@ -263,7 +263,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional(readOnly = true)
     public List<BookingResponse> getBookingsByCustomer(Long customerUserId) {
-        List<Booking> bookings = bookingRepository.findByCustomerUserId(customerUserId);
+        List<Booking> bookings = bookingRepository.findByCustomerUser(userRepository.findByCustomer(customerRepository.findById(customerUserId).get()).get());
         return bookingMapper.toResponseList(bookings);
     }
 
