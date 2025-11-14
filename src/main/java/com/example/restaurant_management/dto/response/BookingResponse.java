@@ -24,7 +24,7 @@ public class BookingResponse {
     private String status;
 
     private List<TableSimpleResponse> table;
-    private CustomerResponse customer;
+    private CustomerSimpleResponse customer;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
