@@ -1,5 +1,6 @@
 package com.example.restaurant_management.mapper;
 
+import com.example.restaurant_management.common.enums.OrderItemStatus;
 import com.example.restaurant_management.dto.request.OrderRequest;
 import com.example.restaurant_management.dto.request.OrderDetailRequest;
 import com.example.restaurant_management.dto.response.*;
@@ -55,7 +56,7 @@ public class OrderMapper {
             detail.setOrder(order);
             detail.setMenuItem(menuItem);
             detail.setQuantity(item.getQuantity());
-            detail.setStatus("PENDING");
+            detail.setStatus(String.valueOf(OrderItemStatus.PENDING));
             detail.setNotes(item.getSpecialRequirements());
             detail.setPriceAtOrder(menuItem.getPrice());
 

@@ -20,7 +20,13 @@ public enum ErrorEnum {
     USER_DISABLED(400, "user_disabled", "User is disabled"),
     BOOKING_NOT_FOUND(400,"invalid_booking_found","Booking not found"),
     STORE_NOT_FOUND(400,"invalid_store_found","Store not found"),
-    ROLE_NOT_FOUND(400,"invalid_role_found","Role not found"),;
+    ROLE_NOT_FOUND(400,"invalid_role_found","Role not found"),
+    STAFF_NOT_FOUND(400, "staff_not_found", "Staff not found"),
+    STAFF_ALREADY_HAS_USER(400, "staff_already_has_user", "This staff already has a user account"),
+    STAFF_EMAIL_EXIST(400, "staff_email_exist", "Email is already used by another staff"),
+    STAFF_PHONE_EXIST(400, "staff_phone_exist", "Phone number is already used by another staff"),
+    USERNAME_TAKEN(400, "username_taken", "Username is already taken"),;
+
     private final Integer httpStatus;
     private final String code;
     private final String message;

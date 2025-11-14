@@ -69,6 +69,9 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework:spring-messaging'
+
+    testImplementation 'com.h2database:h2:2.2.224'
+
 }
 
 //test {
