@@ -25,6 +25,21 @@ public class Transaction extends AbstractEntity<Long> {
     @Column(name = "amount_paid", nullable = false, precision = 12, scale = 2)
     private BigDecimal amountPaid;
 
+    @Column(name = "discount_amount")
+    private BigDecimal discountAmount;
+
+    @Column(name = "amount_original")
+    private BigDecimal amountOriginal;
+
+    @Column(name = "promotion_value")
+    private BigDecimal promotionValue; // 10, 20, 50...
+
+    @Column(name = "promotion_type")
+    private String promotionType; // PERCENT, FIXED
+
+    @Column(name = "promotion_id")
+    private Long promotionId;
+
     @Column(name = "payment_method", nullable = false, length = 20)
     private String paymentMethod;
 

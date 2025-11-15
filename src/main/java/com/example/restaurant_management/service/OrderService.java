@@ -4,6 +4,7 @@ import com.example.restaurant_management.dto.request.AddItemsRequest;
 import com.example.restaurant_management.dto.request.OrderRequest;
 import com.example.restaurant_management.dto.response.OrderResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.security.core.Authentication;
 
 import java.time.LocalDateTime;
@@ -23,4 +24,8 @@ public interface OrderService {
     List<OrderResponse> getActiveOrdersByTable(Long tableId);
 
     OrderResponse addItemsToOrder(Long orderId, @Valid AddItemsRequest request, Authentication authentication);
+
+    OrderResponse linkCustomerToOrder(Long orderId, @NotNull(message = "customerId không được để trống") Long customerId);
+
+    OrderResponse unlinkCustomer(Long orderId);
 }

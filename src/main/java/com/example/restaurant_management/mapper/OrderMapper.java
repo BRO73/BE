@@ -4,14 +4,12 @@ import com.example.restaurant_management.common.enums.OrderItemStatus;
 import com.example.restaurant_management.dto.request.OrderRequest;
 import com.example.restaurant_management.dto.request.OrderDetailRequest;
 import com.example.restaurant_management.dto.response.*;
-import com.example.restaurant_management.entity.MenuItem;
-import com.example.restaurant_management.entity.Order;
-import com.example.restaurant_management.entity.OrderDetail;
-import com.example.restaurant_management.entity.User;
-import com.example.restaurant_management.entity.TableEntity;
+import com.example.restaurant_management.entity.*;
+import com.example.restaurant_management.repository.CustomerRepository;
 import com.example.restaurant_management.repository.MenuItemRepository;
 import com.example.restaurant_management.repository.UserRepository;
 import com.example.restaurant_management.repository.TableRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -21,18 +19,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@AllArgsConstructor
 public class OrderMapper {
     private final TableRepository tableRepository;
     private final UserRepository userRepository;
     private final MenuItemRepository menuItemRepository;
+    private final CustomerRepository customerRepository;
 
-    public OrderMapper(TableRepository tableRepository,
-                      UserRepository userRepository,
-                      MenuItemRepository menuItemRepository) {
-        this.tableRepository = tableRepository;
-        this.userRepository = userRepository;
-        this.menuItemRepository = menuItemRepository;
-    }
 
     public Order toEntity(OrderRequest request) {
         Order order = Order.builder()
@@ -71,6 +64,7 @@ public class OrderMapper {
     }
 
     public OrderResponse toResponse(Order order) {
+
         OrderResponse response = new OrderResponse();
         response.setId(order.getId());
         response.setStatus(order.getStatus());
@@ -88,6 +82,12 @@ public class OrderMapper {
             staffResponse.setId(order.getStaffUser().getId());
             staffResponse.setName(order.getStaffUser().getUsername());
             response.setStaff(staffResponse);
+        }
+        if (order.getCustomerUser() != null) {
+            Customer customer = (Customer) customerRepository.findByUser(order.getCustomerUser()).orElseThrow();
+            response.setCustomerUserId(order.getCustomerUser().getId());
+            response.setCustomerPhone(customer.getPhoneNumber());
+            response.setCustomerName(customer.getFullName());
         }
 
         List<OrderDetailResponse> items = order.getOrderDetails().stream()

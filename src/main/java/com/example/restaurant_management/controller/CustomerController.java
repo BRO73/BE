@@ -3,8 +3,10 @@ package com.example.restaurant_management.controller;
 import com.example.restaurant_management.dto.response.BookingResponse;
 import com.example.restaurant_management.dto.request.CustomerRequest;
 import com.example.restaurant_management.dto.response.CustomerResponse;
+import com.example.restaurant_management.entity.Customer;
 import com.example.restaurant_management.service.BookingService;
 import com.example.restaurant_management.service.CustomerService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -65,5 +67,9 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.updateCustomer(id, request));
     }
 
-
+    @PostMapping("/find-or-create")
+    public ResponseEntity<CustomerResponse> findOrCreateCustomer(@Valid @RequestBody CustomerRequest customerRequest) {
+        // Service của bạn sẽ cần nhận CustomerRequest
+        return ResponseEntity.ok(customerService.findOrCreateCustomer(customerRequest));
+    }
 }
