@@ -2,6 +2,8 @@ package com.example.restaurant_management.repository;
 
 import com.example.restaurant_management.entity.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -21,5 +23,16 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             String status,
             LocalDateTime startDate,
             LocalDateTime endDate
+    );
+
+    @Query("SELECT CASE WHEN COUNT(t) > 0 THEN TRUE ELSE FALSE END " +
+            "FROM Transaction t " +
+            "WHERE t.promotionId = :promotionId " +
+            "  AND t.order.customerUser.id = :customerUserId " +
+            "  AND t.paymentStatus = :paymentStatus")
+    boolean existsByPromotionIdAndOrderCustomerUserIdAndPaymentStatus(
+            @Param("promotionId") Long promotionId,
+            @Param("customerUserId") Long customerUserId,
+            @Param("paymentStatus") String paymentStatus
     );
 }

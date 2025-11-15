@@ -1,6 +1,7 @@
 package com.example.restaurant_management.repository;
 
 import com.example.restaurant_management.entity.Customer;
+import com.example.restaurant_management.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,4 +28,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     List<Customer> searchCustomers(@Param("keyword") String keyword);
 
     boolean existsByPhoneNumber(String phoneNumber);
+
+    Optional<Object> findByUser(User customerUser);
 }

@@ -1,8 +1,10 @@
 package com.example.restaurant_management.controller;
 
 import com.example.restaurant_management.dto.request.PromotionRequest;
+import com.example.restaurant_management.dto.request.ValidatePromotionRequest;
 import com.example.restaurant_management.dto.response.PromotionResponse;
 import com.example.restaurant_management.service.PromotionService;
+import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -70,4 +72,14 @@ public class PromotionController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTime) {
         return ResponseEntity.ok(promotionService.getPromotionsValidAt(dateTime));
     }
+
+    @PostMapping("/validate")
+    public ResponseEntity<PromotionResponse> validatePromotion(
+            @Valid @RequestBody ValidatePromotionRequest request
+    ) {
+        PromotionResponse promotion = promotionService.validateAndGetPromotion(request);
+        return ResponseEntity.ok(promotion);
+    }
+
+
 }

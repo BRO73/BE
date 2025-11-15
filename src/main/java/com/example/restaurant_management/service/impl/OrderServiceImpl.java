@@ -61,7 +61,11 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new RestaurantException(ErrorEnum.ROLE_NOT_FOUND));
         if (role.stream().anyMatch(r -> r.getName().equals("CUSTOMER"))) {
             order.setCustomerUser(user);
-        } else if (role.stream().anyMatch(r -> r.getName().equals("WAITSTAFF"))) {
+        } else if (role.stream().anyMatch(r ->
+                r.getName().equals("WAITSTAFF")
+                        || r.getName().equals("CASHIER")
+                        || r.getName().equals("ADMIN")
+        )) {
             order.setStaffUser(user);
         }
 
@@ -180,6 +184,44 @@ public class OrderServiceImpl implements OrderService {
         kitchenService.notifyBoardUpdate();
 
         // 7. Trả về response
+        return orderMapper.toResponse(savedOrder);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse linkCustomerToOrder(Long orderId, Long userId) { // Đổi tên param cho rõ
+        // 1. Tìm Order
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RestaurantException("Order not found"));
+
+//        // 2. Kiểm tra Order đã có khách chưa (Logic của bạn là đúng)
+//        if (order.getCustomerUser() != null) {
+//            throw new RestaurantException("Order has customer"); // "Đơn này đã có khách"
+//        }
+
+        // 3. Tìm User (không phải Customer)
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RestaurantException("User not found"));
+
+        // 4. Gán khách (User) vào
+        order.setCustomerUser(user);
+
+        // 5. Lưu và trả về DTO
+        Order savedOrder = orderRepository.save(order);
+
+        // === SỬA LỖI BIÊN DỊCH ===
+        // Map entity đã lưu sang DTO trước khi trả về
+        return orderMapper.toResponse(savedOrder);
+    }
+
+    @Transactional
+    public OrderResponse unlinkCustomer(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RestaurantException("Order not found with id: " + orderId));
+
+        order.setCustomerUser(null);
+        Order savedOrder = orderRepository.save(order);
+
         return orderMapper.toResponse(savedOrder);
     }
 }

@@ -1,8 +1,10 @@
 package com.example.restaurant_management.controller;
 
 import com.example.restaurant_management.dto.request.AddItemsRequest;
+import com.example.restaurant_management.dto.request.LinkCustomerRequest;
 import com.example.restaurant_management.dto.request.OrderRequest;
 import com.example.restaurant_management.dto.response.OrderResponse;
+import com.example.restaurant_management.entity.Order;
 import com.example.restaurant_management.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -82,6 +84,22 @@ public class OrderController {
             @Valid @RequestBody AddItemsRequest request,
             Authentication authentication) {
         return ResponseEntity.ok(orderService.addItemsToOrder(orderId, request, authentication));
+    }
+
+    @PutMapping("/{orderId}/link-customer")
+    public ResponseEntity<OrderResponse> linkCustomer(
+            @PathVariable Long orderId,
+            @Valid @RequestBody LinkCustomerRequest request) {
+
+        OrderResponse updatedOrder = orderService.linkCustomerToOrder(orderId, request.getUserId());
+
+        return ResponseEntity.ok(updatedOrder);
+    }
+
+    @PutMapping("/{orderId}/unlink-customer")
+    public ResponseEntity<OrderResponse> unlinkCustomer(@PathVariable Long orderId) {
+        OrderResponse response = orderService.unlinkCustomer(orderId);
+        return ResponseEntity.ok(response);
     }
 
 }

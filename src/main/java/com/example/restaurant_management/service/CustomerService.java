@@ -19,4 +19,5 @@ public interface CustomerService {
     void deleteCustomer(Long id);
     CustomerResponse updateCustomer(Long id, CustomerRequest customer);
     boolean existsByPhoneNumber(String phoneNumber);
+    public CustomerResponse findOrCreateCustomer(CustomerRequest request);
 }
