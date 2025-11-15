@@ -35,4 +35,85 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             @Param("customerUserId") Long customerUserId,
             @Param("paymentStatus") String paymentStatus
     );
+
+    // Tổng doanh thu
+    @Query("SELECT SUM(t.amountPaid) FROM Transaction t " +
+            "WHERE t.transactionTime BETWEEN :start AND :end " +
+            "AND t.paymentStatus = 'PAID'")
+    Double sumTotalAmountBetween(@Param("start") LocalDateTime start,
+                                 @Param("end") LocalDateTime end);
+
+    // Số đơn thanh toán thành công
+    @Query("SELECT COUNT(t) FROM Transaction t " +
+            "WHERE t.transactionTime BETWEEN :start AND :end " +
+            "AND t.paymentStatus = 'PAID'")
+    Long countOrdersBetween(@Param("start") LocalDateTime start,
+                            @Param("end") LocalDateTime end);
+
+    // Giá trị trung bình mỗi giao dịch (AOV)
+    @Query("SELECT AVG(t.amountPaid) FROM Transaction t " +
+            "WHERE t.transactionTime BETWEEN :start AND :end " +
+            "AND t.paymentStatus = 'PAID'")
+    Double avgOrderValueBetween(@Param("start") LocalDateTime start,
+                                @Param("end") LocalDateTime end);
+
+    // Đếm khách hàng unique
+    @Query("SELECT COUNT(DISTINCT t.order.customerUser.id) " +
+            "FROM Transaction t WHERE t.transactionTime BETWEEN :start AND :end " +
+            "AND t.paymentStatus = 'PAID'")
+    Long countDistinctCustomerBetween(@Param("start") LocalDateTime start,
+                                      @Param("end") LocalDateTime end);
+
+    /** Doanh thu theo ngày */
+    @Query(value = """
+        SELECT DATE(t.transaction_time) AS day,
+               SUM(t.amount_paid) AS revenue,
+               COUNT(t.id) AS orders
+        FROM transactions t
+        WHERE t.transaction_time BETWEEN :start AND :end
+        AND t.payment_status = 'PAID'
+        GROUP BY DATE(t.transaction_time)
+        ORDER BY day
+        """, nativeQuery = true)
+    List<Object[]> revenueByDayBetween(@Param("start") LocalDateTime start,
+                                       @Param("end") LocalDateTime end);
+
+
+    /** Top món bán chạy theo transaction → join order_details */
+        @Query(value = """
+        SELECT 
+            mi.name AS item_name,
+            SUM(od.quantity) AS total_orders,
+            SUM(od.price_at_order * od.quantity) AS revenue
+        FROM order_details od
+        JOIN menu_items mi ON mi.id = od.menu_item_id
+        JOIN orders o ON o.id = od.order_id
+        JOIN transactions t ON t.order_id = o.id
+        WHERE t.transaction_time BETWEEN :start AND :end
+          AND t.payment_status = 'PAID'
+        GROUP BY mi.name
+        ORDER BY revenue DESC
+        LIMIT 5
+    """, nativeQuery = true)
+        List<Object[]> topItemsRevenueBetween(@Param("start") LocalDateTime start,
+                                              @Param("end") LocalDateTime end);
+
+
+    @Query(value = """
+    SELECT 
+        mi.name AS item_name,
+        SUM(od.quantity) AS total_orders,
+        SUM(od.price_at_order * od.quantity) AS revenue
+    FROM order_details od
+    JOIN menu_items mi ON mi.id = od.menu_item_id
+    JOIN orders o ON o.id = od.order_id
+    JOIN transactions t ON t.order_id = o.id
+    WHERE t.transaction_time BETWEEN :start AND :end
+      AND t.payment_status = 'PAID'
+    GROUP BY mi.name
+    ORDER BY revenue DESC
+""", nativeQuery = true)
+    List<Object[]> topItemsByDays(@Param("start") LocalDateTime start,
+                                  @Param("end") LocalDateTime end);
+
 }
