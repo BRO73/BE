@@ -13,4 +13,5 @@ public class PaymentRequestDTO {
     private Long orderId;
     private String returnUrl;
     private String cancelUrl;
+    private String promotionCode;
 }

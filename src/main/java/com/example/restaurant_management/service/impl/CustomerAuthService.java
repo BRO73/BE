@@ -77,7 +77,6 @@ public class CustomerAuthService {
         }
     }
 
-
     @Transactional
     public TokenResponse registerCustomer(RegisterCustomerRequest request) {
         // đảm bảo customer đã được tạo ở bước verifyFirebaseIdToken

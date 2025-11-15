@@ -21,6 +21,9 @@ public class OrderResponse {
     private TableResponse table;
     private StaffResponse staff;
     private List<OrderDetailResponse> items;
+    private Long customerUserId;
+    private String customerName;
+    private String customerPhone;
 }
 
 

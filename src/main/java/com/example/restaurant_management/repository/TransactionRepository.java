@@ -25,6 +25,17 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             LocalDateTime endDate
     );
 
+    @Query("SELECT CASE WHEN COUNT(t) > 0 THEN TRUE ELSE FALSE END " +
+            "FROM Transaction t " +
+            "WHERE t.promotionId = :promotionId " +
+            "  AND t.order.customerUser.id = :customerUserId " +
+            "  AND t.paymentStatus = :paymentStatus")
+    boolean existsByPromotionIdAndOrderCustomerUserIdAndPaymentStatus(
+            @Param("promotionId") Long promotionId,
+            @Param("customerUserId") Long customerUserId,
+            @Param("paymentStatus") String paymentStatus
+    );
+
     // Tổng doanh thu
     @Query("SELECT SUM(t.amountPaid) FROM Transaction t " +
             "WHERE t.transactionTime BETWEEN :start AND :end " +

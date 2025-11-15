@@ -1,6 +1,7 @@
 package com.example.restaurant_management.service;
 
 import com.example.restaurant_management.dto.request.PromotionRequest;
+import com.example.restaurant_management.dto.request.ValidatePromotionRequest;
 import com.example.restaurant_management.dto.response.PromotionResponse;
 
 import java.time.LocalDateTime;
@@ -17,4 +18,5 @@ public interface PromotionService {
     List<PromotionResponse> getPromotionsByType(String type);
     List<PromotionResponse> getActivePromotions();
     List<PromotionResponse> getPromotionsValidAt(LocalDateTime dateTime);
+    PromotionResponse validateAndGetPromotion(ValidatePromotionRequest request);
 }

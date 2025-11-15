@@ -1,6 +1,8 @@
 package com.example.restaurant_management.controller;
 
+import com.example.restaurant_management.dto.request.CashPaymentRequest;
 import com.example.restaurant_management.dto.request.PaymentRequestDTO;
+import com.example.restaurant_management.dto.response.CashPaymentResponse;
 import com.example.restaurant_management.dto.response.PaymentResponseDTO;
 import com.example.restaurant_management.service.PaymentService;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +28,13 @@ public class PaymentController {
     public ResponseEntity<String> handleWebhook(@RequestBody Map<String, Object> webhookData) {
         paymentService.handlePaymentWebhook(webhookData);
         return ResponseEntity.ok("Webhook processed successfully");
+    }
+
+    @PostMapping("/cash")
+    public ResponseEntity<CashPaymentResponse> processCashPayment(
+            @RequestBody CashPaymentRequest request
+    ) {
+        CashPaymentResponse response = paymentService.processCashPayment(request);
+        return ResponseEntity.ok(response);
     }
 }
