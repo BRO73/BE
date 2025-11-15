@@ -18,7 +18,5 @@ public record UpdateStaffRequest(
         @NotBlank
         String phoneNumber,
 
-        Boolean isActivated,
-
-        StaffRole role
+        String role
 ) {}

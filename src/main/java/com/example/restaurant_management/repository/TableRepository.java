@@ -18,4 +18,7 @@ public interface TableRepository extends JpaRepository<TableEntity, Long> {
     List<TableEntity> findByStatus(String status);
     List<TableEntity> findByCapacityGreaterThanEqual(Integer capacity);
     List<TableEntity> findByLocation(Location location);
+
+    @Query("select t.id from TableEntity t")
+    List<Long> findAllIds();
 }

@@ -6,6 +6,7 @@ import com.example.restaurant_management.dto.request.OrderRequest;
 import com.example.restaurant_management.dto.response.OrderResponse;
 import com.example.restaurant_management.entity.Order;
 import com.example.restaurant_management.service.OrderService;
+import com.example.restaurant_management.service.TableTokenService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -21,6 +22,8 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
+    private final TableTokenService tableTokenService;
+
 
     @GetMapping
     public ResponseEntity<List<OrderResponse>> getAllOrders() {
@@ -100,6 +103,11 @@ public class OrderController {
     public ResponseEntity<OrderResponse> unlinkCustomer(@PathVariable Long orderId) {
         OrderResponse response = orderService.unlinkCustomer(orderId);
         return ResponseEntity.ok(response);
+      
+    @GetMapping("/table-token/{token}/active")
+    public ResponseEntity<List<OrderResponse>> getActiveOrdersByTableToken(@PathVariable String token) {
+        Long tableId = tableTokenService.resolveTableId(token);
+        return ResponseEntity.ok(orderService.getActiveOrdersByTable(tableId));
     }
 
 }
