@@ -103,7 +103,8 @@ public class OrderController {
     public ResponseEntity<OrderResponse> unlinkCustomer(@PathVariable Long orderId) {
         OrderResponse response = orderService.unlinkCustomer(orderId);
         return ResponseEntity.ok(response);
-      
+    }
+    
     @GetMapping("/table-token/{token}/active")
     public ResponseEntity<List<OrderResponse>> getActiveOrdersByTableToken(@PathVariable String token) {
         Long tableId = tableTokenService.resolveTableId(token);
