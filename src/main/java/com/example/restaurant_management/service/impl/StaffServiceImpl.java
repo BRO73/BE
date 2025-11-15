@@ -119,16 +119,85 @@ public class StaffServiceImpl implements StaffService {
         List<Staff> staffList = staffRepository.findAll();
 
         return staffList.stream().map(staff -> {
-            Long userId = staff.getUser().getId();
 
-            Set<String> roles = userRoleRepository.findAllByUserId(userId)
+            Long userId = staff.getUser() != null ? staff.getUser().getId() : null;
+
+            Set<String> roles;
+
+            if (userId != null) {
+                // Lấy role thật từ UserRole
+                roles = userRoleRepository.findAllByUserId(userId)
+                        .stream()
+                        .map(ur -> roleRepository.findById(ur.getRoleId())
+                                .orElseThrow(() -> new RestaurantException("Role not found"))
+                                .getName())
+                        .collect(Collectors.toSet());
+            } else {
+                // Chưa có user → dùng role String lưu trong staff table
+                roles = Set.of(staff.getRole());
+            }
+
+            return staffMapper.toResponse(staff, roles);
+        }).collect(Collectors.toList());
+    }
+
+
+    @Override
+    @Transactional
+    public StaffResponse createStaff(CreateStaffRequest request) {
+        Staff staff = new Staff();
+        staff.setFullName(request.fullName());
+        staff.setEmail(request.email());
+        staff.setPhoneNumber(request.phoneNumber());
+        staff.setRole(request.role()); // role = String
+
+        staffRepository.save(staff);
+
+        return staffMapper.toResponse(staff, Set.of(request.role()));
+    }
+
+    // 🟡 UPDATE
+    @Override
+    @Transactional
+    public StaffResponse updateStaff(Long id, UpdateStaffRequest request) {
+
+        Staff staff = staffRepository.findById(id)
+                .orElseThrow(() -> new RestaurantException("Staff not found"));
+
+        staff.setFullName(request.fullName());
+        staff.setEmail(request.email());
+        staff.setPhoneNumber(request.phoneNumber());
+
+        if (request.role() != null)
+            staff.setRole(request.role());
+
+        staffRepository.save(staff);
+
+        Set<String> roleNames;
+
+        if (staff.getUser() != null) {
+            Long userId = staff.getUser().getId();
+            roleNames = userRoleRepository.findAllByUserId(userId)
                     .stream()
                     .map(ur -> roleRepository.findById(ur.getRoleId())
                             .orElseThrow(() -> new RestaurantException("Role not found"))
                             .getName())
                     .collect(Collectors.toSet());
+        } else {
+            roleNames = Set.of(staff.getRole());
+        }
 
-            return staffMapper.toResponse(staff, roles);
-        }).collect(Collectors.toList());
+        return staffMapper.toResponse(staff, roleNames);
     }
+
+
+    // 🔴 DELETE
+    @Override
+    @Transactional
+    public void deleteStaff(Long id) {
+        Staff staff = staffRepository.findById(id)
+                .orElseThrow(() -> new RestaurantException("Staff not found"));
+        staffRepository.delete(staff);
+    }
+
 }

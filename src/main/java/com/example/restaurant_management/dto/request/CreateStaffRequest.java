@@ -17,10 +17,7 @@ public record CreateStaffRequest(
         @NotBlank(message = "Phone number is required.")
         String phoneNumber,
 
-        @NotNull(message = "Store is required.")
-        Long storeId,
-
         // Role nghiệp vụ của staff (WAITER, CHEF, CASHIER, ADMIN...)
         @NotNull(message = "Role is required.")
-        StaffRole role
+        String role
 ) {}

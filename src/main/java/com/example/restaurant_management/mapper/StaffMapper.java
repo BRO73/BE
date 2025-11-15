@@ -11,6 +11,8 @@ import java.util.Set;
 public class StaffMapper {
 
     public StaffResponse toResponse(Staff staff, Set<String> roles) {
+        Long userId = staff.getUser() != null ? staff.getUser().getId() : null;
+
         return StaffResponse.builder()
                 .id(staff.getId())
                 .name(staff.getFullName())
@@ -18,10 +20,11 @@ public class StaffMapper {
                 .phoneNumber(staff.getPhoneNumber())
                 .isActivated(true)
                 .createdAt(staff.getCreatedAt())
-                .userId(staff.getUser().getId())
+                .userId(userId) // 👈 SAFE
                 .roles(roles)
                 .build();
     }
+
 
     public StaffProfileResponse toProfileResponse(Long userId, String username,
                                                   String fullName, String email,
