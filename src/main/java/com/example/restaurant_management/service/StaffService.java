@@ -17,4 +17,9 @@ public interface StaffService {
     StaffProfileResponse updateProfile(String username, UpdateProfileRequest request);
     List<StaffResponse> getAllStaff();
 
+    // CRUD mới
+    StaffResponse createStaff(CreateStaffRequest request);
+    StaffResponse updateStaff(Long id, UpdateStaffRequest request);
+    void deleteStaff(Long id);
 }
+

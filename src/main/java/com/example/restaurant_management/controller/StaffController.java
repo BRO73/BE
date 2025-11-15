@@ -21,7 +21,6 @@ public class StaffController {
 
     private final StaffService staffService;
 
-    // 🟢 Lấy thông tin profile staff hiện tại
     @GetMapping("/profile")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RestaurantResponse<StaffProfileResponse>> getProfile(Authentication authentication) {
@@ -34,5 +33,30 @@ public class StaffController {
         return RestaurantResponse.ok(staffService.getAllStaff());
     }
 
+    // 🟢 CREATE STAFF
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<RestaurantResponse<StaffResponse>> createStaff(
+            @RequestBody CreateStaffRequest request
+    ) {
+        return RestaurantResponse.ok(staffService.createStaff(request), "Create staff successfully");
+    }
 
+    // 🟡 UPDATE STAFF
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<RestaurantResponse<StaffResponse>> updateStaff(
+            @PathVariable Long id,
+            @RequestBody UpdateStaffRequest request
+    ) {
+        return RestaurantResponse.ok(staffService.updateStaff(id, request), "Update staff successfully");
+    }
+
+    // 🔴 DELETE STAFF
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<RestaurantResponse<Void>> deleteStaff(@PathVariable Long id) {
+        staffService.deleteStaff(id);
+        return RestaurantResponse.ok(null, "Delete staff successfully");
+    }
 }

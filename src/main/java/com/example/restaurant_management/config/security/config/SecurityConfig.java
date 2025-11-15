@@ -54,10 +54,11 @@ public class SecurityConfig {
             "/api/chatbot",
             "/api/chatbot/**",
             "/api/customers/verify-phone",
-            "/ws/**"
+            "/ws/**",
             "/api/customers/by-phone",
             "/api/customers/by-phone/**",
-            "/api/customers/*/bookings"
+            "/api/customers/*/bookings",
+            "/api/staff-accounts/**"
     };
 
 
