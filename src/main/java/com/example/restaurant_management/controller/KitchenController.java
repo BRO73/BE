@@ -67,10 +67,9 @@ public class KitchenController {
         return ResponseEntity.ok().build();
     }
 
-    /** NEW: (panel chờ cung ứng) xuất 1 đơn vị */
-    @PatchMapping("/order-details/{id}/serve-one")
-    public ResponseEntity<Void> serveOneUnit(@PathVariable Long id) {
-        kitchenService.serveOneUnit(id);
+    @PatchMapping("/order-details/{id}/serve-all")
+    public ResponseEntity<Void> serveAllUnits(@PathVariable Long id) {
+        kitchenService.serveAllUnits(id);
         return ResponseEntity.ok().build();
     }
 
