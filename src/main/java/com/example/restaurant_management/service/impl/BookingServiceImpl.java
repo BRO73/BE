@@ -21,7 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -38,22 +40,27 @@ public class BookingServiceImpl implements BookingService {
     // ======================================================
     // ✅ HELPER: cập nhật trạng thái bàn theo tất cả booking trong ngày
     // ======================================================
-    private void updateTableStatusByDay(TableEntity table, LocalDateTime date) {
-        List<Booking> bookingsToday = bookingRepository.findByTableAndDay(table.getId(), date);
+    private void updateTableStatusByDay(
+            TableEntity table,
+            Map<Long, List<Booking>> bookingsMap
+    ) {
+        List<Booking> bookingsToday =
+                bookingsMap.getOrDefault(table.getId(), List.of());
+
         String status = "Available";
 
         for (Booking b : bookingsToday) {
             if ("Confirmed".equalsIgnoreCase(b.getStatus())) {
-                status = "Reserved"; // ưu tiên Confirmed
+                status = "Reserved";
                 break;
             } else if ("Pending".equalsIgnoreCase(b.getStatus())) {
                 status = "Occupied";
             }
         }
 
-        table.setStatus(status);
-        tableRepository.save(table);
+        table.setStatus(status); // ❗ Không save ở đây nữa
     }
+
 
     // ======================================================
     // ✅ CREATE BOOKING
@@ -98,10 +105,7 @@ public class BookingServiceImpl implements BookingService {
                     request.getBookingTime().toLocalTime().toString()
             );
         }
-
-        for (TableEntity table : tables) {
-            updateTableStatusByDay(table, request.getBookingTime());
-        }
+        updateAllTableStatuses(request.getBookingTime());
         return bookingMapper.toResponse(saved);
     }
 
@@ -151,14 +155,7 @@ public class BookingServiceImpl implements BookingService {
             }
         }
 
-        // 🔹 Cập nhật trạng thái bàn
-        for (TableEntity table : existing.getTables()) {
-            updateTableStatusByDay(table, request.getBookingTime());
-        }
-        for (TableEntity table : newTables) {
-            updateTableStatusByDay(table, request.getBookingTime());
-        }
-
+        updateAllTableStatuses(request.getBookingTime());
         return bookingMapper.toResponse(updated);
     }
 
@@ -177,10 +174,8 @@ public class BookingServiceImpl implements BookingService {
 
         bookingRepository.delete(existing);
 
-        // Cập nhật trạng thái bàn
-        for (TableEntity table : existing.getTables()) {
-            updateTableStatusByDay(table, existing.getBookingTime());
-        }
+        updateAllTableStatuses(existing.getBookingTime());
+
     }
 
     // ======================================================
@@ -222,10 +217,8 @@ public class BookingServiceImpl implements BookingService {
             }
         }
 
-        // 🔹 Cập nhật trạng thái bàn
-        for (TableEntity table : existing.getTables()) {
-            updateTableStatusByDay(table, existing.getBookingTime());
-        }
+        updateAllTableStatuses(existing.getBookingTime());
+
 
         return bookingMapper.toResponse(updated);
     }
@@ -297,6 +290,40 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingResponse> getBookingsByCustomerId(Long customerId) {
         List<Booking> bookings = bookingRepository.findByCustomerUser(userRepository.findByCustomer(customerRepository.findById(customerId).get()).get());
         return bookingMapper.toResponseList(bookings);
+    }
+
+    private Map<Long, List<Booking>> getBookingsGroupedByTable(LocalDateTime bookingTime) {
+
+        LocalDateTime startDay = bookingTime.toLocalDate().atStartOfDay();
+        LocalDateTime endDay = startDay.plusDays(1);
+
+        List<Booking> bookings = bookingRepository.findBookingsWithTablesByDay(startDay, endDay);
+
+        Map<Long, List<Booking>> map = new HashMap<>();
+
+        for (Booking b : bookings) {
+            for (TableEntity t : b.getTables()) {
+                map.computeIfAbsent(t.getId(), x -> new ArrayList<>()).add(b);
+            }
+        }
+
+        return map;
+    }
+
+    private void updateAllTableStatuses(LocalDateTime bookingTime) {
+
+        // 1 query lấy toàn bộ bookings trong ngày
+        Map<Long, List<Booking>> bookingsMap = getBookingsGroupedByTable(bookingTime);
+
+        // Lấy tất cả bàn (1 query)
+        List<TableEntity> allTables = tableRepository.findAll();
+
+        for (TableEntity table : allTables) {
+            updateTableStatusByDay(table, bookingsMap);
+        }
+
+        // Save tất cả cùng lúc (1 query)
+        tableRepository.saveAll(allTables);
     }
 
 
