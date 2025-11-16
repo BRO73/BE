@@ -291,7 +291,7 @@ public class PaymentServiceImpl implements PaymentService {
         transactionRepository.save(transaction);
 
         // 5. Cập nhật order status
-        order.setStatus("COMPLETED");
+        order.setStatus("PAID");
         order.setCompletedAt(LocalDateTime.now());
         orderRepository.save(order);
 

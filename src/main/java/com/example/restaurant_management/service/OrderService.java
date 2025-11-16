@@ -1,8 +1,10 @@
 package com.example.restaurant_management.service;
 
 import com.example.restaurant_management.dto.request.AddItemsRequest;
+import com.example.restaurant_management.dto.request.MergeOrderRequest;
 import com.example.restaurant_management.dto.request.OrderRequest;
 import com.example.restaurant_management.dto.response.OrderResponse;
+import com.example.restaurant_management.dto.response.SplitOrderRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.security.core.Authentication;
@@ -28,4 +30,8 @@ public interface OrderService {
     OrderResponse linkCustomerToOrder(Long orderId, @NotNull(message = "customerId không được để trống") Long customerId);
 
     OrderResponse unlinkCustomer(Long orderId);
+
+    OrderResponse mergeOrders(@Valid MergeOrderRequest request);
+
+    OrderResponse splitOrder(@Valid SplitOrderRequest request);
 }
