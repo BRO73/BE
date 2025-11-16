@@ -37,7 +37,7 @@ ENV PORT 8080
 # --- SỬA LỖI BUILD ---
 # Copy file .jar đã được build từ stage 1
 # Dùng *[!plain].jar để chắc chắn copy đúng file boot-jar
-COPY --from=build /app/build/libs/*[!plain].jar app.jar
+COPY --from=build /app/build/libs/*.jar app.jar
 
 # --- SỬA LỖI RUNTIME ---
 # Bảo Spring Boot lắng nghe trên $PORT mà Cloud Run cung cấp
