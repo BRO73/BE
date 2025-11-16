@@ -5,9 +5,7 @@ import com.example.restaurant_management.dto.request.OrderRequest;
 import com.example.restaurant_management.dto.request.OrderDetailRequest;
 import com.example.restaurant_management.dto.response.*;
 import com.example.restaurant_management.entity.*;
-import com.example.restaurant_management.repository.CustomerRepository;
 import com.example.restaurant_management.repository.MenuItemRepository;
-import com.example.restaurant_management.repository.UserRepository;
 import com.example.restaurant_management.repository.TableRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -22,10 +20,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class OrderMapper {
     private final TableRepository tableRepository;
-    private final UserRepository userRepository;
     private final MenuItemRepository menuItemRepository;
-    private final CustomerRepository customerRepository;
-
 
     public Order toEntity(OrderRequest request) {
         Order order = Order.builder()
@@ -64,32 +59,50 @@ public class OrderMapper {
     }
 
     public OrderResponse toResponse(Order order) {
-
         OrderResponse response = new OrderResponse();
         response.setId(order.getId());
         response.setStatus(order.getStatus());
         response.setTotalAmount(order.getTotalAmount());
         response.setNote(order.getNotes());
 
+        // Table
         TableResponse tableResponse = new TableResponse();
         tableResponse.setId(order.getTable().getId());
         tableResponse.setTableNumber(order.getTable().getTableNumber());
         tableResponse.setCapacity(order.getTable().getCapacity());
         response.setTable(tableResponse);
 
+        // ✅ Staff - Lấy từ staffUser.staff (đã eager load)
         if (order.getStaffUser() != null) {
-            StaffResponse staffResponse = new StaffResponse();
-            staffResponse.setId(order.getStaffUser().getId());
-            staffResponse.setName(order.getStaffUser().getUsername());
-            response.setStaff(staffResponse);
-        }
-        if (order.getCustomerUser() != null) {
-            Customer customer = (Customer) customerRepository.findByUser(order.getCustomerUser()).orElseThrow();
-            response.setCustomerUserId(order.getCustomerUser().getId());
-            response.setCustomerPhone(customer.getPhoneNumber());
-            response.setCustomerName(customer.getFullName());
+            Staff staff = order.getStaffUser().getStaff();
+            if (staff != null) {
+                StaffResponse staffResponse = new StaffResponse();
+                staffResponse.setId(staff.getId());
+                staffResponse.setName(staff.getFullName());
+                response.setStaff(staffResponse);
+            } else if (order.getStaffUser().getUsername() != null) {
+                // Fallback nếu không có Staff profile
+                StaffResponse staffResponse = new StaffResponse();
+                staffResponse.setId(order.getStaffUser().getId());
+                staffResponse.setName(order.getStaffUser().getUsername());
+                response.setStaff(staffResponse);
+            }
         }
 
+        // ✅ Customer - Lấy từ customerUser.customer (đã eager load)
+        if (order.getCustomerUser() != null) {
+            Customer customer = order.getCustomerUser().getCustomer();
+            if (customer != null) {
+                response.setCustomerUserId(order.getCustomerUser().getId());
+                response.setCustomerPhone(customer.getPhoneNumber());
+                response.setCustomerName(customer.getFullName());
+            } else {
+                System.err.println("Warning: Order " + order.getId() +
+                        " has a User but no corresponding Customer profile found.");
+            }
+        }
+
+        // Order details
         List<OrderDetailResponse> items = order.getOrderDetails().stream()
                 .map(detail -> {
                     OrderDetailResponse itemResponse = new OrderDetailResponse();

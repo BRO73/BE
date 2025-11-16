@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
@@ -81,6 +82,86 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     """, nativeQuery = true)
     List<Object[]> topItemsRevenueBetween(@Param("start") LocalDateTime start,
                                           @Param("end") LocalDateTime end);
+    @Query("SELECT DISTINCT o FROM Order o " +
+            "LEFT JOIN FETCH o.orderDetails od " +
+            "LEFT JOIN FETCH od.menuItem " +
+            "LEFT JOIN FETCH o.table " +
+            "LEFT JOIN FETCH o.customerUser cu " +
+            "LEFT JOIN FETCH cu.customer " +           // ← THÊM
+            "LEFT JOIN FETCH o.staffUser su " +
+            "LEFT JOIN FETCH su.staff")                // ← THÊM
+    List<Order> findAllWithDetails();
 
+    @Query("SELECT DISTINCT o FROM Order o " +
+            "LEFT JOIN FETCH o.orderDetails od " +
+            "LEFT JOIN FETCH od.menuItem " +
+            "LEFT JOIN FETCH o.table " +
+            "LEFT JOIN FETCH o.customerUser cu " +
+            "LEFT JOIN FETCH cu.customer " +           // ← THÊM
+            "LEFT JOIN FETCH o.staffUser su " +
+            "LEFT JOIN FETCH su.staff " +              // ← THÊM
+            "WHERE o.id = :id")
+    Optional<Order> findByIdWithDetails(@Param("id") Long id);
+
+    @Query("SELECT DISTINCT o FROM Order o " +
+            "LEFT JOIN FETCH o.orderDetails od " +
+            "LEFT JOIN FETCH od.menuItem " +
+            "LEFT JOIN FETCH o.table t " +
+            "LEFT JOIN FETCH o.customerUser cu " +
+            "LEFT JOIN FETCH cu.customer " +           // ← THÊM
+            "LEFT JOIN FETCH o.staffUser su " +
+            "LEFT JOIN FETCH su.staff " +              // ← THÊM
+            "WHERE t.id = :tableId")
+    List<Order> findByTableIdWithDetails(@Param("tableId") Long tableId);
+
+    @Query("SELECT DISTINCT o FROM Order o " +
+            "LEFT JOIN FETCH o.orderDetails od " +
+            "LEFT JOIN FETCH od.menuItem " +
+            "LEFT JOIN FETCH o.table " +
+            "LEFT JOIN FETCH o.customerUser cu " +
+            "LEFT JOIN FETCH cu.customer " +           // ← THÊM
+            "LEFT JOIN FETCH o.staffUser su " +
+            "LEFT JOIN FETCH su.staff " +              // ← THÊM
+            "WHERE o.status = :status")
+    List<Order> findByStatusWithDetails(@Param("status") String status);
+
+    @Query("SELECT DISTINCT o FROM Order o " +
+            "LEFT JOIN FETCH o.orderDetails od " +
+            "LEFT JOIN FETCH od.menuItem " +
+            "LEFT JOIN FETCH o.table " +
+            "LEFT JOIN FETCH o.customerUser cu " +
+            "LEFT JOIN FETCH cu.customer " +           // ← THÊM
+            "LEFT JOIN FETCH o.staffUser su " +
+            "LEFT JOIN FETCH su.staff " +              // ← THÊM
+            "WHERE su.id = :staffId")
+    List<Order> findByStaffUserIdWithDetails(@Param("staffId") Long staffId);
+
+    @Query("SELECT DISTINCT o FROM Order o " +
+            "LEFT JOIN FETCH o.orderDetails od " +
+            "LEFT JOIN FETCH od.menuItem " +
+            "LEFT JOIN FETCH o.table " +
+            "LEFT JOIN FETCH o.customerUser cu " +
+            "LEFT JOIN FETCH cu.customer " +           // ← THÊM
+            "LEFT JOIN FETCH o.staffUser su " +
+            "LEFT JOIN FETCH su.staff " +              // ← THÊM
+            "WHERE o.createdAt BETWEEN :start AND :end")
+    List<Order> findByCreatedAtBetweenWithDetails(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+
+    @Query("SELECT DISTINCT o FROM Order o " +
+            "LEFT JOIN FETCH o.orderDetails od " +
+            "LEFT JOIN FETCH od.menuItem " +
+            "LEFT JOIN FETCH o.table t " +
+            "LEFT JOIN FETCH o.customerUser cu " +
+            "LEFT JOIN FETCH cu.customer " +           // ← THÊM
+            "LEFT JOIN FETCH o.staffUser su " +
+            "LEFT JOIN FETCH su.staff " +              // ← THÊM
+            "WHERE t = :table AND o.status = :status")
+    List<Order> findByTableAndStatusWithDetails(
+            @Param("table") TableEntity table,
+            @Param("status") String status
+    );
 }
 

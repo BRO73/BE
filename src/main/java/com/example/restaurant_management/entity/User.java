@@ -23,10 +23,10 @@ public class User extends AbstractEntity<Long> implements Serializable {
     @Column(name = "hashed_password")
     private String hashedPassword;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Staff staff;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Customer customer;
 
     @OneToMany(mappedBy = "staffUser", fetch = FetchType.LAZY)
