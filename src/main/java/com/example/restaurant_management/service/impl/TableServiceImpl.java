@@ -68,7 +68,7 @@ public class TableServiceImpl implements TableService {
     // ================================
     @Override
     public List<TableResponse> getAllTables() {
-        return tableRepository.findAll().stream()
+        return tableRepository.findAllWithDetails().stream()
                 .map(TableResponse::fromEntity)
                 .toList();
     }

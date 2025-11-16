@@ -22,6 +22,9 @@ public interface TableRepository extends JpaRepository<TableEntity, Long> {
     @Query("select t.id from TableEntity t")
     List<Long> findAllIds();
 
-    @Query("SELECT DISTINCT t FROM TableEntity t LEFT JOIN FETCH t.location l LEFT JOIN FETCH t.bookings b")
+
+    @Query("SELECT DISTINCT t FROM TableEntity t " +
+            "LEFT JOIN FETCH t.location l " +
+            "LEFT JOIN FETCH t.bookings b")
     List<TableEntity> findAllWithDetails();
 }
