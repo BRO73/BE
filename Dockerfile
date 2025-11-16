@@ -17,7 +17,7 @@ RUN ./gradlew build --no-daemon -x test
 
 # ----- Stage 2: Tạo image cuối cùng để chạy -----
 # Sử dụng image JRE 21 (siêu nhẹ, chỉ để chạy)
-FROM openjdk:21-jre
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # Copy file .jar đã được build từ stage 1
