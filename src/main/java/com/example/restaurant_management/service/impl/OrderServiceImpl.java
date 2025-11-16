@@ -38,20 +38,21 @@ public class OrderServiceImpl implements OrderService {
     private final MenuItemRepository menuItemRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final KitchenService kitchenService;
+
     @Override
     public List<OrderResponse> getAllOrders() {
-        return orderRepository.findAll().stream()
+        return orderRepository.findAllWithDetails().stream()  // ✅ Chỉ 1 query
                 .map(orderMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
     public OrderResponse getOrderById(Long id) {
-        Order order = orderRepository.findById(id)
+        Order order = orderRepository.findByIdWithDetails(id)  // ✅ Chỉ 1 query
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         return orderMapper.toResponse(order);
-
     }
+
     @Override
     @Transactional
     public OrderResponse createOrder(OrderRequest request,
@@ -98,28 +99,28 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponse> getOrdersByTable(Long tableId) {
-        return orderRepository.findByTableId(tableId).stream()
+        return orderRepository.findByTableIdWithDetails(tableId).stream()  // ✅
                 .map(orderMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<OrderResponse> getOrdersByStatus(String status) {
-        return orderRepository.findByStatus(status).stream()
+        return orderRepository.findByStatusWithDetails(status).stream()  // ✅
                 .map(orderMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<OrderResponse> getOrdersByStaff(Long staffId) {
-        return orderRepository.findByStaffUserId(staffId).stream()
+        return orderRepository.findByStaffUserIdWithDetails(staffId).stream()  // ✅
                 .map(orderMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<OrderResponse> getOrdersBetween(LocalDateTime start, LocalDateTime end) {
-        return orderRepository.findByCreatedAtBetween(start, end).stream()
+        return orderRepository.findByCreatedAtBetweenWithDetails(start, end).stream()  // ✅
                 .map(orderMapper::toResponse)
                 .collect(Collectors.toList());
     }
@@ -129,7 +130,7 @@ public class OrderServiceImpl implements OrderService {
         TableEntity table = tableRepository.findById(tableId)
                 .orElseThrow(() -> new RuntimeException("Table not found"));
 
-        return orderRepository.findByTableAndStatus(table, "PENDING").stream()
+        return orderRepository.findByTableAndStatusWithDetails(table, "PENDING").stream()  // ✅
                 .map(orderMapper::toResponse)
                 .collect(Collectors.toList());
     }
@@ -233,14 +234,12 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse mergeOrders(MergeOrderRequest request) {
 
-        // 1. Lấy 2 orders
         Order sourceOrder = orderRepository.findById(request.getSourceOrderId())
                 .orElseThrow(() -> new RestaurantException("Source order not found"));
 
         Order targetOrder = orderRepository.findById(request.getTargetOrderId())
                 .orElseThrow(() -> new RestaurantException("Target order not found"));
 
-        // 2. Validate: Cả 2 orders phải PENDING
         if (!"PENDING".equals(sourceOrder.getStatus())) {
             throw new RestaurantException("Source order must be PENDING");
         }
@@ -319,55 +318,78 @@ public class OrderServiceImpl implements OrderService {
 
         newOrder = orderRepository.save(newOrder);
 
-        // 6. Xử lý split cho từng OrderDetail
-        List<OrderDetail> sourceOrderDetails = new ArrayList<>(sourceOrder.getOrderDetails());
-        int remainingDetailsCount = sourceOrderDetails.size();
+        // 6. Xử lý split cho từng MenuItem
+        List<OrderDetail> movedOrEmptyDetails = new ArrayList<>();
 
         for (Map.Entry<Long, Integer> entry : splitItems.entrySet()) {
-            Long orderDetailId = entry.getKey();
+            Long menuItemId = entry.getKey();
             Integer quantityToSplit = entry.getValue();
-
-            // Tìm OrderDetail
-            OrderDetail sourceDetail = sourceOrderDetails.stream()
-                    .filter(d -> d.getId().equals(orderDetailId))
-                    .findFirst()
-                    .orElseThrow(() -> new RestaurantException("OrderDetail not found: " + orderDetailId));
 
             // Validate quantity
             if (quantityToSplit <= 0) {
                 throw new RestaurantException("Quantity to split must be greater than 0");
             }
-            if (quantityToSplit > sourceDetail.getQuantity()) {
-                throw new RestaurantException("Quantity to split exceeds available quantity");
+
+            // Tìm tất cả OrderDetails có cùng menuItemId (sắp xếp theo thứ tự tạo - FIFO)
+            List<OrderDetail> matchingDetails = sourceOrder.getOrderDetails().stream()
+                    .filter(d -> d.getMenuItem().getId().equals(menuItemId))
+                    .sorted((d1, d2) -> d1.getCreatedAt().compareTo(d2.getCreatedAt()))
+                    .toList();
+
+            if (matchingDetails.isEmpty()) {
+                throw new RestaurantException("MenuItem not found in order: " + menuItemId);
             }
 
-            // Nếu split hết quantity
-            if (quantityToSplit.equals(sourceDetail.getQuantity())) {
-                // Move nguyên OrderDetail sang order mới
-                sourceDetail.setOrder(newOrder);
-                orderDetailRepository.save(sourceDetail);
-                remainingDetailsCount--;
-            } else {
-                // Split một phần
-                // Trừ quantity ở order gốc
-                sourceDetail.setQuantity(sourceDetail.getQuantity() - quantityToSplit);
-                orderDetailRepository.save(sourceDetail);
+            // Tính tổng quantity có sẵn
+            int totalAvailable = matchingDetails.stream()
+                    .mapToInt(OrderDetail::getQuantity)
+                    .sum();
 
-                // Tạo OrderDetail mới cho order mới
-                OrderDetail newDetail = OrderDetail.builder()
-                        .order(newOrder)
-                        .menuItem(sourceDetail.getMenuItem())
-                        .quantity(quantityToSplit)
-                        .priceAtOrder(sourceDetail.getPriceAtOrder())
-                        .status(sourceDetail.getStatus()) // Giữ nguyên status
-                        .notes(sourceDetail.getNotes())
-                        .build();
+            if (quantityToSplit > totalAvailable) {
+                throw new RestaurantException("Quantity to split exceeds available quantity for menuItem: " + menuItemId);
+            }
 
-                orderDetailRepository.save(newDetail);
+            // Trừ dần quantity từ các OrderDetails (FIFO)
+            int remainingToSplit = quantityToSplit;
+            MenuItem menuItem = matchingDetails.get(0).getMenuItem();
+            BigDecimal priceAtOrder = matchingDetails.get(0).getPriceAtOrder();
+            String commonStatus = matchingDetails.get(0).getStatus();
+
+            for (OrderDetail detail : matchingDetails) {
+                if (remainingToSplit == 0) break;
+
+                if (detail.getQuantity() <= remainingToSplit) {
+                    // Lấy hết OrderDetail này
+                    remainingToSplit -= detail.getQuantity();
+                    detail.setOrder(newOrder);
+                    orderDetailRepository.save(detail);
+                    movedOrEmptyDetails.add(detail);
+                } else {
+                    // Lấy một phần
+                    detail.setQuantity(detail.getQuantity() - remainingToSplit);
+                    orderDetailRepository.save(detail);
+
+                    // Tạo OrderDetail mới cho order mới
+                    OrderDetail newDetail = OrderDetail.builder()
+                            .order(newOrder)
+                            .menuItem(detail.getMenuItem())
+                            .quantity(remainingToSplit)
+                            .priceAtOrder(detail.getPriceAtOrder())
+                            .status(detail.getStatus())
+                            .notes(detail.getNotes())
+                            .build();
+                    orderDetailRepository.save(newDetail);
+
+                    remainingToSplit = 0;
+                }
             }
         }
 
         // 7. Validate: Order gốc phải còn ít nhất 1 OrderDetail
+        long remainingDetailsCount = sourceOrder.getOrderDetails().stream()
+                .filter(d -> d.getOrder().getId().equals(sourceOrder.getId()))
+                .count();
+
         if (remainingDetailsCount == 0) {
             throw new RestaurantException("Cannot split all items. Source order must have at least 1 item remaining");
         }
