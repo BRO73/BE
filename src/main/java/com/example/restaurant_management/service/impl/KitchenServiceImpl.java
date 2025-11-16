@@ -120,18 +120,59 @@ public class KitchenServiceImpl implements KitchenService {
             }
 
             case "DONE" -> {
-                // DONE -> PENDING (rollback) hoặc DONE -> COMPLETED
                 if (!statusNorm.equals("PENDING") && !statusNorm.equals("COMPLETED")) {
                     throw new IllegalStateException("Invalid transition from DONE to " + statusNorm);
                 }
 
                 if (statusNorm.equals("PENDING")) {
-                    // ✅ ROLLBACK: DONE -> PENDING
+
+                    LocalDateTime now = LocalDateTime.now();
+
+
+                    if (od.getQuantity() == 1
+                            && od.getOrder() != null
+                            && od.getMenuItem() != null) {
+
+                        Long orderId = od.getOrder().getId();
+                        Long menuItemId = od.getMenuItem().getId();
+
+                        var candidates = orderDetailRepository
+                                .findByOrder_IdAndMenuItem_IdAndStatusIgnoreCaseAndIdNot(
+                                        orderId,
+                                        menuItemId,
+                                        "PENDING",
+                                        od.getId()
+                                );
+
+                        if (!candidates.isEmpty()) {
+                            OrderDetail base = candidates.stream()
+                                    .min(Comparator.comparing(OrderDetail::getCreatedAt))
+                                    .orElse(candidates.get(0));
+
+                            int oldQty = base.getQuantity();
+                            base.setQuantity(oldQty + od.getQuantity());
+                            base.setUpdatedAt(now);
+                            orderDetailRepository.save(base);
+
+                            // Xoá dòng DONE vừa rollback
+                            orderDetailRepository.delete(od);
+
+                            log.info("✅ Rollback & merged DONE(id={}) -> PENDING(id={}), qty {} -> {}",
+                                    od.getId(), base.getId(), oldQty, base.getQuantity());
+                            System.out.println("✅ [ROLLBACK+MERGE] DONE id=" + od.getId()
+                                    + " merged into PENDING id=" + base.getId());
+
+                            broadcastBoardSnapshot();
+                            return;
+                        }
+                    }
+
                     od.setStatus("PENDING");
-                    od.setUpdatedAt(LocalDateTime.now());
+                    od.setUpdatedAt(now);
                     orderDetailRepository.save(od);
-                    log.info("✅ Rollback DONE -> PENDING for orderDetailId={}", orderDetailId);
-                    System.out.println("✅ [ROLLBACK] DONE -> PENDING (ID: " + orderDetailId + ")");
+
+                    log.info("✅ Rollback DONE -> PENDING (no merge) for orderDetailId={}", orderDetailId);
+                    System.out.println("✅ [ROLLBACK] DONE -> PENDING (no merge) ID=" + orderDetailId);
                     broadcastBoardSnapshot();
                     return;
                 }
@@ -148,6 +189,7 @@ public class KitchenServiceImpl implements KitchenService {
                 }
             }
 
+
             case "COMPLETED", "CANCELED" -> {
                 throw new IllegalStateException("Item already finished. Current status=" + cur);
             }
@@ -155,13 +197,13 @@ public class KitchenServiceImpl implements KitchenService {
             default -> throw new IllegalStateException("Unknown status: " + cur);
         }
 
-        // Các case còn lại (PENDING -> DONE/CANCELED)
         od.setStatus(statusNorm);
         od.setUpdatedAt(LocalDateTime.now());
         orderDetailRepository.save(od);
 
         broadcastBoardSnapshot();
     }
+
 
     @Override
     @Transactional

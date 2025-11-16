@@ -64,4 +64,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
     List<OrderDetail> findAllByStatusInWithDetails(
             @Param("statuses") List<String> statuses
     );
+
+    List<OrderDetail> findByOrder_IdAndMenuItem_IdAndStatusIgnoreCaseAndIdNot(
+            Long orderId,
+            Long menuItemId,
+            String status,
+            Long excludeId
+    );
 }
