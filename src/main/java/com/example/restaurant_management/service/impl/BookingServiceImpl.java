@@ -21,7 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -38,34 +40,54 @@ public class BookingServiceImpl implements BookingService {
     // ======================================================
     // ✅ HELPER: cập nhật trạng thái bàn theo tất cả booking trong ngày
     // ======================================================
-    private void updateTableStatusByDay(TableEntity table, LocalDateTime date) {
-        List<Booking> bookingsToday = bookingRepository.findByTableAndDay(table.getId(), date);
+    private void updateTableStatusByDay(
+            TableEntity table,
+            Map<Long, List<Booking>> bookingsMap
+    ) {
+        List<Booking> bookingsToday =
+                bookingsMap.getOrDefault(table.getId(), List.of());
+
         String status = "Available";
 
         for (Booking b : bookingsToday) {
             if ("Confirmed".equalsIgnoreCase(b.getStatus())) {
-                status = "Reserved"; // ưu tiên Confirmed
+                status = "Reserved";
                 break;
             } else if ("Pending".equalsIgnoreCase(b.getStatus())) {
                 status = "Occupied";
             }
         }
 
-        table.setStatus(status);
-        tableRepository.save(table);
+        table.setStatus(status); // ❗ Không save ở đây nữa
     }
+
 
     // ======================================================
     // ✅ CREATE BOOKING
     // ======================================================
     @Override
     public BookingResponse createBooking(BookingRequest request) {
-        validateBookingRequest(request); // ✅ thêm để tránh NPE
+        validateBookingRequest(request);
 
+        // 1️⃣ Lấy hoặc tạo customer
+        Customer customer = customerRepository.findByPhoneNumber(request.getCustomerPhone())
+                .orElseGet(() -> {
+                    Customer newCustomer = Customer.builder()
+                            .fullName(request.getCustomerName())
+                            .phoneNumber(request.getCustomerPhone())
+                            .email(request.getCustomerEmail())
+                            .build();
+                    return customerRepository.save(newCustomer);
+                });
+
+        User customerUser = customer.getUser();
+
+        // 2️⃣ Lấy tất cả table và kiểm tra trùng booking trong cùng ngày
         List<TableEntity> tables = new ArrayList<>();
         for (Long tbId : request.getTableIds()) {
             TableEntity table = tableRepository.findById(tbId)
                     .orElseThrow(() -> new EntityNotFoundException("Table not found with id: " + tbId));
+
             List<Booking> bookingsToday = bookingRepository.findByTableAndDay(table.getId(), request.getBookingTime());
             if (!bookingsToday.isEmpty()) {
                 throw new IllegalStateException("Table " + table.getTableNumber() + " already has a booking on this day!");
@@ -73,23 +95,13 @@ public class BookingServiceImpl implements BookingService {
             tables.add(table);
         }
 
-        Customer customer = customerRepository.findByPhoneNumber(request.getCustomerPhone())
-                .orElseGet(() -> {
-                    Customer newCustomer = Customer.builder()
-                            .fullName(request.getCustomerName())
-                            .phoneNumber(request.getCustomerPhone())
-                            .email(request.getCustomerEmail()) // optional
-                            .build();
-                    return customerRepository.save(newCustomer);
-                });
-
-        User customerUser = customer.getUser();
+        // 3️⃣ Map request → entity
         Booking booking = bookingMapper.toEntity(request, tables, customerUser);
         booking.setStatus(request.getStatus() != null ? request.getStatus() : "Pending");
 
         Booking saved = bookingRepository.save(booking);
 
-        // ✅ Optional: gửi email khi tạo mới
+        // 4️⃣ Gửi email xác nhận (nếu có)
         if (customer.getEmail() != null && !customer.getEmail().isBlank()) {
             emailService.sendBookingConfirmation(
                     customer.getEmail(),
@@ -99,11 +111,12 @@ public class BookingServiceImpl implements BookingService {
             );
         }
 
-        for (TableEntity table : tables) {
-            updateTableStatusByDay(table, request.getBookingTime());
-        }
+        // 5️⃣ Cập nhật status table
+        updateAllTableStatuses(request.getBookingTime());
+
         return bookingMapper.toResponse(saved);
     }
+
 
 
     // ======================================================
@@ -114,7 +127,7 @@ public class BookingServiceImpl implements BookingService {
         Booking existing = bookingRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Booking not found"));
 
-        String oldStatus = existing.getStatus(); // 🔹 Lưu trạng thái cũ
+        String oldStatus = existing.getStatus();
 
         validateBookingRequest(request);
 
@@ -122,23 +135,22 @@ public class BookingServiceImpl implements BookingService {
         for (Long tbId : request.getTableIds()) {
             TableEntity table = tableRepository.findById(tbId)
                     .orElseThrow(() -> new EntityNotFoundException("Table not found with id: " + tbId));
-            // Check booking trùng trong ngày, trừ chính booking này
+
             List<Booking> bookingsToday = bookingRepository.findByTableAndDay(table.getId(), request.getBookingTime());
             boolean conflict = bookingsToday.stream().anyMatch(b -> !b.getId().equals(id));
             if (conflict) {
                 throw new IllegalStateException("Table " + table.getTableNumber() + " already has a booking on this day!");
             }
+
             newTables.add(table);
         }
 
-        // Map dữ liệu mới vào entity
         bookingMapper.updateEntityFromRequest(existing, request, newTables);
         Booking updated = bookingRepository.save(existing);
 
-        // 🔹 Gửi email nếu trạng thái chuyển từ Pending → Confirmed
+        // Gửi email nếu trạng thái chuyển từ Pending → Confirmed
         if ("Pending".equalsIgnoreCase(oldStatus) && "Confirmed".equalsIgnoreCase(updated.getStatus())) {
-            String toEmail = updated.getCustomerName()!= null ? updated.getCustomerEmail(): null;
-
+            String toEmail = updated.getCustomerEmail();
             if (toEmail != null && !toEmail.isBlank()) {
                 emailService.sendBookingConfirmation(
                         toEmail,
@@ -151,16 +163,10 @@ public class BookingServiceImpl implements BookingService {
             }
         }
 
-        // 🔹 Cập nhật trạng thái bàn
-        for (TableEntity table : existing.getTables()) {
-            updateTableStatusByDay(table, request.getBookingTime());
-        }
-        for (TableEntity table : newTables) {
-            updateTableStatusByDay(table, request.getBookingTime());
-        }
-
+        updateAllTableStatuses(request.getBookingTime());
         return bookingMapper.toResponse(updated);
     }
+
 
 
     // ======================================================
@@ -177,10 +183,8 @@ public class BookingServiceImpl implements BookingService {
 
         bookingRepository.delete(existing);
 
-        // Cập nhật trạng thái bàn
-        for (TableEntity table : existing.getTables()) {
-            updateTableStatusByDay(table, existing.getBookingTime());
-        }
+        updateAllTableStatuses(existing.getBookingTime());
+
     }
 
     // ======================================================
@@ -222,10 +226,8 @@ public class BookingServiceImpl implements BookingService {
             }
         }
 
-        // 🔹 Cập nhật trạng thái bàn
-        for (TableEntity table : existing.getTables()) {
-            updateTableStatusByDay(table, existing.getBookingTime());
-        }
+        updateAllTableStatuses(existing.getBookingTime());
+
 
         return bookingMapper.toResponse(updated);
     }
@@ -298,6 +300,51 @@ public class BookingServiceImpl implements BookingService {
         List<Booking> bookings = bookingRepository.findByCustomerUser(userRepository.findByCustomer(customerRepository.findById(customerId).get()).get());
         return bookingMapper.toResponseList(bookings);
     }
+
+
+    // ==========================================
+// 2️⃣ Service
+// ==========================================
+    private Map<Long, List<Booking>> getBookingsGroupedByTable(LocalDateTime bookingTime) {
+
+        LocalDateTime startDay = bookingTime.toLocalDate().atStartOfDay();
+        LocalDateTime endDay = startDay.plusDays(1);
+
+        // ✅ 1 query duy nhất: load Booking + Tables + Location
+        List<Booking> bookings = bookingRepository.findBookingsWithTablesAndLocationByDay(startDay, endDay);
+
+        Map<Long, List<Booking>> map = new HashMap<>();
+        for (Booking b : bookings) {
+            for (TableEntity t : b.getTables()) {
+                map.computeIfAbsent(t.getId(), x -> new ArrayList<>()).add(b);
+            }
+        }
+        return map;
+    }
+
+    private void updateAllTableStatuses(LocalDateTime bookingTime) {
+
+        Map<Long, List<Booking>> bookingsMap = getBookingsGroupedByTable(bookingTime);
+        List<TableEntity> allTables = tableRepository.findAll();
+
+        List<TableEntity> tablesToUpdate = new ArrayList<>();
+
+        for (TableEntity table : allTables) {
+            String oldStatus = table.getStatus();
+            updateTableStatusByDay(table, bookingsMap);
+
+            // ✅ Chỉ save nếu status thay đổi
+            if (!oldStatus.equals(table.getStatus())) {
+                tablesToUpdate.add(table);
+            }
+        }
+
+        if (!tablesToUpdate.isEmpty()) {
+            tableRepository.saveAll(tablesToUpdate);
+        }
+    }
+
+
 
 
 }

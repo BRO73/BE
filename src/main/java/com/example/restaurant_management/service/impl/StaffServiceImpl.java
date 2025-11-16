@@ -20,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,6 +34,66 @@ public class StaffServiceImpl implements StaffService {
 
     private final UserRoleRepository userRoleRepository;
     private final RoleRepository roleRepository;
+    @Override
+    public List<StaffResponse> getAllStaff() {
+        List<Staff> staffList = staffRepository.findAll();
+
+        // ✅ Lấy tất cả UserRole + Role 1 lần
+        Map<Long, Set<Long>> userIdRoleIdsMap = userRoleRepository.findAll()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        ur -> ur.getUserId(),
+                        Collectors.mapping(ur -> ur.getRoleId(), Collectors.toSet())
+                ));
+
+        Map<Long, String> roleIdNameMap = roleRepository.findAll()
+                .stream()
+                .collect(Collectors.toMap(r -> r.getId(), r -> r.getName()));
+
+        return staffList.stream().map(staff -> {
+            Long userId = staff.getUser() != null ? staff.getUser().getId() : null;
+            Set<String> roleNames;
+            if (userId != null && userIdRoleIdsMap.containsKey(userId)) {
+                roleNames = userIdRoleIdsMap.get(userId)
+                        .stream()
+                        .map(roleIdNameMap::get)
+                        .collect(Collectors.toSet());
+            } else {
+                roleNames = Set.of(staff.getRole());
+            }
+            return staffMapper.toResponse(staff, roleNames);
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public StaffProfileResponse getProfile(Authentication authentication) {
+        String username = authentication.getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RestaurantException("User not found"));
+
+        Staff staff = staffRepository.findByUser(user)
+                .orElseThrow(() -> new RestaurantException("Staff not found"));
+
+        // ✅ Lấy tất cả roles 1 lần → tránh N+1
+        Map<Long, String> roleIdNameMap = roleRepository.findAll()
+                .stream()
+                .collect(Collectors.toMap(r -> r.getId(), r -> r.getName()));
+
+        Set<String> roleNames = userRoleRepository.findAllByUserId(user.getId())
+                .stream()
+                .map(ur -> roleIdNameMap.get(ur.getRoleId()))
+                .collect(Collectors.toSet());
+
+        return staffMapper.toProfileResponse(
+                user.getId(),
+                user.getUsername(),
+                staff.getFullName(),
+                staff.getEmail(),
+                staff.getPhoneNumber(),
+                roleNames
+        );
+    }
 
     @Override
     @Transactional
@@ -51,34 +112,6 @@ public class StaffServiceImpl implements StaffService {
         return user;
     }
 
-    @Override
-    public StaffProfileResponse getProfile(Authentication authentication) {
-        String username = authentication.getName();
-
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RestaurantException("User not found"));
-
-        Staff staff = staffRepository.findByUser(user)
-                .orElseThrow(() -> new RestaurantException("Staff not found"));
-
-        // 👇 Lấy danh sách role theo userId
-        java.util.Set<String> roleNames = userRoleRepository.findAllByUserId(user.getId())
-                .stream()
-                .map(ur -> roleRepository.findById(ur.getRoleId())
-                        .orElseThrow(() -> new RestaurantException("Role not found for id: " + ur.getRoleId()))
-                        .getName())
-                .collect(java.util.stream.Collectors.toSet());
-
-        // 👇 Gọi mapper với ĐỦ 6 tham số
-        return staffMapper.toProfileResponse(
-                user.getId(),
-                user.getUsername(),
-                staff.getFullName(),
-                staff.getEmail(),
-                staff.getPhoneNumber(),
-                roleNames
-        );
-    }
 
     @Override
     @Transactional
@@ -114,32 +147,6 @@ public class StaffServiceImpl implements StaffService {
         );
     }
 
-    @Override
-    public List<StaffResponse> getAllStaff() {
-        List<Staff> staffList = staffRepository.findAll();
-
-        return staffList.stream().map(staff -> {
-
-            Long userId = staff.getUser() != null ? staff.getUser().getId() : null;
-
-            Set<String> roles;
-
-            if (userId != null) {
-                // Lấy role thật từ UserRole
-                roles = userRoleRepository.findAllByUserId(userId)
-                        .stream()
-                        .map(ur -> roleRepository.findById(ur.getRoleId())
-                                .orElseThrow(() -> new RestaurantException("Role not found"))
-                                .getName())
-                        .collect(Collectors.toSet());
-            } else {
-                // Chưa có user → dùng role String lưu trong staff table
-                roles = Set.of(staff.getRole());
-            }
-
-            return staffMapper.toResponse(staff, roles);
-        }).collect(Collectors.toList());
-    }
 
 
     @Override
@@ -156,32 +163,29 @@ public class StaffServiceImpl implements StaffService {
         return staffMapper.toResponse(staff, Set.of(request.role()));
     }
 
-    // 🟡 UPDATE
     @Override
     @Transactional
     public StaffResponse updateStaff(Long id, UpdateStaffRequest request) {
-
         Staff staff = staffRepository.findById(id)
                 .orElseThrow(() -> new RestaurantException("Staff not found"));
 
         staff.setFullName(request.fullName());
         staff.setEmail(request.email());
         staff.setPhoneNumber(request.phoneNumber());
-
-        if (request.role() != null)
-            staff.setRole(request.role());
+        if (request.role() != null) staff.setRole(request.role());
 
         staffRepository.save(staff);
 
         Set<String> roleNames;
-
         if (staff.getUser() != null) {
-            Long userId = staff.getUser().getId();
-            roleNames = userRoleRepository.findAllByUserId(userId)
+            // Lấy tất cả UserRole + Role 1 lần
+            Map<Long, String> roleIdNameMap = roleRepository.findAll()
                     .stream()
-                    .map(ur -> roleRepository.findById(ur.getRoleId())
-                            .orElseThrow(() -> new RestaurantException("Role not found"))
-                            .getName())
+                    .collect(Collectors.toMap(r -> r.getId(), r -> r.getName()));
+
+            roleNames = userRoleRepository.findAllByUserId(staff.getUser().getId())
+                    .stream()
+                    .map(ur -> roleIdNameMap.get(ur.getRoleId()))
                     .collect(Collectors.toSet());
         } else {
             roleNames = Set.of(staff.getRole());
@@ -189,6 +193,7 @@ public class StaffServiceImpl implements StaffService {
 
         return staffMapper.toResponse(staff, roleNames);
     }
+
 
 
     // 🔴 DELETE

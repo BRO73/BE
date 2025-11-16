@@ -11,103 +11,98 @@ import com.example.restaurant_management.repository.TableRepository;
 import com.example.restaurant_management.service.TableService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class TableServiceImpl implements TableService {
 
     private final TableRepository tableRepository;
     private final LocationRepository locationRepository;
     private final BookingRepository bookingRepository;
+
+    // ================================
+    // ✅ GET TABLES BY DAY
+    // ================================
     @Override
     public List<TableResponse> getTablesByDay(String date) {
-        LocalDateTime targetDay = LocalDateTime.parse(date + "T00:00:00");
+        LocalDate day = LocalDate.parse(date);
+        LocalDateTime startDay = day.atStartOfDay();
+        LocalDateTime endDay = day.plusDays(1).atStartOfDay();
 
-        List<TableEntity> allTables = tableRepository.findAll();
+        // 1 query lấy tất cả booking trong ngày
+        List<Booking> bookings = bookingRepository.findBookingsByDay(startDay, endDay);
 
-        for (TableEntity table : allTables) {
-            List<Booking> bookingsOnDay = bookingRepository.findByTableAndDay(table.getId(), targetDay);
-            String status = "Available";
-
-            for (Booking b : bookingsOnDay) {
-                if ("Confirmed".equalsIgnoreCase(b.getStatus())) {
-                    status = "Reserved";
-                    break;
-                } else if ("Pending".equalsIgnoreCase(b.getStatus())) {
-                    status = "Occupied";
-                }
+        // Map<tableId, List<Booking>> – tránh N+1
+        Map<Long, List<Booking>> bookingsByTable = new HashMap<>();
+        for (Booking booking : bookings) {
+            for (TableEntity table : booking.getTables()) {
+                bookingsByTable.computeIfAbsent(table.getId(), k -> new ArrayList<>()).add(booking);
             }
-
-            table.setStatus(status);
-            tableRepository.save(table);
         }
 
-        return allTables.stream()
-                .map(TableResponse::fromEntity)
-                .toList();
-    }
-
-    // ======================================================
-    // ✅ HELPER: cập nhật trạng thái tất cả bàn hôm nay
-    // ======================================================
-    public void updateAllTablesStatusToday() {
-        LocalDateTime today = LocalDateTime.now();
+        // 1 query lấy tất cả table
         List<TableEntity> allTables = tableRepository.findAll();
 
-        for (TableEntity table : allTables) {
-            List<Booking> bookingsToday = bookingRepository.findByTableAndDay(table.getId(), today);
-            String status = "Available";
-
-            for (Booking b : bookingsToday) {
-                if ("Confirmed".equalsIgnoreCase(b.getStatus())) {
-                    status = "Reserved";
-                    break;
-                } else if ("Pending".equalsIgnoreCase(b.getStatus())) {
-                    status = "Occupied";
-                }
-            }
-
+        // Cập nhật status theo booking trong map
+        allTables.forEach(table -> {
+            List<Booking> tableBookings = bookingsByTable.getOrDefault(table.getId(), List.of());
+            String status = tableBookings.stream()
+                    .anyMatch(b -> "Confirmed".equalsIgnoreCase(b.getStatus())) ? "Reserved" :
+                    tableBookings.stream().anyMatch(b -> "Pending".equalsIgnoreCase(b.getStatus())) ? "Occupied" :
+                            "Available";
             table.setStatus(status);
-            tableRepository.save(table);
-        }
+        });
+
+        return allTables.stream().map(TableResponse::fromEntity).toList();
     }
 
-
+    // ================================
+    // ✅ GET ALL TABLES
+    // ================================
     @Override
     public List<TableResponse> getAllTables() {
-        updateAllTablesStatusToday();
         return tableRepository.findAll().stream()
                 .map(TableResponse::fromEntity)
                 .toList();
     }
 
+    // ================================
+    // ✅ GET TABLE BY ID
+    // ================================
     @Override
     public Optional<TableResponse> getTableById(Long id) {
-        updateAllTablesStatusToday();
         return tableRepository.findById(id).map(TableResponse::fromEntity);
     }
 
+    // ================================
+    // ✅ CREATE TABLE
+    // ================================
+    @Transactional
     @Override
     public TableResponse createTable(TableRequest request) {
-
         Location location = locationRepository.findById(request.getLocationId())
                 .orElseThrow(() -> new RuntimeException("Location not found"));
 
         TableEntity table = new TableEntity();
         table.setTableNumber(request.getTableNumber());
         table.setCapacity(request.getCapacity());
-        table.setStatus(request.getStatus());
+        table.setStatus(request.getStatus() != null ? request.getStatus() : "Available");
         table.setLocation(location);
 
         return TableResponse.fromEntity(tableRepository.save(table));
     }
 
+    // ================================
+    // ✅ UPDATE TABLE
+    // ================================
+    @Transactional
     @Override
     public TableResponse updateTable(Long id, TableRequest request) {
         TableEntity table = tableRepository.findById(id)
@@ -119,62 +114,68 @@ public class TableServiceImpl implements TableService {
         table.setTableNumber(request.getTableNumber());
         table.setCapacity(request.getCapacity());
         table.setLocation(location);
-        table.setStatus(request.getStatus());
-        updateAllTablesStatusToday();
+        table.setStatus(request.getStatus() != null ? request.getStatus() : table.getStatus());
 
         return TableResponse.fromEntity(tableRepository.save(table));
     }
 
+    // ================================
+    // ✅ DELETE TABLE
+    // ================================
+    @Transactional
     @Override
     public void deleteTable(Long id) {
         tableRepository.deleteById(id);
     }
 
+    // ================================
+    // ✅ GET TABLE BY NUMBER
+    // ================================
     @Override
     public Optional<TableResponse> getTableByNumber(String tableNumber) {
-        updateAllTablesStatusToday();
-
-        return tableRepository.findByTableNumber(tableNumber).map(TableResponse::fromEntity);
-
+        return tableRepository.findByTableNumber(tableNumber)
+                .map(TableResponse::fromEntity);
     }
 
+    // ================================
+    // ✅ GET TABLES BY STATUS
+    // ================================
     @Override
     public List<TableResponse> getTablesByStatus(String status) {
-        updateAllTablesStatusToday();
-
         return tableRepository.findByStatus(status).stream()
                 .map(TableResponse::fromEntity)
                 .toList();
     }
 
+    // ================================
+    // ✅ GET TABLES BY CAPACITY
+    // ================================
     @Override
     public List<TableResponse> getTablesByCapacity(Integer capacity) {
-        updateAllTablesStatusToday();
         return tableRepository.findByCapacityGreaterThanEqual(capacity).stream()
                 .map(TableResponse::fromEntity)
                 .toList();
     }
 
+    // ================================
+    // ✅ GET TABLES BY LOCATION
+    // ================================
     @Override
     public List<TableResponse> getTablesByLocation(Long locationId) {
-
         Location location = locationRepository.findById(locationId)
                 .orElseThrow(() -> new RuntimeException("Location not found"));
-        updateAllTablesStatusToday();
 
         return tableRepository.findByLocation(location).stream()
                 .map(TableResponse::fromEntity)
                 .toList();
     }
 
+    // ================================
+    // ✅ GET TABLES BY BOOKING
+    // ================================
     @Override
     public List<TableResponse> getTablesByBooking(Booking booking) {
-        List<Long> tableIds = booking.getTables().stream().map(tb -> tb.getId()).toList();
-        List<TableEntity> tbs = new ArrayList<>();
-        for (Long tableId : tableIds) {
-            tableRepository.findById(tableId).ifPresent(tbs::add);
-        }
-        return tbs.stream()
+        return booking.getTables().stream()
                 .map(TableResponse::fromEntity)
                 .toList();
     }
