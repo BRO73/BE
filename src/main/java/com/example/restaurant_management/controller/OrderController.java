@@ -107,27 +107,26 @@ public class OrderController {
         OrderResponse response = orderService.unlinkCustomer(orderId);
         return ResponseEntity.ok(response);
     }
-      
-    @GetMapping("/table-token/{token}/active")
-    public ResponseEntity<List<OrderResponse>> getActiveOrdersByTableToken(@PathVariable String token) {
-        Long tableId = tableTokenService.resolveTableId(token);
-        return ResponseEntity.ok(orderService.getActiveOrdersByTable(tableId));
+        @GetMapping("/table-token/{token}/active")
+        public ResponseEntity<List<OrderResponse>> getActiveOrdersByTableToken (@PathVariable String token){
+            Long tableId = tableTokenService.resolveTableId(token);
+            return ResponseEntity.ok(orderService.getActiveOrdersByTable(tableId));
+        }
+
+        @PostMapping("/merge")
+        public ResponseEntity<OrderResponse> mergeOrders (@Valid @RequestBody MergeOrderRequest request){
+
+            OrderResponse response = orderService.mergeOrders(request);
+
+            return ResponseEntity.ok(response);
+        }
+
+        @PostMapping("/split")
+        public ResponseEntity<OrderResponse> splitOrder (@Valid @RequestBody SplitOrderRequest request){
+
+            OrderResponse response = orderService.splitOrder(request);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        }
+
     }
-
-    @PostMapping("/merge")
-    public ResponseEntity<OrderResponse> mergeOrders(@Valid @RequestBody MergeOrderRequest request) {
-
-        OrderResponse response = orderService.mergeOrders(request);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/split")
-    public ResponseEntity<OrderResponse> splitOrder(@Valid @RequestBody SplitOrderRequest request) {
-
-        OrderResponse response = orderService.splitOrder(request);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-}

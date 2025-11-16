@@ -69,4 +69,18 @@ public class ReportController {
         return reportService.getTopCustomers(days);
     }
 
+    @GetMapping("/revenue")
+    public List<Map<String, Object>> getRevenueByDays(
+            @RequestParam(defaultValue = "7") int days
+    ) {
+        return reportService.getRevenueByDays(days);
+    }
+
+    @GetMapping("/top-items/days")
+    public List<Map<String, Object>> getTopItemsByDays(
+            @RequestParam(defaultValue = "7") int days) {
+        return reportService.getTopItemsByDays(days);
+    }
+
+
 }
