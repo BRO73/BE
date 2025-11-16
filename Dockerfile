@@ -1,6 +1,6 @@
 # ----- Stage 1: Build ứng dụng với Gradle Wrapper -----
 # Sử dụng image JDK 21 (bản slim) để build
-FROM eclipse-temurin:21-jdk-slim AS build
+FROM eclipse-temurin:21-jre AS build
 WORKDIR /app
 
 # Copy các file cần thiết cho Gradle
