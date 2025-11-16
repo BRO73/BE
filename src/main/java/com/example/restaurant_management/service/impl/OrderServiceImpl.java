@@ -3,8 +3,10 @@ package com.example.restaurant_management.service.impl;
 import com.example.restaurant_management.common.constant.ErrorEnum;
 import com.example.restaurant_management.common.exception.RestaurantException;
 import com.example.restaurant_management.dto.request.AddItemsRequest;
+import com.example.restaurant_management.dto.request.MergeOrderRequest;
 import com.example.restaurant_management.dto.request.OrderRequest;
 import com.example.restaurant_management.dto.response.OrderResponse;
+import com.example.restaurant_management.dto.response.SplitOrderRequest;
 import com.example.restaurant_management.entity.*;
 import com.example.restaurant_management.mapper.OrderMapper;
 import com.example.restaurant_management.repository.*;
@@ -18,7 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -223,5 +227,167 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
 
         return orderMapper.toResponse(savedOrder);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse mergeOrders(MergeOrderRequest request) {
+
+        // 1. Lấy 2 orders
+        Order sourceOrder = orderRepository.findById(request.getSourceOrderId())
+                .orElseThrow(() -> new RestaurantException("Source order not found"));
+
+        Order targetOrder = orderRepository.findById(request.getTargetOrderId())
+                .orElseThrow(() -> new RestaurantException("Target order not found"));
+
+        // 2. Validate: Cả 2 orders phải PENDING
+        if (!"PENDING".equals(sourceOrder.getStatus())) {
+            throw new RestaurantException("Source order must be PENDING");
+        }
+        if (!"PENDING".equals(targetOrder.getStatus())) {
+            throw new RestaurantException("Target order must be PENDING");
+        }
+
+        // 3. Validate: TẤT CẢ OrderDetails phải COMPLETED
+        List<OrderDetail> allDetails = new ArrayList<>();
+        allDetails.addAll(sourceOrder.getOrderDetails());
+        allDetails.addAll(targetOrder.getOrderDetails());
+
+        boolean hasIncompleteItem = allDetails.stream()
+                .anyMatch(detail -> !"COMPLETED".equals(detail.getStatus()));
+
+        if (hasIncompleteItem) {
+            throw new RestaurantException("Có món chưa hoàn thành, không thể gộp order");
+        }
+
+        // 4. Gộp tất cả OrderDetails từ sourceOrder sang targetOrder
+        for (OrderDetail detail : sourceOrder.getOrderDetails()) {
+            detail.setOrder(targetOrder);
+            orderDetailRepository.save(detail);
+        }
+
+        // 5. Cập nhật sourceOrder status = MERGED
+        sourceOrder.setStatus("MERGED");
+        orderRepository.save(sourceOrder);
+
+        // 6. Tính lại totalAmount cho targetOrder
+        BigDecimal totalAmount = targetOrder.getOrderDetails().stream()
+                .map(detail -> detail.getPriceAtOrder().multiply(BigDecimal.valueOf(detail.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        targetOrder.setTotalAmount(totalAmount);
+        Order mergedOrder = orderRepository.save(targetOrder);
+
+
+        // 7. Trả về OrderResponse sử dụng OrderMapper
+        return orderMapper.toResponse(mergedOrder);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse splitOrder(SplitOrderRequest request) {
+
+        // 1. Lấy order gốc
+        Order sourceOrder = orderRepository.findById(request.getSourceOrderId())
+                .orElseThrow(() -> new RestaurantException("Source order not found"));
+
+        // 2. Validate: Order phải PENDING
+        if (!"PENDING".equals(sourceOrder.getStatus())) {
+            throw new RestaurantException("Order must be PENDING to split");
+        }
+
+        // 3. Lấy table mới
+        TableEntity newTable = tableRepository.findById(request.getNewTableId())
+                .orElseThrow(() -> new RestaurantException("New table not found"));
+
+        // 4. Validate split items
+        Map<Long, Integer> splitItems = request.getSplitItems();
+        if (splitItems.isEmpty()) {
+            throw new RestaurantException("Split items cannot be empty");
+        }
+
+        // 5. Tạo order mới
+        Order newOrder = Order.builder()
+                .table(newTable)
+                .staffUser(sourceOrder.getStaffUser())
+                .customerUser(sourceOrder.getCustomerUser())
+                .status(sourceOrder.getStatus())
+                .notes(sourceOrder.getNotes())
+                .totalAmount(BigDecimal.ZERO)
+                .orderDetails(new ArrayList<>())
+                .build();
+
+        newOrder = orderRepository.save(newOrder);
+
+        // 6. Xử lý split cho từng OrderDetail
+        List<OrderDetail> sourceOrderDetails = new ArrayList<>(sourceOrder.getOrderDetails());
+        int remainingDetailsCount = sourceOrderDetails.size();
+
+        for (Map.Entry<Long, Integer> entry : splitItems.entrySet()) {
+            Long orderDetailId = entry.getKey();
+            Integer quantityToSplit = entry.getValue();
+
+            // Tìm OrderDetail
+            OrderDetail sourceDetail = sourceOrderDetails.stream()
+                    .filter(d -> d.getId().equals(orderDetailId))
+                    .findFirst()
+                    .orElseThrow(() -> new RestaurantException("OrderDetail not found: " + orderDetailId));
+
+            // Validate quantity
+            if (quantityToSplit <= 0) {
+                throw new RestaurantException("Quantity to split must be greater than 0");
+            }
+            if (quantityToSplit > sourceDetail.getQuantity()) {
+                throw new RestaurantException("Quantity to split exceeds available quantity");
+            }
+
+            // Nếu split hết quantity
+            if (quantityToSplit.equals(sourceDetail.getQuantity())) {
+                // Move nguyên OrderDetail sang order mới
+                sourceDetail.setOrder(newOrder);
+                orderDetailRepository.save(sourceDetail);
+                remainingDetailsCount--;
+            } else {
+                // Split một phần
+                // Trừ quantity ở order gốc
+                sourceDetail.setQuantity(sourceDetail.getQuantity() - quantityToSplit);
+                orderDetailRepository.save(sourceDetail);
+
+                // Tạo OrderDetail mới cho order mới
+                OrderDetail newDetail = OrderDetail.builder()
+                        .order(newOrder)
+                        .menuItem(sourceDetail.getMenuItem())
+                        .quantity(quantityToSplit)
+                        .priceAtOrder(sourceDetail.getPriceAtOrder())
+                        .status(sourceDetail.getStatus()) // Giữ nguyên status
+                        .notes(sourceDetail.getNotes())
+                        .build();
+
+                orderDetailRepository.save(newDetail);
+            }
+        }
+
+        // 7. Validate: Order gốc phải còn ít nhất 1 OrderDetail
+        if (remainingDetailsCount == 0) {
+            throw new RestaurantException("Cannot split all items. Source order must have at least 1 item remaining");
+        }
+
+        // 8. Tính lại totalAmount cho cả 2 orders
+        // Order gốc
+        BigDecimal sourceTotal = sourceOrder.getOrderDetails().stream()
+                .map(detail -> detail.getPriceAtOrder().multiply(BigDecimal.valueOf(detail.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        sourceOrder.setTotalAmount(sourceTotal);
+        orderRepository.save(sourceOrder);
+
+        // Order mới
+        BigDecimal newTotal = newOrder.getOrderDetails().stream()
+                .map(detail -> detail.getPriceAtOrder().multiply(BigDecimal.valueOf(detail.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        newOrder.setTotalAmount(newTotal);
+        Order savedNewOrder = orderRepository.save(newOrder);
+
+        // 9. Trả về OrderResponse của order mới sử dụng OrderMapper
+        return orderMapper.toResponse(savedNewOrder);
     }
 }

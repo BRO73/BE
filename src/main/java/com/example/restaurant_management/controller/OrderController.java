@@ -2,14 +2,17 @@ package com.example.restaurant_management.controller;
 
 import com.example.restaurant_management.dto.request.AddItemsRequest;
 import com.example.restaurant_management.dto.request.LinkCustomerRequest;
+import com.example.restaurant_management.dto.request.MergeOrderRequest;
 import com.example.restaurant_management.dto.request.OrderRequest;
 import com.example.restaurant_management.dto.response.OrderResponse;
+import com.example.restaurant_management.dto.response.SplitOrderRequest;
 import com.example.restaurant_management.entity.Order;
 import com.example.restaurant_management.service.OrderService;
 import com.example.restaurant_management.service.TableTokenService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -103,11 +106,28 @@ public class OrderController {
     public ResponseEntity<OrderResponse> unlinkCustomer(@PathVariable Long orderId) {
         OrderResponse response = orderService.unlinkCustomer(orderId);
         return ResponseEntity.ok(response);
+    }
       
     @GetMapping("/table-token/{token}/active")
     public ResponseEntity<List<OrderResponse>> getActiveOrdersByTableToken(@PathVariable String token) {
         Long tableId = tableTokenService.resolveTableId(token);
         return ResponseEntity.ok(orderService.getActiveOrdersByTable(tableId));
+    }
+
+    @PostMapping("/merge")
+    public ResponseEntity<OrderResponse> mergeOrders(@Valid @RequestBody MergeOrderRequest request) {
+
+        OrderResponse response = orderService.mergeOrders(request);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/split")
+    public ResponseEntity<OrderResponse> splitOrder(@Valid @RequestBody SplitOrderRequest request) {
+
+        OrderResponse response = orderService.splitOrder(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
 }
