@@ -24,8 +24,6 @@ public class FirebaseConfig {
                 // SDK sẽ tự động đọc projectId từ file JSON
                 FirebaseOptions options = FirebaseOptions.builder()
                         .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                        // XÓA DÒNG NÀY ĐI
-                        // .setProjectId(projectId)
                         .build();
                 FirebaseApp.initializeApp(options);
             }

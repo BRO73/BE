@@ -42,7 +42,11 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
                     .userId(((UserDetailsImpl) user).getUserId())
                     .build();
 
-            return new UsernamePasswordAuthenticationToken(user.getUsername(), credentialPayload, user.getAuthorities());
+            return new UsernamePasswordAuthenticationToken(
+                    user.getUsername(),
+                    credentialPayload,
+                    user.getAuthorities()
+            );
         }
 
     @Override
