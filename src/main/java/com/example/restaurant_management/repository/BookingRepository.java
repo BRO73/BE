@@ -85,6 +85,17 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             LocalDateTime startDay,
             LocalDateTime endDay
     );
+    @Query("""
+SELECT DISTINCT b FROM Booking b
+LEFT JOIN FETCH b.tables t
+LEFT JOIN FETCH t.location
+WHERE b.bookingTime >= :startDay
+  AND b.bookingTime < :endDay
+""")
+    List<Booking> findBookingsWithTablesAndLocationByDay(
+            @Param("startDay") LocalDateTime startDay,
+            @Param("endDay") LocalDateTime endDay
+    );
 
 
 }
