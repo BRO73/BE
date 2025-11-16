@@ -89,7 +89,7 @@ public class BookingServiceImpl implements BookingService {
                     .orElseThrow(() -> new EntityNotFoundException("Table not found with id: " + tbId));
 
             List<Booking> bookingsToday = bookingRepository.findByTableAndDay(table.getId(), request.getBookingTime());
-            if (!bookingsToday.isEmpty()) {
+            if (!bookingsToday.stream().anyMatch(p -> p.getStatus().toLowerCase().equals("completed"))) {
                 throw new IllegalStateException("Table " + table.getTableNumber() + " already has a booking on this day!");
             }
             tables.add(table);
@@ -137,8 +137,7 @@ public class BookingServiceImpl implements BookingService {
                     .orElseThrow(() -> new EntityNotFoundException("Table not found with id: " + tbId));
 
             List<Booking> bookingsToday = bookingRepository.findByTableAndDay(table.getId(), request.getBookingTime());
-            boolean conflict = bookingsToday.stream().anyMatch(b -> !b.getId().equals(id));
-            if (conflict) {
+            if (!bookingsToday.stream().anyMatch(p -> p.getStatus().toLowerCase().equals("completed"))) {
                 throw new IllegalStateException("Table " + table.getTableNumber() + " already has a booking on this day!");
             }
 
