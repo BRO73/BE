@@ -138,7 +138,9 @@ public class BookingServiceImpl implements BookingService {
                     .orElseThrow(() -> new EntityNotFoundException("Table not found with id: " + tbId));
 
             List<Booking> bookingsToday = bookingRepository.findByTableAndDay(table.getId(), request.getBookingTime());
-            if (bookingsToday.stream().anyMatch(p -> !p.getStatus().equalsIgnoreCase("completed"))) {
+
+            if (bookingsToday.stream()
+                    .anyMatch(p -> !p.getStatus().equalsIgnoreCase("completed") && !p.getId().equals(existing.getId()))) {
                 throw new IllegalStateException("Table " + table.getTableNumber() + " already has a booking on this day!");
             }
 
