@@ -216,7 +216,6 @@ public class PaymentServiceImpl implements PaymentService {
 
             if ("00".equals(paymentStatus) || "PAID".equals(paymentStatus)) {
                 transaction.setPaymentStatus("PAID");
-
                 Order order = transaction.getOrder();
                 order.setStatus("PAID");
                 orderRepository.save(order);

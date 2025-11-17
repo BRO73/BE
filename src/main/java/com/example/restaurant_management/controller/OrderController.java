@@ -67,6 +67,11 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrdersByStatus(status));
     }
 
+    @GetMapping("/status/{status}/completed")
+    public ResponseEntity<List<OrderResponse>> getOrdersByStatusAndOrderDetailsCompleted(@PathVariable String status) {
+        return ResponseEntity.ok(orderService.getOrdersByStatusAndOrderDetailsCompleted(status));
+    }
+
     @GetMapping("/staff/{staffId}")
     public ResponseEntity<List<OrderResponse>> getOrdersByStaff(@PathVariable Long staffId) {
         return ResponseEntity.ok(orderService.getOrdersByStaff(staffId));

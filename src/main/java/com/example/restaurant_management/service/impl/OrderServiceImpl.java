@@ -412,4 +412,12 @@ public class OrderServiceImpl implements OrderService {
         // 9. Trả về OrderResponse của order mới sử dụng OrderMapper
         return orderMapper.toResponse(savedNewOrder);
     }
+
+    @Override
+    public List<OrderResponse> getOrdersByStatusAndOrderDetailsCompleted(String status) {
+        return orderRepository.findByStatusWithAllDetailsCompleted(status).stream()
+                .map(orderMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
 }

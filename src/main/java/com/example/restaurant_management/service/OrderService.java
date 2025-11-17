@@ -34,4 +34,6 @@ public interface OrderService {
     OrderResponse mergeOrders(@Valid MergeOrderRequest request);
 
     OrderResponse splitOrder(@Valid SplitOrderRequest request);
+
+    List<OrderResponse> getOrdersByStatusAndOrderDetailsCompleted(String status);
 }
