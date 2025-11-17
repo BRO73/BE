@@ -163,5 +163,22 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("table") TableEntity table,
             @Param("status") String status
     );
+
+    @Query("SELECT DISTINCT o FROM Order o " +
+            "LEFT JOIN FETCH o.orderDetails od " +
+            "LEFT JOIN FETCH od.menuItem " +
+            "LEFT JOIN FETCH o.table " +
+            "LEFT JOIN FETCH o.customerUser cu " +
+            "LEFT JOIN FETCH cu.customer " +
+            "LEFT JOIN FETCH o.staffUser su " +
+            "LEFT JOIN FETCH su.staff " +
+            "WHERE o.status = :status " +
+            "AND SIZE(o.orderDetails) > 0 " +  // ← Thêm dòng này
+            "AND NOT EXISTS (" +
+            "    SELECT 1 FROM OrderDetail od2 " +
+            "    WHERE od2.order = o " +
+            "    AND od2.status != 'COMPLETED'" +
+            ")")
+    List<Order> findByStatusWithAllDetailsCompleted(@Param("status") String status);
 }
 
