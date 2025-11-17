@@ -15,8 +15,7 @@ public interface KitchenService {
     void completeOneUnit(Long orderDetailId);
 
     // NEW: (chờ cung ứng) “>” — xuất 1 đơn vị khỏi DONE
-    void serveOneUnit(Long orderDetailId);
-
+    void serveAllUnits(Long orderDetailId);
 
     void completeAllUnits(Long id);
 
